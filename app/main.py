@@ -1,7 +1,15 @@
-from app.database.connection import get_connection
+from fastapi import FastAPI
+from app.routers.insumos import router as insumos_router
 
-conn = get_connection()
+app = FastAPI(
+    title="BloomLab API",
+    version="1.0.0"
+)
 
-print("✅ BloomLab conectado")
+app.include_router(insumos_router)
 
-conn.close()
+@app.get("/")
+def root():
+    return {
+        "mensaje": "BloomLab API funcionando"
+    }
