@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Detalle Arreglo</title>
+
+    <link rel="stylesheet"
+          href="css/estilos.css">
+
+</head>
+
+<body>
+
+    <h1>BloomLab</h1>
+
+    <p>
+        <a href="arreglos.html">
+            ← Regresar a Arreglos
+        </a>
+    </p>
+
+    <h2 id="nombre-arreglo"></h2>
+
+    <p>
+        <strong>Código:</strong>
+        <span id="codigo"></span>
+    </p>
+
+    <p>
+        <strong>Categoría:</strong>
+        <span id="categoria"></span>
+    </p>
+
+    <p>
+        <strong>Descripción:</strong>
+        <span id="descripcion"></span>
+    </p>
+
+    <p>
+        <strong>Costo Total:</strong>
+        <span id="costo-total"></span>
+    </p>
+
+    <h3>Insumos</h3>
+
+    <button onclick="agregarInsumo()">
+        Agregar Insumo
+    </button>
+
+    <br><br>
+
+    <table id="tabla-detalle">
+
+        <thead>
+
+            <tr>
+
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Cantidad</th>
+                <th>Costo Real</th>
+                <th>Subtotal</th>
+                <th>observaciones</th>
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        </tbody>
+
+    </table>
+
+    <script src="js/detalle_arreglo.js"></script>
+
+</body>
+
+</html>

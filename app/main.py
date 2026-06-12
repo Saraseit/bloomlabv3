@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.routers.insumos import router as insumos_router
 from app.routers.arreglos import router as arreglos_router
@@ -15,6 +16,12 @@ app.include_router(insumos_router)
 app.include_router(arreglos_router)
 app.include_router(arreglo_detalle_router)
 
+# Frontend
+app.mount(
+    "/frontend",
+    StaticFiles(directory="app/frontend"),
+    name="frontend"
+)
 
 @app.get("/")
 def root():
