@@ -11,3 +11,11 @@ class ArregloDetalleCreate(BaseModel):
     costo_real: float
 
     observaciones: str | None = None
+
+class ArregloDetalleUpdate(BaseModel):
+
+    cantidad: float
+
+    costo_real: float
+
+    observaciones: str | None = None

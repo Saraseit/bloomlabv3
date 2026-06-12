@@ -104,3 +104,80 @@ def crear_arreglo(data):
     "codigo": nuevo_codigo,
     "categoria": data.categoria
 }
+
+def obtener_arreglo(arreglo_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # Encabezado
+    cur.execute("""
+        SELECT
+            id,
+            codigo,
+            nombre,
+            categoria,
+            descripcion,
+            costo_total,
+            activo,
+            fecha_creacion
+        FROM arreglos
+        WHERE id = %s
+    """, (arreglo_id,))
+
+    arreglo = cur.fetchone()
+
+    if not arreglo:
+
+        cur.close()
+        conn.close()
+
+        return {
+            "error": "Arreglo no encontrado"
+        }
+
+    columnas = [desc[0] for desc in cur.description]
+
+    resultado = dict(zip(columnas, arreglo))
+
+    # Detalle
+    cur.execute("""
+        SELECT
+
+            i.id AS insumo_id,
+            i.codigo,
+            i.nombre,
+
+            ad.cantidad,
+            ad.costo_real,
+
+            (ad.cantidad * ad.costo_real) AS subtotal,
+
+            ad.observaciones
+
+        FROM arreglo_detalle ad
+
+        INNER JOIN insumos i
+            ON ad.insumo_id = i.id
+
+        WHERE ad.arreglo_id = %s
+
+        ORDER BY ad.id
+
+    """, (arreglo_id,))
+
+    filas = cur.fetchall()
+
+    columnas = [desc[0] for desc in cur.description]
+
+    detalle = [
+        dict(zip(columnas, fila))
+        for fila in filas
+    ]
+
+    resultado["insumos"] = detalle
+
+    cur.close()
+    conn.close()
+
+    return resultado
