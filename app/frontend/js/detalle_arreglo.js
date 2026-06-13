@@ -60,12 +60,16 @@ async function cargarDetalle() {
             <td>${insumo.subtotal}</td>
             <td>${insumo.observaciones}</td>
             <td>
-
                 <button
-                    onclick='editarDetalle(${JSON.stringify(insumo)})'
+                    onclick="editarDetalle(
+                        ${insumo.id},
+                        ${insumo.cantidad},
+                        ${insumo.costo_real},
+                        '${(insumo.observaciones ?? "").replace(/'/g, "\\'")}'
+                    )"
                 >
                     Editar
-                </button>
+                 </button>
 
                 <button
                     onclick='eliminarDetalle(${insumo.id})'
@@ -156,13 +160,18 @@ async function eliminarDetalle(id) {
     cargarDetalle();
 }
 
-async function editarDetalle(detalle) {
+async function editarDetalle(
+    id,
+    cantidadActual,
+    costoActual,
+    observacionesActuales
+) {
 
     const cantidad =
         parseFloat(
             prompt(
                 "Cantidad",
-                detalle.cantidad
+                cantidadActual
             )
         );
 
@@ -170,19 +179,19 @@ async function editarDetalle(detalle) {
         parseFloat(
             prompt(
                 "Costo Real",
-                detalle.costo_real
+                costoActual
             )
         );
 
     const observaciones =
         prompt(
             "Observaciones",
-            detalle.observaciones ?? ""
+            observacionesActuales
         );
 
     const respuesta =
         await fetch(
-            `http://127.0.0.1:8000/arreglo-detalle/${detalle.id}`,
+            `http://127.0.0.1:8000/arreglo-detalle/${id}`,
             {
                 method: "PUT",
 
@@ -200,6 +209,10 @@ async function editarDetalle(detalle) {
         );
 
     if (!respuesta.ok) {
+
+        console.log(
+            await respuesta.text()
+        );
 
         alert(
             "Error al actualizar"

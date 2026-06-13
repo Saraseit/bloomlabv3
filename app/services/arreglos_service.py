@@ -144,6 +144,8 @@ def obtener_arreglo(arreglo_id):
     cur.execute("""
         SELECT
 
+            ad.id,
+
             i.id AS insumo_id,
             i.codigo,
             i.nombre,
@@ -154,7 +156,6 @@ def obtener_arreglo(arreglo_id):
             (ad.cantidad * ad.costo_real) AS subtotal,
 
             ad.observaciones
-
         FROM arreglo_detalle ad
 
         INNER JOIN insumos i
@@ -181,3 +182,53 @@ def obtener_arreglo(arreglo_id):
     conn.close()
 
     return resultado
+
+def editar_arreglo(arreglo_id, data):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE arreglos
+        SET
+            nombre = %s,
+            categoria = %s,
+            descripcion = %s
+        WHERE id = %s
+    """, (
+
+        data.nombre,
+        data.categoria,
+        data.descripcion,
+        arreglo_id
+
+    ))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "mensaje": "Arreglo actualizado"
+    }
+
+def eliminar_arreglo(arreglo_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE arreglos
+        SET activo = FALSE
+        WHERE id = %s
+    """, (arreglo_id,))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "mensaje": "Arreglo desactivado"
+    }

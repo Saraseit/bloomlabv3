@@ -7,3 +7,14 @@ class ArregloCreate(BaseModel):
     categoria: str
 
     descripcion: str | None = None
+
+
+from pydantic import BaseModel
+
+class ArregloUpdate(BaseModel):
+
+    nombre: str
+
+    categoria: str | None = None
+
+    descripcion: str | None = None
