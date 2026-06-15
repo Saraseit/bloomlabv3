@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Clientes</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+
+</head>
+
+<body>
+
+    <h1>Clientes</h1>
+
+    <p>
+        <a href="index.html">
+          ← Menú Principal
+        </a>
+    </p>
+
+    <table id="tabla-clientes">
+
+        <thead>
+
+            <tr>
+
+                <th>Nombre</th>
+                <th>Empresa</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Comisión %</th>
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+    <hr>
+
+    <h2>Nuevo Cliente</h2>
+
+    <input
+        type="text"
+        id="nombre"
+        placeholder="Nombre"
+    >
+
+    <input
+        type="text"
+        id="empresa"
+        placeholder="Empresa"
+    >
+
+    <input
+        type="text"
+        id="telefono"
+        placeholder="Teléfono"
+    >
+
+    <input
+        type="email"
+        id="email"
+        placeholder="Email"
+    >
+
+    <input
+        type="number"
+        id="comision"
+        placeholder="Comisión %"
+        step="0.01"
+    >
+
+    <button onclick="crearCliente()">
+        Guardar
+    </button>
+
+    <script src="js/clientes.js"></script>
+
+</body>
+
+</html>

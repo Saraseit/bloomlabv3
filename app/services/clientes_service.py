@@ -102,7 +102,7 @@ def actualizar_cliente(cliente_id, data):
             telefono = %s,
             email = %s,
             empresa = %s,
-            notas = %s
+            notas = %s,
             comision_porcentaje = %s
         WHERE id = %s
     """, (

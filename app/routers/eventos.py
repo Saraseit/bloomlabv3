@@ -46,7 +46,7 @@ def borrar_evento(evento_id: int):
 
     return eliminar_evento(evento_id)
 
-@router.get("/eventos/{evento_id}")
+@router.get("/{evento_id}")
 def detalle_evento(
     evento_id: int
 ):

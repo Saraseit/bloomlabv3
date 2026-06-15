@@ -1,0 +1,115 @@
+<p>
+    <a href="eventos.html">
+        ← Regresar a Eventos
+    </a>
+</p>
+
+<h1 id="nombre-evento"></h1>
+
+<p>
+    Cliente:
+    <span id="cliente"></span>
+</p>
+
+<p>
+    Fecha:
+    <span id="fecha-evento"></span>
+</p>
+
+<p>
+    Lugar:
+    <span id="lugar"></span>
+</p>
+
+<p>
+    Descripción:
+    <span id="descripcion"></span>
+</p>
+
+<hr>
+
+<h2>Resumen Financiero</h2>
+
+<p>
+    Costo Base:
+    <span id="costo-base"></span>
+</p>
+
+<p>
+    Comisión:
+    <span id="comision-porcentaje"></span>%
+</p>
+
+<p>
+    Importe Comisión:
+    $<span id="importe-comision"></span>
+</p>
+
+<p>
+    Costo Final:
+    <span id="costo-final"></span>
+</p>
+
+<p>
+    Precio Mínimo:
+    <span id="precio-minimo"></span>
+</p>
+
+<p>
+    Precio Sugerido:
+    <span id="precio-sugerido"></span>
+</p>
+
+<hr>
+
+<h2>Arreglos del Evento</h2>
+
+<table id="tabla-evento-arreglos">
+
+    <thead>
+
+        <tr>
+
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Cantidad</th>
+            <th>Costo Unitario</th>
+            <th>Subtotal</th>
+            <th>Observaciones</th>
+            <th>Acciones</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody></tbody>
+
+</table>
+
+<hr>
+
+<h3>Agregar Arreglo</h3>
+
+<select id="arreglo-select">
+    <option value="">
+        Seleccionar arreglo
+    </option>
+</select>
+
+<input
+    type="number"
+    id="cantidad"
+    placeholder="Cantidad"
+/>
+
+<input
+    type="text"
+    id="observaciones"
+    placeholder="Observaciones"
+/>
+
+<button onclick="agregarArreglo()">
+    Agregar
+</button>
+
+<script src="js/detalle_evento.js"></script>

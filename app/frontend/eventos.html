@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Eventos</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+
+</head>
+
+<body>
+
+    <h1>Eventos</h1>
+
+    <p>
+        <a href="index.html">
+            ← Menú Principal
+        </a>
+    </p>
+
+    <table id="tabla-eventos">
+
+        <thead>
+
+            <tr>
+
+                <th>Cliente</th>
+                <th>Evento</th>
+                <th>Fecha</th>
+                <th>Lugar</th>
+                <th>Estatus</th>
+                <th>Costo Final</th>
+                <th>Precio Sugerido</th>
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+    <hr>
+
+    <h2>Nuevo Evento</h2>
+
+    <select id="cliente-select">
+        <option value="">
+            Seleccionar cliente
+        </option>
+    </select>
+
+    <input
+        type="text"
+        id="nombre"
+        placeholder="Nombre del evento"
+    >
+
+    <input
+        type="date"
+        id="fecha_evento"
+    >
+
+    <input
+        type="text"
+        id="lugar"
+        placeholder="Lugar"
+    >
+
+    <input
+        type="text"
+        id="descripcion"
+        placeholder="Descripción"
+    >
+
+    <button onclick="crearEvento()">
+        Guardar
+    </button>
+
+    <script src="js/eventos.js"></script>
+
+</body>
+
+</html>

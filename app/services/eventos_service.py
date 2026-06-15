@@ -271,6 +271,8 @@ def obtener_evento(evento_id):
 
             c.nombre AS cliente,
 
+            c.comision_porcentaje,
+
             e.nombre,
 
             e.fecha_evento,
@@ -299,8 +301,9 @@ def obtener_evento(evento_id):
             ON e.cliente_id = c.id
 
         WHERE e.id = %s
+
     """, (evento_id,))
-    
+
     evento = cur.fetchone()
 
     if not evento:
@@ -311,6 +314,7 @@ def obtener_evento(evento_id):
         return {
             "error": "Evento no encontrado"
         }
+
     columnas = [
         desc[0]
         for desc in cur.description
@@ -318,6 +322,33 @@ def obtener_evento(evento_id):
 
     resultado = dict(
         zip(columnas, evento)
+    )
+
+    resultado["costo_base"] = round(
+        resultado["costo_base"] or 0,
+        2
+    )
+
+    resultado["costo_final"] = round(
+        resultado["costo_final"] or 0,
+        2
+    )
+
+    resultado["precio_minimo"] = round(
+        resultado["precio_minimo"] or 0,
+        2
+    )
+
+    resultado["precio_sugerido"] = round(
+        resultado["precio_sugerido"] or 0,
+        2
+    )
+
+    resultado["importe_comision"] = round(
+        resultado["costo_final"]
+        -
+        resultado["costo_base"],
+        2
     )
 
     cur.execute("""
@@ -347,8 +378,9 @@ def obtener_evento(evento_id):
         WHERE ea.evento_id = %s
 
         ORDER BY ea.id
+
     """, (evento_id,))
-    
+
     filas = cur.fetchall()
 
     columnas = [
@@ -363,6 +395,7 @@ def obtener_evento(evento_id):
         )
 
         for fila in filas
+
     ]
 
     resultado["arreglos"] = arreglos
