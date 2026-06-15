@@ -1,56 +1,27 @@
-const parametros =
-    new URLSearchParams(
-        window.location.search
-    );
-
-const arregloId =
-    parametros.get("id");
+const parametros = new URLSearchParams(window.location.search);
+const arregloId = parametros.get("id");
 
 async function cargarDetalle() {
 
     const respuesta = await fetch(
-        `http://127.0.0.1:8000/arreglos/${arregloId}`
+        `${API_URL}/arreglos/${arregloId}`
     );
 
-    const arreglo =
-        await respuesta.json();
+    const arreglo = await respuesta.json();
 
-    document.getElementById(
-        "nombre-arreglo"
-    ).textContent =
-        arreglo.nombre;
+    document.getElementById("nombre-arreglo").textContent = arreglo.nombre;
+    document.getElementById("codigo").textContent = arreglo.codigo;
+    document.getElementById("categoria").textContent = arreglo.categoria ?? "";
+    document.getElementById("descripcion").textContent = arreglo.descripcion ?? "";
+    document.getElementById("costo-total").textContent = arreglo.costo_total ?? 0;
 
-    document.getElementById(
-        "codigo"
-    ).textContent =
-        arreglo.codigo;
-
-    document.getElementById(
-        "categoria"
-    ).textContent =
-        arreglo.categoria ?? "";
-
-    document.getElementById(
-        "descripcion"
-    ).textContent =
-        arreglo.descripcion ?? "";
-
-    document.getElementById(
-        "costo-total"
-    ).textContent =
-        arreglo.costo_total ?? 0;
-
-    const tbody =
-        document.querySelector(
-            "#tabla-detalle tbody"
-        );
+    const tbody = document.querySelector("#tabla-detalle tbody");
 
     tbody.innerHTML = "";
 
-    arreglo.insumos.forEach(insumo => {
+    (arreglo.insumos || []).forEach(insumo => {
 
-        const fila =
-            document.createElement("tr");
+        const fila = document.createElement("tr");
 
         fila.innerHTML = `
             <td>${insumo.codigo}</td>
@@ -58,32 +29,25 @@ async function cargarDetalle() {
             <td>${insumo.cantidad}</td>
             <td>${insumo.costo_real}</td>
             <td>${insumo.subtotal}</td>
-            <td>${insumo.observaciones}</td>
+            <td>${insumo.observaciones ?? ""}</td>
             <td>
-                <button
-                    onclick="editarDetalle(
-                        ${insumo.id},
-                        ${insumo.cantidad},
-                        ${insumo.costo_real},
-                        '${(insumo.observaciones ?? "").replace(/'/g, "\\'")}'
-                    )"
-                >
+                <button onclick="editarDetalle(
+                    ${insumo.id},
+                    ${insumo.cantidad},
+                    ${insumo.costo_real},
+                    '${(insumo.observaciones ?? "").replace(/'/g, "\\'")}'
+                )">
                     Editar
-                 </button>
-
-                <button
-                    onclick='eliminarDetalle(${insumo.id})'
-                >
-                    Eliminar
                 </button>
 
+                <button onclick="eliminarDetalle(${insumo.id})">
+                    Eliminar
+                </button>
             </td>
         `;
 
         tbody.appendChild(fila);
-
     });
-
 }
 
 cargarDetalle();
@@ -91,97 +55,60 @@ cargarInsumos();
 
 async function cargarInsumos() {
 
-    const respuesta =
-        await fetch(
-            "http://127.0.0.1:8000/insumos"
-        );
+    const respuesta = await fetch(`${API_URL}/insumos`);
 
-    const insumos =
-        await respuesta.json();
+    const insumos = await respuesta.json();
 
-    const select =
-        document.getElementById(
-            "insumo-select"
-        );
+    const select = document.getElementById("insumo-select");
 
-    select.innerHTML =
-        `<option value="">
-            Seleccionar insumo
-        </option>`;
+    select.innerHTML = `
+        <option value="">Seleccionar insumo</option>
+    `;
 
     insumos.forEach(insumo => {
 
-        const option =
-            document.createElement(
-                "option"
-            );
+        const option = document.createElement("option");
 
-        option.value =
-            insumo.id;
-
-        option.textContent =
-            `${insumo.codigo} - ${insumo.nombre}`;
+        option.value = insumo.id;
+        option.textContent = `${insumo.codigo} - ${insumo.nombre}`;
 
         select.appendChild(option);
-
     });
-
 }
 
 async function agregarInsumo() {
 
-    const insumo_id =
-        parseInt(
-            document.getElementById(
-                "insumo-select"
-            ).value
-        );
+    const insumo_id = parseInt(
+        document.getElementById("insumo-select").value
+    );
 
-    const cantidad =
-        parseFloat(
-            document.getElementById(
-                "cantidad"
-            ).value
-        );
+    const cantidad = parseFloat(
+        document.getElementById("cantidad").value
+    );
 
-    const costo_real =
-        parseFloat(
-            document.getElementById(
-                "costo-real"
-            ).value
-        );
+    const costo_real = parseFloat(
+        document.getElementById("costo-real").value
+    );
 
     const observaciones =
-        document.getElementById(
-            "observaciones"
-        ).value;
-    const respuesta =
-        await fetch(
-            "http://127.0.0.1:8000/arreglo-detalle",
-            {
-                method: "POST",
+        document.getElementById("observaciones").value;
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    arreglo_id: parseInt(arregloId),
-                    insumo_id,
-                    cantidad,
-                    costo_real,
-                    observaciones
-                })
-            }
-        );
+    const respuesta = await fetch(`${API_URL}/arreglo-detalle`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            arreglo_id: parseInt(arregloId),
+            insumo_id,
+            cantidad,
+            costo_real,
+            observaciones
+        })
+    });
 
     if (!respuesta.ok) {
-
-        alert(
-            "Error al agregar insumo"
-        );
-
+        alert("Error al agregar insumo");
         return;
     }
 
@@ -191,36 +118,19 @@ async function agregarInsumo() {
 
 async function eliminarDetalle(id) {
 
-    const confirmar =
-        confirm(
-            "¿Eliminar insumo?"
-        );
-
+    const confirmar = confirm("¿Eliminar insumo?");
     if (!confirmar) return;
 
-    await fetch(
-        `http://127.0.0.1:8000/arreglo-detalle/${id}`,
-        {
-            method: "DELETE"
-        }
-    );
+    await fetch(`${API_URL}/arreglo-detalle/${id}`, {
+        method: "DELETE"
+    });
 
     cargarDetalle();
-        document.getElementById(
-        "insumo-select"
-    ).value = "";
 
-    document.getElementById(
-        "cantidad"
-    ).value = "";
-
-    document.getElementById(
-        "costo-real"
-    ).value = "";
-
-    document.getElementById(
-        "observaciones"
-    ).value = "";
+    document.getElementById("insumo-select").value = "";
+    document.getElementById("cantidad").value = "";
+    document.getElementById("costo-real").value = "";
+    document.getElementById("observaciones").value = "";
 }
 
 async function editarDetalle(
@@ -230,61 +140,28 @@ async function editarDetalle(
     observacionesActuales
 ) {
 
-    const cantidad =
-        parseFloat(
-            prompt(
-                "Cantidad",
-                cantidadActual
-            )
-        );
+    const cantidad = parseFloat(prompt("Cantidad", cantidadActual));
+    const costo_real = parseFloat(prompt("Costo Real", costoActual));
+    const observaciones = prompt("Observaciones", observacionesActuales);
 
-    const costo_real =
-        parseFloat(
-            prompt(
-                "Costo Real",
-                costoActual
-            )
-        );
-
-    const observaciones =
-        prompt(
-            "Observaciones",
-            observacionesActuales
-        );
-
-    const respuesta =
-        await fetch(
-            `http://127.0.0.1:8000/arreglo-detalle/${id}`,
-            {
-                method: "PUT",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    cantidad,
-                    costo_real,
-                    observaciones
-                })
-            }
-        );
+    const respuesta = await fetch(`${API_URL}/arreglo-detalle/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            cantidad,
+            costo_real,
+            observaciones
+        })
+    });
 
     if (!respuesta.ok) {
-
-        console.log(
-            await respuesta.text()
-        );
-
-        alert(
-            "Error al actualizar"
-        );
-
+        console.log(await respuesta.text());
+        alert("Error al actualizar");
         return;
     }
 
     cargarDetalle();
     cargarInsumos();
 }
-
