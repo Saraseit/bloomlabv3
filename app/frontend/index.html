@@ -1,49 +1,77 @@
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BloomLab</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
-
-
+    <link rel="stylesheet" href="css/home.css">
 </head>
 
-<body>
+<body class="home-page">
 
-    <h1>BloomLab</h1>
+    <div class="home-wrapper">
 
-    <h2>Menú Principal</h2>
+        <header class="home-header">
+            <div class="logo-area">
+                <span class="logo-icon">&#127800;</span>
+                <h1 class="brand-name">BloomLab</h1>
+            </div>
+            <p class="brand-tagline">Sistema de Gestión Floral</p>
+        </header>
 
-    <div>
+        <main class="home-main">
+            <h2 class="menu-title">Menú Principal</h2>
+            <p class="menu-subtitle">Selecciona un módulo para comenzar</p>
 
-        <p>
-            <a href="insumos.html">
-                Catálogo de Insumos
-            </a>
-        </p>
+            <nav class="menu-grid">
 
-        <p>
-            <a href="arreglos.html">
-                Catálogo de Arreglos
-            </a>
-        </p>
+                <a href="insumos.html" class="menu-card">
+                    <div class="card-icon">&#127807;</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Catálogo de Insumos</h3>
+                        <p class="card-desc">Gestiona materiales y suministros</p>
+                    </div>
+                    <span class="card-arrow">&#8594;</span>
+                </a>
 
-        <p>
-            <a href="clientes.html">
-                Clientes
-            </a>
-        </p>
+                <a href="arreglos.html" class="menu-card">
+                    <div class="card-icon">&#128144;</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Catálogo de Arreglos</h3>
+                        <p class="card-desc">Diseña y administra arreglos florales</p>
+                    </div>
+                    <span class="card-arrow">&#8594;</span>
+                </a>
 
-        <p>
-            <a href="eventos.html">
-                Eventos
-            </a>
-        </p>
+                <a href="clientes.html" class="menu-card">
+                    <div class="card-icon">&#128101;</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Clientes</h3>
+                        <p class="card-desc">Administra tu base de clientes</p>
+                    </div>
+                    <span class="card-arrow">&#8594;</span>
+                </a>
+
+                <a href="eventos.html" class="menu-card">
+                    <div class="card-icon">&#128197;</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Eventos</h3>
+                        <p class="card-desc">Organiza y da seguimiento a eventos</p>
+                    </div>
+                    <span class="card-arrow">&#8594;</span>
+                </a>
+
+            </nav>
+        </main>
+
+        <footer class="home-footer">
+            <p>&copy; 2025 BloomLab &middot; Sistema de Gestión Floral</p>
+        </footer>
 
     </div>
 
