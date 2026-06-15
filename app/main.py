@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import os
 
 from app.routers.insumos import router as insumos_router
@@ -12,10 +13,23 @@ from app.routers.evento_arreglo import router as evento_arreglo_router
 
 app = FastAPI(
     title="BloomLab API",
-    version="1.0.0"
+    version="3.0.0"
 )
 
-# Routers
+# -------------------------
+# CORS (IMPORTANTE si usas frontend)
+# -------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # luego puedes restringirlo
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# -------------------------
+# ROUTERS
+# -------------------------
 app.include_router(insumos_router)
 app.include_router(arreglos_router)
 app.include_router(arreglo_detalle_router)
@@ -23,17 +37,24 @@ app.include_router(clientes_router)
 app.include_router(eventos_router)
 app.include_router(evento_arreglo_router)
 
-# Frontend (más seguro para Render)
+# -------------------------
+# FRONTEND STATIC
+# -------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
-app.mount(
-    "/frontend",
-    StaticFiles(directory=os.path.join(BASE_DIR, "frontend")),
-    name="frontend"
-)
+if os.path.exists(FRONTEND_DIR):
+    app.mount(
+        "/frontend",
+        StaticFiles(directory=FRONTEND_DIR, html=True),
+        name="frontend"
+    )
 
+# -------------------------
+# ROOT
+# -------------------------
 @app.get("/")
 def root():
     return {
-        "mensaje": "BloomLab API funcionando"
+        "mensaje": "BloomLab API funcionando 🚀"
     }
