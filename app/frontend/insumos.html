@@ -20,12 +20,47 @@
 
     <h2>Catálogo de Insumos</h2>
 
-    <button onclick="nuevoInsumo()">
-         Nuevo Insumo
+    <h3>Nuevo Insumo</h3>
+
+    <input
+        type="text"
+        id="nombre-insumo"
+        placeholder="Nombre"
+    />
+
+    <select id="categoria-select">
+
+        <option value="">
+            Seleccionar categoría
+        </option>
+
+    </select>
+
+    <input
+        type="text"
+        id="unidad"
+        placeholder="Unidad"
+    />
+
+    <input
+        type="number"
+        id="costo-referencia"
+        placeholder="Costo Referencia"
+        step="0.01"
+    />
+
+    <input
+        type="number"
+        id="porcentaje-merma"
+        placeholder="Merma"
+        step="0.01"
+    />
+
+    <button onclick="crearInsumo()">
+        Guardar
     </button>
 
-    <br><br>
-
+    <hr>
     <table id="tabla-insumos">
 
         <thead>

@@ -74,16 +74,19 @@ function verDetalle(id) {
 async function crearArreglo() {
 
     const nombre =
-        prompt("Nombre");
-
-    if (!nombre) return;
+        document.getElementById(
+            "nombre-arreglo"
+        ).value;
 
     const categoria =
-        prompt("Categoría");
+        document.getElementById(
+            "categoria-arreglo"
+        ).value;
 
     const descripcion =
-        prompt("Descripción");
-
+        document.getElementById(
+            "descripcion-arreglo"
+        ).value;
     const respuesta =
         await fetch(
             "http://127.0.0.1:8000/arreglos",
@@ -113,6 +116,18 @@ async function crearArreglo() {
     }
 
     cargarArreglos();
+
+        document.getElementById(
+        "nombre-arreglo"
+    ).value = "";
+
+    document.getElementById(
+        "categoria-arreglo"
+    ).value = "";
+
+    document.getElementById(
+        "descripcion-arreglo"
+    ).value = "";
 }
 
 async function editarArreglo(

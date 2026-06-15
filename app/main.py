@@ -6,6 +6,17 @@ from app.routers.arreglos import router as arreglos_router
 from app.routers.arreglo_detalle import (
     router as arreglo_detalle_router
 )
+from app.routers.clientes import (
+    router as clientes_router
+)
+from app.routers.eventos import (
+    router as eventos_router
+)
+from app.routers.evento_arreglo import (
+    router as evento_arreglo_router
+)
+
+
 
 app = FastAPI(
     title="BloomLab API",
@@ -15,6 +26,11 @@ app = FastAPI(
 app.include_router(insumos_router)
 app.include_router(arreglos_router)
 app.include_router(arreglo_detalle_router)
+app.include_router(clientes_router)
+app.include_router(eventos_router)
+app.include_router(
+    evento_arreglo_router
+)
 
 # Frontend
 app.mount(
@@ -28,3 +44,4 @@ def root():
     return {
         "mensaje": "BloomLab API funcionando"
     }
+

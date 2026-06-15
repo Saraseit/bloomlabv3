@@ -5,7 +5,8 @@ from app.services.insumos_service import (
     obtener_insumos,
     crear_insumo,
     actualizar_insumo,
-    eliminar_insumo
+    eliminar_insumo,
+    obtener_categorias_insumo
 )
 
 router = APIRouter()
@@ -39,3 +40,8 @@ def editar_insumo(
 @router.delete("/insumos/{insumo_id}")
 def borrar_insumo(insumo_id: int):
     return eliminar_insumo(insumo_id)
+
+@router.get("/categorias")
+def listar_categorias():
+
+    return obtener_categorias_insumo()

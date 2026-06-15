@@ -14,8 +14,8 @@ async function eliminarInsumo(id) {
             method: "DELETE"
         }
     );
-
-    cargarInsumos();
+cargarInsumos();
+cargarCategorias();
 }
 
 async function editarInsumo(insumo) {
@@ -84,8 +84,8 @@ async function editarInsumo(insumo) {
 
         return;
     }
-
-    cargarInsumos();
+cargarInsumos();
+cargarCategorias();
 }
 
 async function nuevoInsumo() {
@@ -97,7 +97,9 @@ async function nuevoInsumo() {
 
     const categoria_id =
         parseInt(
-            prompt("ID Categoría")
+            document.getElementById(
+                "categoria-select"
+            ).value
         );
 
     const unidad =
@@ -141,8 +143,8 @@ async function nuevoInsumo() {
 
         return;
     }
-
-    cargarInsumos();
+cargarInsumos();
+cargarCategorias();
 }
 
 async function cargarInsumos() {
@@ -192,5 +194,47 @@ async function cargarInsumos() {
     });
 
 }
+cargarInsumos();
+cargarCategorias();
+
+async function cargarCategorias() {
+
+    const respuesta =
+        await fetch(
+            "http://127.0.0.1:8000/categorias"
+        );
+
+    const categorias =
+        await respuesta.json();
+
+    const select =
+        document.getElementById(
+            "categoria-select"
+        );
+
+    select.innerHTML =
+        `<option value="">
+            Seleccionar categoría
+        </option>`;
+
+    categorias.forEach(categoria => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            categoria.id;
+
+        option.textContent =
+            categoria.nombre;
+
+        select.appendChild(option);
+
+    });
+
+}
 
 cargarInsumos();
+cargarCategorias();

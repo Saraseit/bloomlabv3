@@ -44,13 +44,40 @@
         <span id="costo-total"></span>
     </p>
 
-    <h3>Insumos</h3>
+    <h3>Agregar Insumo</h3>
+
+    <select id="insumo-select">
+        <option value="">
+            Seleccionar insumo
+        </option>
+    </select>
+
+    <input
+        type="number"
+        id="cantidad"
+        placeholder="Cantidad"
+    />
+
+    <input
+        type="number"
+        id="costo-real"
+        placeholder="Costo Real"
+        step="0.01"
+    />
+
+    <input
+        type="text"
+        id="observaciones"
+        placeholder="Observaciones"
+    />
 
     <button onclick="agregarInsumo()">
-        Agregar Insumo
+        Agregar
     </button>
 
-    <br><br>
+    <hr>
+
+
 
     <table id="tabla-detalle">
 

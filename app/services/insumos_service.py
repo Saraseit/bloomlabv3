@@ -193,3 +193,34 @@ def eliminar_insumo(insumo_id):
         "mensaje": "Insumo desactivado",
         "id": resultado[0]
     }
+
+def obtener_categorias_insumo():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            id,
+            nombre,
+            codigo
+        FROM categorias_insumo
+        ORDER BY nombre
+    """)
+
+    filas = cur.fetchall()
+
+    columnas = [
+        desc[0]
+        for desc in cur.description
+    ]
+
+    resultado = [
+        dict(zip(columnas, fila))
+        for fila in filas
+    ]
+
+    cur.close()
+    conn.close()
+
+    return resultado

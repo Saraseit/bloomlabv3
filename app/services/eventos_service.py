@@ -1,0 +1,373 @@
+from app.database.connection import get_connection
+def obtener_eventos():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+
+            e.id,
+
+            e.cliente_id,
+
+            c.nombre AS cliente,
+
+            e.nombre,
+
+            e.fecha_evento,
+
+            e.lugar,
+
+            e.descripcion,
+
+            e.estatus,
+
+            e.costo_base,
+
+            e.costo_final,
+
+            e.precio_minimo,
+
+            e.precio_sugerido,
+
+            e.activo,
+
+            e.fecha_creacion
+
+        FROM eventos e
+
+        INNER JOIN clientes c
+            ON e.cliente_id = c.id
+
+        WHERE e.activo = TRUE
+
+        ORDER BY e.fecha_evento
+    """)
+
+    filas = cur.fetchall()
+
+    columnas = [
+        desc[0]
+        for desc in cur.description
+    ]
+
+    resultado = [
+        dict(zip(columnas, fila))
+        for fila in filas
+    ]
+
+    cur.close()
+    conn.close()
+
+    return resultado
+
+def crear_evento(data):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO eventos (
+
+            cliente_id,
+            nombre,
+            fecha_evento,
+            lugar,
+            descripcion,
+            estatus,
+            activo
+
+        )
+        VALUES (
+
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            TRUE
+
+        )
+        RETURNING id
+    """, (
+
+        data.cliente_id,
+        data.nombre,
+        data.fecha_evento,
+        data.lugar,
+        data.descripcion,
+        data.estatus
+
+    ))
+
+    nuevo_id = cur.fetchone()[0]
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "mensaje": "Evento creado",
+        "id": nuevo_id
+    }
+
+def actualizar_evento(evento_id, data):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE eventos
+        SET
+            cliente_id = %s,
+            nombre = %s,
+            fecha_evento = %s,
+            lugar = %s,
+            descripcion = %s,
+            estatus = %s
+        WHERE id = %s
+    """, (
+
+        data.cliente_id,
+        data.nombre,
+        data.fecha_evento,
+        data.lugar,
+        data.descripcion,
+        data.estatus,
+        evento_id
+
+    ))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "mensaje": "Evento actualizado"
+    }
+
+def eliminar_evento(evento_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE eventos
+        SET activo = FALSE
+        WHERE id = %s
+    """, (evento_id,))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "mensaje": "Evento eliminado"
+    }
+
+def actualizar_totales_evento(evento_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    MARGEN_MINIMO = 0.30
+    MARGEN_OBJETIVO = 0.40
+
+    # Obtener costo base
+    cur.execute("""
+        SELECT
+            COALESCE(
+                SUM(subtotal),
+                0
+            )
+        FROM evento_arreglos
+        WHERE evento_id = %s
+    """, (evento_id,))
+
+    costo_base = float(
+        cur.fetchone()[0]
+    )
+
+    # Obtener comisión
+    cur.execute("""
+        SELECT
+            c.comision_porcentaje
+
+        FROM eventos e
+
+        INNER JOIN clientes c
+            ON e.cliente_id = c.id
+
+        WHERE e.id = %s
+    """, (evento_id,))
+
+    fila = cur.fetchone()
+
+    comision_porcentaje = (
+        float(fila[0])
+        if fila and fila[0] is not None
+        else 0
+    )
+
+    comision = (
+        costo_base *
+        (comision_porcentaje / 100)
+    )
+
+    costo_final = (
+        costo_base +
+        comision
+    )
+
+    precio_minimo = (
+        costo_final /
+        (1 - MARGEN_MINIMO)
+    )
+
+    precio_sugerido = (
+        costo_final /
+        (1 - MARGEN_OBJETIVO)
+    )
+
+    cur.execute("""
+        UPDATE eventos
+        SET
+            costo_base = %s,
+            costo_final = %s,
+            precio_minimo = %s,
+            precio_sugerido = %s
+        WHERE id = %s
+    """, (
+
+        costo_base,
+        costo_final,
+        precio_minimo,
+        precio_sugerido,
+        evento_id
+
+    ))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+def obtener_evento(evento_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+
+            e.id,
+
+            e.cliente_id,
+
+            c.nombre AS cliente,
+
+            e.nombre,
+
+            e.fecha_evento,
+
+            e.lugar,
+
+            e.descripcion,
+
+            e.estatus,
+
+            e.costo_base,
+
+            e.costo_final,
+
+            e.precio_minimo,
+
+            e.precio_sugerido,
+
+            e.activo,
+
+            e.fecha_creacion
+
+        FROM eventos e
+
+        INNER JOIN clientes c
+            ON e.cliente_id = c.id
+
+        WHERE e.id = %s
+    """, (evento_id,))
+    
+    evento = cur.fetchone()
+
+    if not evento:
+
+        cur.close()
+        conn.close()
+
+        return {
+            "error": "Evento no encontrado"
+        }
+    columnas = [
+        desc[0]
+        for desc in cur.description
+    ]
+
+    resultado = dict(
+        zip(columnas, evento)
+    )
+
+    cur.execute("""
+        SELECT
+
+            ea.id,
+
+            ea.arreglo_id,
+
+            a.codigo,
+
+            a.nombre,
+
+            ea.cantidad,
+
+            ea.costo_unitario,
+
+            ea.subtotal,
+
+            ea.observaciones
+
+        FROM evento_arreglos ea
+
+        INNER JOIN arreglos a
+            ON ea.arreglo_id = a.id
+
+        WHERE ea.evento_id = %s
+
+        ORDER BY ea.id
+    """, (evento_id,))
+    
+    filas = cur.fetchall()
+
+    columnas = [
+        desc[0]
+        for desc in cur.description
+    ]
+
+    arreglos = [
+
+        dict(
+            zip(columnas, fila)
+        )
+
+        for fila in filas
+    ]
+
+    resultado["arreglos"] = arreglos
+
+    cur.close()
+    conn.close()
+
+    return resultado

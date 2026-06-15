@@ -87,27 +87,74 @@ async function cargarDetalle() {
 }
 
 cargarDetalle();
+cargarInsumos();
+
+async function cargarInsumos() {
+
+    const respuesta =
+        await fetch(
+            "http://127.0.0.1:8000/insumos"
+        );
+
+    const insumos =
+        await respuesta.json();
+
+    const select =
+        document.getElementById(
+            "insumo-select"
+        );
+
+    select.innerHTML =
+        `<option value="">
+            Seleccionar insumo
+        </option>`;
+
+    insumos.forEach(insumo => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            insumo.id;
+
+        option.textContent =
+            `${insumo.codigo} - ${insumo.nombre}`;
+
+        select.appendChild(option);
+
+    });
+
+}
 
 async function agregarInsumo() {
 
     const insumo_id =
         parseInt(
-            prompt("ID del insumo")
+            document.getElementById(
+                "insumo-select"
+            ).value
         );
 
     const cantidad =
         parseFloat(
-            prompt("Cantidad")
+            document.getElementById(
+                "cantidad"
+            ).value
         );
 
     const costo_real =
         parseFloat(
-            prompt("Costo real")
+            document.getElementById(
+                "costo-real"
+            ).value
         );
 
     const observaciones =
-        prompt("Observaciones");
-
+        document.getElementById(
+            "observaciones"
+        ).value;
     const respuesta =
         await fetch(
             "http://127.0.0.1:8000/arreglo-detalle",
@@ -139,6 +186,7 @@ async function agregarInsumo() {
     }
 
     cargarDetalle();
+    cargarInsumos();
 }
 
 async function eliminarDetalle(id) {
@@ -158,6 +206,21 @@ async function eliminarDetalle(id) {
     );
 
     cargarDetalle();
+        document.getElementById(
+        "insumo-select"
+    ).value = "";
+
+    document.getElementById(
+        "cantidad"
+    ).value = "";
+
+    document.getElementById(
+        "costo-real"
+    ).value = "";
+
+    document.getElementById(
+        "observaciones"
+    ).value = "";
 }
 
 async function editarDetalle(
@@ -222,4 +285,6 @@ async function editarDetalle(
     }
 
     cargarDetalle();
+    cargarInsumos();
 }
+
