@@ -2,84 +2,294 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <title>Clientes</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* Estilos específicos de Clientes (CRM) */
+        .client-name-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
 
+        .client-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e8f5e0 0%, #c5dfc9 100%);
+            color: #2b5c3c;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1.5px solid #b3d9bb;
+            letter-spacing: 0;
+        }
+
+        .client-name-text {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        #tabla-clientes tbody td:nth-child(2) {
+            color: #6b7280;
+            font-size: 0.84rem;
+        }
+
+        .contact-link {
+            color: #4a8c5c;
+            text-decoration: none;
+            font-size: 0.84rem;
+            transition: color 0.15s ease;
+        }
+
+        .contact-link:hover {
+            color: #2b5c3c;
+            text-decoration: underline;
+        }
+
+        .comision-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+    </style>
 </head>
 
-<body>
+<body class="module-page">
 
-    <h1>Clientes</h1>
+    <div class="module-wrapper">
 
-    <p>
-        <a href="index.html">
-          ← Menú Principal
-        </a>
-    </p>
+        <!-- ── Encabezado de página ── -->
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
 
-    <table id="tabla-clientes">
+            <div class="page-title-block">
+                <div class="page-icon">&#128101;</div>
+                <div>
+                    <h1 class="page-title">Clientes</h1>
+                    <p class="page-subtitle">Directorio de contactos y comisiones comerciales</p>
+                </div>
+            </div>
+        </header>
 
-        <thead>
+        <!-- ── Directorio CRM ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Directorio de Clientes</h2>
+                    <p class="card-subtitle">Contactos activos con datos de comisión por evento</p>
+                </div>
+            </div>
 
-            <tr>
+            <div class="table-scroll">
+                <table id="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Empresa</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Comisión</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
 
-                <th>Nombre</th>
-                <th>Empresa</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Comisión %</th>
-                <th>Acciones</th>
+        <!-- ── Formulario nuevo cliente ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Nuevo Cliente</h2>
+                    <p class="card-subtitle">Registra un nuevo contacto con su comisión acordada</p>
+                </div>
+            </div>
 
-            </tr>
+            <div class="form-grid">
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="nombre">Nombre completo</label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        class="form-input"
+                        placeholder="Ej: María García, Juan López..."
+                    >
+                </div>
 
-        </thead>
+                <div class="form-group">
+                    <label class="form-label" for="empresa">Empresa</label>
+                    <input
+                        type="text"
+                        id="empresa"
+                        class="form-input"
+                        placeholder="Razón social o nombre comercial"
+                    >
+                </div>
 
-        <tbody></tbody>
+                <div class="form-group">
+                    <label class="form-label" for="telefono">Teléfono</label>
+                    <input
+                        type="text"
+                        id="telefono"
+                        class="form-input"
+                        placeholder="+52 55 1234 5678"
+                    >
+                </div>
 
-    </table>
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        class="form-input"
+                        placeholder="contacto@empresa.com"
+                    >
+                </div>
 
-    <hr>
+                <div class="form-group">
+                    <label class="form-label" for="comision">Comisión (%)</label>
+                    <input
+                        type="number"
+                        id="comision"
+                        class="form-input"
+                        placeholder="0.00"
+                        step="0.01"
+                    >
+                </div>
+            </div>
 
-    <h2>Nuevo Cliente</h2>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="crearCliente()">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Guardar Cliente
+                </button>
+            </div>
+        </section>
 
-    <input
-        type="text"
-        id="nombre"
-        placeholder="Nombre"
-    >
+    </div>
 
-    <input
-        type="text"
-        id="empresa"
-        placeholder="Empresa"
-    >
+    <!--
+        Post-procesador CRM.
+        Observa el tbody y aplica estilos visuales sin modificar clientes.js
+        ni los IDs/funciones existentes.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tbody = document.querySelector('#tabla-clientes tbody');
+            if (!tbody) return;
 
-    <input
-        type="text"
-        id="telefono"
-        placeholder="Teléfono"
-    >
+            function estilizarFila(row) {
+                // Avatar inicial + nombre (índice 0)
+                var nombreCell = row.cells[0];
+                if (nombreCell && !nombreCell.dataset.avatared) {
+                    var nombre = nombreCell.textContent.trim();
+                    var initial = nombre.charAt(0).toUpperCase();
+                    nombreCell.innerHTML =
+                        '<div class="client-name-wrap">' +
+                            '<span class="client-avatar">' + initial + '</span>' +
+                            '<span class="client-name-text">' + nombre + '</span>' +
+                        '</div>';
+                    nombreCell.dataset.avatared = '1';
+                }
 
-    <input
-        type="email"
-        id="email"
-        placeholder="Email"
-    >
+                // Teléfono como enlace tel: (índice 2)
+                var telCell = row.cells[2];
+                if (telCell && !telCell.dataset.linked) {
+                    var tel = telCell.textContent.trim();
+                    if (tel) {
+                        var a = document.createElement('a');
+                        a.href = 'tel:' + tel.replace(/\s/g, '');
+                        a.textContent = tel;
+                        a.className = 'contact-link';
+                        telCell.textContent = '';
+                        telCell.appendChild(a);
+                    }
+                    telCell.dataset.linked = '1';
+                }
 
-    <input
-        type="number"
-        id="comision"
-        placeholder="Comisión %"
-        step="0.01"
-    >
+                // Email como enlace mailto: (índice 3)
+                var emailCell = row.cells[3];
+                if (emailCell && !emailCell.dataset.linked) {
+                    var email = emailCell.textContent.trim();
+                    if (email) {
+                        var ae = document.createElement('a');
+                        ae.href = 'mailto:' + email;
+                        ae.textContent = email;
+                        ae.className = 'contact-link';
+                        emailCell.textContent = '';
+                        emailCell.appendChild(ae);
+                    }
+                    emailCell.dataset.linked = '1';
+                }
 
-    <button onclick="crearCliente()">
-        Guardar
-    </button>
+                // Comisión como chip verde (índice 4)
+                var comCell = row.cells[4];
+                if (comCell && !comCell.dataset.chipped) {
+                    var com = comCell.textContent.trim();
+                    var chip = document.createElement('span');
+                    chip.textContent = com + '%';
+                    chip.className = 'comision-chip';
+                    comCell.textContent = '';
+                    comCell.appendChild(chip);
+                    comCell.dataset.chipped = '1';
+                }
+
+                // Botones de acción (índice 5)
+                var actionCell = row.cells[5];
+                if (actionCell && !actionCell.dataset.styled) {
+                    var btns = actionCell.querySelectorAll('button');
+                    actionCell.classList.add('action-cell');
+                    if (btns[0]) btns[0].className = 'btn btn-secondary btn-sm'; // Editar
+                    if (btns[1]) btns[1].className = 'btn btn-danger btn-sm';    // Eliminar
+                    actionCell.dataset.styled = '1';
+                }
+            }
+
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
+                        if (node.nodeType === 1 && node.tagName === 'TR') {
+                            estilizarFila(node);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(tbody, { childList: true });
+        });
+    </script>
 
     <script src="config.js"></script>
     <script src="js/clientes.js"></script>

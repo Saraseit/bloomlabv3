@@ -3,70 +3,243 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>BloomLab - Arreglos</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arreglos — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* Estilos específicos de Arreglos */
+        #tabla-arreglos tbody td:nth-child(1) {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: #6b7280;
+            letter-spacing: 0.04em;
+        }
+
+        #tabla-arreglos tbody td:nth-child(2) {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        #tabla-arreglos tbody td:nth-child(4) {
+            font-weight: 700;
+            color: #2b5c3c;
+        }
+
+        #tabla-arreglos tbody td:nth-child(5) {
+            color: #6b7280;
+            font-size: 0.84rem;
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Fila clickeable — refuerza el cursor del JS */
+        #tabla-arreglos tbody tr {
+            cursor: pointer;
+        }
+
+        .cat-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+            white-space: nowrap;
+        }
+
+        .cost-prefix {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #4a8c5c;
+            opacity: 0.7;
+            margin-right: 1px;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        /* Evita que los clics en botones naveguen por la fila */
+        .action-cell button {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
 
-<body>
+<body class="module-page">
 
-    <h1>BloomLab</h1>
+    <div class="module-wrapper">
 
-    <p>
-        <a href="index.html">
-            ← Menú Principal
-        </a>
-    </p>
+        <!-- ── Encabezado de página ── -->
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
 
-    <h2>Catálogo de Arreglos</h2>
+            <div class="page-title-block">
+                <div class="page-icon">&#127826;</div>
+                <div>
+                    <h1 class="page-title">Arreglos</h1>
+                    <p class="page-subtitle">Catálogo de diseños florales y composiciones</p>
+                </div>
+            </div>
+        </header>
 
-    <h3>Nuevo Arreglo</h3>
+        <!-- ── Catálogo de arreglos ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Catálogo de Diseños</h2>
+                    <p class="card-subtitle">Haz clic en cualquier fila para ver el detalle del arreglo</p>
+                </div>
+            </div>
 
-    <input
-        type="text"
-        id="nombre-arreglo"
-        placeholder="Nombre"
-    />
+            <div class="table-scroll">
+                <table id="tabla-arreglos">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Costo Total</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
 
-    <input
-        type="text"
-        id="categoria-arreglo"
-        placeholder="Categoría"
-    />
+        <!-- ── Formulario nuevo arreglo ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Nuevo Arreglo</h2>
+                    <p class="card-subtitle">Crea un diseño floral para agregar al catálogo</p>
+                </div>
+            </div>
 
-    <input
-        type="text"
-        id="descripcion-arreglo"
-        placeholder="Descripción"
-    />
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="nombre-arreglo">Nombre del arreglo</label>
+                    <input
+                        type="text"
+                        id="nombre-arreglo"
+                        class="form-input"
+                        placeholder="Ej: Centro de mesa rosas, Bouquet novia..."
+                    >
+                </div>
 
-    <button onclick="crearArreglo()">
-        Guardar
-    </button>
+                <div class="form-group">
+                    <label class="form-label" for="categoria-arreglo">Categoría</label>
+                    <input
+                        type="text"
+                        id="categoria-arreglo"
+                        class="form-input"
+                        placeholder="Ej: Bodas, Corporativo, Quinceañera..."
+                    >
+                </div>
 
-    <hr>
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="descripcion-arreglo">Descripción</label>
+                    <input
+                        type="text"
+                        id="descripcion-arreglo"
+                        class="form-input"
+                        placeholder="Materiales, dimensiones, ocasión, notas de producción..."
+                    >
+                </div>
+            </div>
 
-    <table id="tabla-arreglos">
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="crearArreglo()">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Guardar Arreglo
+                </button>
+            </div>
+        </section>
 
-        <thead>
+    </div>
 
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Costo Total</th>
-                <th>Descripcion</th>
-                <th>Acciones</th>
-            </tr>
+    <!--
+        Post-procesador visual.
+        Observa el tbody y aplica estilos sin modificar arreglos.js
+        ni los IDs/funciones existentes.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tbody = document.querySelector('#tabla-arreglos tbody');
+            if (!tbody) return;
 
-        </thead>
+            function estilizarFila(row) {
+                // Categoría chip (índice 2)
+                var catCell = row.cells[2];
+                if (catCell && !catCell.dataset.chipped) {
+                    var texto = catCell.textContent.trim();
+                    if (texto) {
+                        var chip = document.createElement('span');
+                        chip.textContent = texto;
+                        chip.className = 'cat-chip';
+                        catCell.textContent = '';
+                        catCell.appendChild(chip);
+                    }
+                    catCell.dataset.chipped = '1';
+                }
 
-        <tbody>
+                // Prefijo $ en costo total (índice 3)
+                var costoCell = row.cells[3];
+                if (costoCell && !costoCell.dataset.prefixed) {
+                    var val = costoCell.textContent.trim();
+                    costoCell.innerHTML = '<span class="cost-prefix">$</span>' + val;
+                    costoCell.dataset.prefixed = '1';
+                }
 
-        </tbody>
+                // Botones de acción (índice 5)
+                var actionCell = row.cells[5];
+                if (actionCell && !actionCell.dataset.styled) {
+                    var btns = actionCell.querySelectorAll('button');
+                    actionCell.classList.add('action-cell');
+                    if (btns[0]) btns[0].className = 'btn btn-primary btn-sm';   // Ver
+                    if (btns[1]) btns[1].className = 'btn btn-secondary btn-sm'; // Editar
+                    if (btns[2]) btns[2].className = 'btn btn-danger btn-sm';    // Eliminar
+                    actionCell.dataset.styled = '1';
+                }
+            }
 
-    </table>
-    
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
+                        if (node.nodeType === 1 && node.tagName === 'TR') {
+                            estilizarFila(node);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(tbody, { childList: true });
+        });
+    </script>
+
     <script src="config.js"></script>
     <script src="js/arreglos.js"></script>
 

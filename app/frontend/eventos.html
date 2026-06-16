@@ -2,84 +2,216 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <title>Eventos</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* Estilos específicos de Eventos */
+        #tabla-eventos tbody td:nth-child(1) {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
 
+        #tabla-eventos tbody td:nth-child(3) {
+            color: #2b5c3c;
+            font-weight: 500;
+        }
+
+        #tabla-eventos tbody td:nth-child(7) {
+            font-weight: 700;
+            color: #2b5c3c;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+    </style>
 </head>
 
-<body>
+<body class="module-page">
 
-    <h1>Eventos</h1>
+    <div class="module-wrapper">
 
-    <p>
-        <a href="index.html">
-            ← Menú Principal
-        </a>
-    </p>
+        <!-- ── Encabezado de página ── -->
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
 
-    <table id="tabla-eventos">
+            <div class="page-title-block">
+                <div class="page-icon">&#128197;</div>
+                <div>
+                    <h1 class="page-title">Eventos</h1>
+                    <p class="page-subtitle">Gestión de eventos, cotizaciones y producción floral</p>
+                </div>
+            </div>
+        </header>
 
-        <thead>
+        <!-- ── Tabla de eventos ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Eventos registrados</h2>
+                    <p class="card-subtitle">Lista completa de eventos y su estado de producción</p>
+                </div>
+            </div>
 
-            <tr>
+            <div class="table-scroll">
+                <table id="tabla-eventos">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Evento</th>
+                            <th>Fecha</th>
+                            <th>Lugar</th>
+                            <th>Estatus</th>
+                            <th>Costo Final</th>
+                            <th>Precio Sugerido</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
 
-                <th>Cliente</th>
-                <th>Evento</th>
-                <th>Fecha</th>
-                <th>Lugar</th>
-                <th>Estatus</th>
-                <th>Costo Final</th>
-                <th>Precio Sugerido</th>
-                <th>Acciones</th>
+        <!-- ── Formulario nuevo evento ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Nuevo Evento</h2>
+                    <p class="card-subtitle">Registra un evento o cotización — el estatus inicial será Cotizacion</p>
+                </div>
+            </div>
 
-            </tr>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="cliente-select">Cliente</label>
+                    <select id="cliente-select" class="form-select">
+                        <option value="">Seleccionar cliente</option>
+                    </select>
+                </div>
 
-        </thead>
+                <div class="form-group">
+                    <label class="form-label" for="nombre">Nombre del evento</label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        class="form-input"
+                        placeholder="Ej: Boda García, XV años, Corporativo..."
+                    >
+                </div>
 
-        <tbody></tbody>
+                <div class="form-group">
+                    <label class="form-label" for="fecha_evento">Fecha del evento</label>
+                    <input
+                        type="date"
+                        id="fecha_evento"
+                        class="form-input"
+                    >
+                </div>
 
-    </table>
+                <div class="form-group">
+                    <label class="form-label" for="lugar">Lugar</label>
+                    <input
+                        type="text"
+                        id="lugar"
+                        class="form-input"
+                        placeholder="Salón, dirección, sede..."
+                    >
+                </div>
 
-    <hr>
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="descripcion">Descripción</label>
+                    <input
+                        type="text"
+                        id="descripcion"
+                        class="form-input"
+                        placeholder="Detalles adicionales, tema, número de mesas, requerimientos especiales..."
+                    >
+                </div>
+            </div>
 
-    <h2>Nuevo Evento</h2>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="crearEvento()">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Guardar Evento
+                </button>
+            </div>
+        </section>
 
-    <select id="cliente-select">
-        <option value="">
-            Seleccionar cliente
-        </option>
-    </select>
+    </div>
 
-    <input
-        type="text"
-        id="nombre"
-        placeholder="Nombre del evento"
-    >
+    <!--
+        Post-procesador de badges y botones.
+        Observa el tbody y aplica estilos visuales sin modificar eventos.js
+        ni los IDs/funciones existentes.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tbody = document.querySelector('#tabla-eventos tbody');
+            if (!tbody) return;
 
-    <input
-        type="date"
-        id="fecha_evento"
-    >
+            function estilizarFila(row) {
+                // Badge de estatus (columna 5, índice 4)
+                var statusCell = row.cells[4];
+                if (statusCell && !statusCell.dataset.badged) {
+                    var texto = statusCell.textContent.trim();
+                    var span = document.createElement('span');
+                    span.textContent = texto;
+                    var low = texto.toLowerCase();
+                    if (low.includes('cotiz'))                       span.className = 'badge badge-cotizacion';
+                    else if (low.includes('confirm') ||
+                             low.includes('activo'))                  span.className = 'badge badge-confirmado';
+                    else if (low.includes('complet') ||
+                             low.includes('entregado'))               span.className = 'badge badge-completado';
+                    else if (low.includes('cancel'))                  span.className = 'badge badge-cancelado';
+                    else                                              span.className = 'badge badge-default';
+                    statusCell.textContent = '';
+                    statusCell.appendChild(span);
+                    statusCell.dataset.badged = '1';
+                }
 
-    <input
-        type="text"
-        id="lugar"
-        placeholder="Lugar"
-    >
+                // Botones de acción (columna 8, índice 7)
+                var actionCell = row.cells[7];
+                if (actionCell && !actionCell.dataset.styled) {
+                    var btns = actionCell.querySelectorAll('button');
+                    actionCell.classList.add('action-cell');
+                    if (btns[0]) btns[0].className = 'btn btn-primary btn-sm';
+                    if (btns[1]) btns[1].className = 'btn btn-secondary btn-sm';
+                    if (btns[2]) btns[2].className = 'btn btn-danger btn-sm';
+                    actionCell.dataset.styled = '1';
+                }
+            }
 
-    <input
-        type="text"
-        id="descripcion"
-        placeholder="Descripción"
-    >
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
+                        if (node.nodeType === 1 && node.tagName === 'TR') {
+                            estilizarFila(node);
+                        }
+                    });
+                });
+            });
 
-    <button onclick="crearEvento()">
-        Guardar
-    </button>
+            observer.observe(tbody, { childList: true });
+        });
+    </script>
+
     <script src="config.js"></script>
     <script src="js/eventos.js"></script>
 

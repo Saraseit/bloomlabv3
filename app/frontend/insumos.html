@@ -3,83 +3,256 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>BloomLab - Insumos</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insumos — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* Estilos específicos de Insumos */
+        #tabla-insumos tbody td:nth-child(1) {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: #6b7280;
+            letter-spacing: 0.04em;
+        }
+
+        #tabla-insumos tbody td:nth-child(2) {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        #tabla-insumos tbody td:nth-child(5) {
+            font-weight: 700;
+            color: #2b5c3c;
+        }
+
+        .cost-prefix {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #4a8c5c;
+            opacity: 0.7;
+            margin-right: 1px;
+        }
+
+        .merma-suffix {
+            font-size: 0.8em;
+            color: #6b7280;
+            margin-left: 1px;
+        }
+
+        .cat-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+            white-space: nowrap;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+    </style>
 </head>
 
-<body>
+<body class="module-page">
 
-    <h1>BloomLab</h1>
+    <div class="module-wrapper">
 
-     <p>
-    <a href="index.html">
-        ← Menú Principal
-    </a>
-    </p>
+        <!-- ── Encabezado de página ── -->
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
 
-    <h2>Catálogo de Insumos</h2>
+            <div class="page-title-block">
+                <div class="page-icon">🌿</div>
+                <div>
+                    <h1 class="page-title">Insumos</h1>
+                    <p class="page-subtitle">Catálogo de materiales, flores y herramientas florales</p>
+                </div>
+            </div>
+        </header>
 
-    <h3>Nuevo Insumo</h3>
+        <!-- ── Catálogo ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Catálogo de Insumos</h2>
+                    <p class="card-subtitle">Materiales registrados con costos y mermas de referencia</p>
+                </div>
+            </div>
 
-    <input
-        type="text"
-        id="nombre-insumo"
-        placeholder="Nombre"
-    />
+            <div class="table-scroll">
+                <table id="tabla-insumos">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Unidad</th>
+                            <th>Costo Ref.</th>
+                            <th>Merma %</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
 
-    <select id="categoria-select">
+        <!-- ── Formulario nuevo insumo ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Nuevo Insumo</h2>
+                    <p class="card-subtitle">Agrega un material o flor al catálogo de producción</p>
+                </div>
+            </div>
 
-        <option value="">
-            Seleccionar categoría
-        </option>
+            <div class="form-grid">
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="nombre-insumo">Nombre</label>
+                    <input
+                        type="text"
+                        id="nombre-insumo"
+                        class="form-input"
+                        placeholder="Ej: Rosa roja, Follaje eucalipto, Cinta organza..."
+                    >
+                </div>
 
-    </select>
+                <div class="form-group">
+                    <label class="form-label" for="categoria-select">Categoría</label>
+                    <select id="categoria-select" class="form-select">
+                        <option value="">Seleccionar categoría</option>
+                    </select>
+                </div>
 
-    <input
-        type="text"
-        id="unidad"
-        placeholder="Unidad"
-    />
+                <div class="form-group">
+                    <label class="form-label" for="unidad">Unidad</label>
+                    <input
+                        type="text"
+                        id="unidad"
+                        class="form-input"
+                        placeholder="Ej: pieza, tallo, metro, gramo..."
+                    >
+                </div>
 
-    <input
-        type="number"
-        id="costo-referencia"
-        placeholder="Costo Referencia"
-        step="0.01"
-    />
+                <div class="form-group">
+                    <label class="form-label" for="costo-referencia">Costo de Referencia ($)</label>
+                    <input
+                        type="number"
+                        id="costo-referencia"
+                        class="form-input"
+                        placeholder="0.00"
+                        step="0.01"
+                    >
+                </div>
 
-    <input
-        type="number"
-        id="porcentaje-merma"
-        placeholder="Merma"
-        step="0.01"
-    />
+                <div class="form-group">
+                    <label class="form-label" for="porcentaje-merma">Porcentaje de Merma (%)</label>
+                    <input
+                        type="number"
+                        id="porcentaje-merma"
+                        class="form-input"
+                        placeholder="0.00"
+                        step="0.01"
+                    >
+                </div>
+            </div>
 
-    <button onclick="crearInsumo()">
-        Guardar
-    </button>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="crearInsumo()">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Guardar Insumo
+                </button>
+            </div>
+        </section>
 
-    <hr>
-    <table id="tabla-insumos">
+    </div>
 
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Unidad</th>
-                <th>Costo</th>
-                <th>Merma</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+    <!--
+        Post-procesador visual.
+        Observa el tbody y aplica estilos sin modificar insumos.js
+        ni los IDs/funciones existentes.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tbody = document.querySelector('#tabla-insumos tbody');
+            if (!tbody) return;
 
-        <tbody>
+            function estilizarFila(row) {
+                // Categoría chip (índice 2)
+                var catCell = row.cells[2];
+                if (catCell && !catCell.dataset.chipped) {
+                    var texto = catCell.textContent.trim();
+                    if (texto) {
+                        var chip = document.createElement('span');
+                        chip.textContent = texto;
+                        chip.className = 'cat-chip';
+                        catCell.textContent = '';
+                        catCell.appendChild(chip);
+                    }
+                    catCell.dataset.chipped = '1';
+                }
 
-        </tbody>
+                // Prefijo $ en costo (índice 4)
+                var costoCell = row.cells[4];
+                if (costoCell && !costoCell.dataset.prefixed) {
+                    var val = costoCell.textContent.trim();
+                    costoCell.innerHTML = '<span class="cost-prefix">$</span>' + val;
+                    costoCell.dataset.prefixed = '1';
+                }
 
-    </table>
+                // Sufijo % en merma (índice 5)
+                var mermaCell = row.cells[5];
+                if (mermaCell && !mermaCell.dataset.suffixed) {
+                    var mval = mermaCell.textContent.trim();
+                    mermaCell.innerHTML = mval + '<span class="merma-suffix">%</span>';
+                    mermaCell.dataset.suffixed = '1';
+                }
+
+                // Botones de acción (índice 6)
+                var actionCell = row.cells[6];
+                if (actionCell && !actionCell.dataset.styled) {
+                    var btns = actionCell.querySelectorAll('button');
+                    actionCell.classList.add('action-cell');
+                    if (btns[0]) btns[0].className = 'btn btn-secondary btn-sm'; // Editar
+                    if (btns[1]) btns[1].className = 'btn btn-danger btn-sm';    // Eliminar
+                    actionCell.dataset.styled = '1';
+                }
+            }
+
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
+                        if (node.nodeType === 1 && node.tagName === 'TR') {
+                            estilizarFila(node);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(tbody, { childList: true });
+        });
+    </script>
+
     <script src="config.js"></script>
     <script src="js/insumos.js"></script>
 

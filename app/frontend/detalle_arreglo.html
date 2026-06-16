@@ -2,106 +2,414 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Arreglo — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* ── Ficha de información del arreglo ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 1.25rem 1.5rem 0;
+        }
 
-    <title>Detalle Arreglo</title>
+        @media (max-width: 640px) {
+            .info-grid { grid-template-columns: 1fr 1fr; }
+        }
 
-    <link rel="stylesheet"
-          href="css/estilos.css">
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            padding: 0.55rem 1rem 0.9rem 0;
+            border-bottom: 1px solid #f0f5f0;
+        }
 
+        .info-item-full {
+            grid-column: 1 / -1;
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.69rem;
+            font-weight: 600;
+            color: #7aaa82;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: #1a2e1e;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .info-value-mono {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.84rem;
+            color: #4a7a5a;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Costo total destacado en la ficha */
+        .info-value-cost {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #2b5c3c;
+            letter-spacing: -0.025em;
+        }
+
+        .cost-currency {
+            font-size: 0.7em;
+            font-weight: 600;
+            color: #4a8c5c;
+            opacity: 0.75;
+        }
+
+        /* Chip de categoría */
+        .cat-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+            width: fit-content;
+        }
+
+        /* ── Separador de sección ── */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: #4a7a5a;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #c5dfc9, transparent);
+        }
+
+        /* ── Tabla de insumos del arreglo ── */
+        #tabla-detalle {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        #tabla-detalle thead th {
+            background: #f7fbf7;
+            color: #4a7a5a;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.85rem 1.25rem;
+            text-align: left;
+            border-bottom: 1.5px solid #e2ede5;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            white-space: nowrap;
+        }
+
+        #tabla-detalle tbody tr {
+            border-bottom: 1px solid #f0f5f0;
+            transition: background 0.15s ease;
+        }
+
+        #tabla-detalle tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        #tabla-detalle tbody tr:hover {
+            background: #f7fbf7;
+        }
+
+        #tabla-detalle tbody td {
+            padding: 0.875rem 1.25rem;
+            color: #374151;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* Código insumo */
+        #tabla-detalle tbody td:nth-child(1) {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: #6b7280;
+            letter-spacing: 0.04em;
+        }
+
+        /* Nombre insumo */
+        #tabla-detalle tbody td:nth-child(2) {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        /* Subtotal */
+        #tabla-detalle tbody td:nth-child(5) {
+            font-weight: 700;
+            color: #2b5c3c;
+        }
+
+        /* Observaciones */
+        #tabla-detalle tbody td:nth-child(6) {
+            color: #6b7280;
+            font-size: 0.84rem;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            #tabla-detalle thead th,
+            #tabla-detalle tbody td {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        .money-prefix {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #4a8c5c;
+            opacity: 0.7;
+            margin-right: 1px;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+    </style>
 </head>
 
-<body>
+<body class="module-page">
 
-    <h1>BloomLab</h1>
+    <div class="module-wrapper">
 
-    <p>
-        <a href="arreglos.html">
-            ← Regresar a Arreglos
-        </a>
-    </p>
+        <!-- ── Encabezado ── -->
+        <header class="module-header">
+            <a href="arreglos.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Regresar a Arreglos
+            </a>
 
-    <h2 id="nombre-arreglo"></h2>
+            <div class="page-title-block">
+                <div class="page-icon">&#127826;</div>
+                <div>
+                    <h1 class="page-title" id="nombre-arreglo">Cargando...</h1>
+                    <p class="page-subtitle">Ficha técnica · Composición e insumos del arreglo</p>
+                </div>
+            </div>
+        </header>
 
-    <p>
-        <strong>Código:</strong>
-        <span id="codigo"></span>
-    </p>
+        <!-- ── Ficha del arreglo ── -->
+        <section class="card">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Código</span>
+                    <span class="info-value info-value-mono" id="codigo">—</span>
+                </div>
 
-    <p>
-        <strong>Categoría:</strong>
-        <span id="categoria"></span>
-    </p>
+                <div class="info-item">
+                    <span class="info-label">Categoría</span>
+                    <span class="info-value" id="categoria">—</span>
+                </div>
 
-    <p>
-        <strong>Descripción:</strong>
-        <span id="descripcion"></span>
-    </p>
+                <div class="info-item">
+                    <span class="info-label">Costo Total</span>
+                    <span class="info-value-cost">
+                        <span class="cost-currency">$</span><span id="costo-total">0</span>
+                    </span>
+                </div>
 
-    <p>
-        <strong>Costo Total:</strong>
-        <span id="costo-total"></span>
-    </p>
+                <div class="info-item info-item-full">
+                    <span class="info-label">Descripción</span>
+                    <span class="info-value" id="descripcion">—</span>
+                </div>
+            </div>
+        </section>
 
-    <h3>Agregar Insumo</h3>
+        <!-- ── Composición ── -->
+        <div class="section-label">🌿 Composición del Arreglo</div>
 
-    <select id="insumo-select">
-        <option value="">
-            Seleccionar insumo
-        </option>
-    </select>
+        <section class="card">
+            <div class="table-scroll">
+                <table id="tabla-detalle">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Insumo</th>
+                            <th>Cantidad</th>
+                            <th>Costo Real</th>
+                            <th>Subtotal</th>
+                            <th>Observaciones</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
 
-    <input
-        type="number"
-        id="cantidad"
-        placeholder="Cantidad"
-    />
+        <!-- ── Formulario agregar insumo ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Agregar Insumo</h2>
+                    <p class="card-subtitle">Añade un material a la composición de este arreglo</p>
+                </div>
+            </div>
 
-    <input
-        type="number"
-        id="costo-real"
-        placeholder="Costo Real"
-        step="0.01"
-    />
+            <div class="form-grid">
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="insumo-select">Insumo</label>
+                    <select id="insumo-select" class="form-select">
+                        <option value="">Seleccionar insumo</option>
+                    </select>
+                </div>
 
-    <input
-        type="text"
-        id="observaciones"
-        placeholder="Observaciones"
-    />
+                <div class="form-group">
+                    <label class="form-label" for="cantidad">Cantidad</label>
+                    <input
+                        type="number"
+                        id="cantidad"
+                        class="form-input"
+                        placeholder="0"
+                    >
+                </div>
 
-    <button onclick="agregarInsumo()">
-        Agregar
-    </button>
+                <div class="form-group">
+                    <label class="form-label" for="costo-real">Costo Real ($)</label>
+                    <input
+                        type="number"
+                        id="costo-real"
+                        class="form-input"
+                        placeholder="0.00"
+                        step="0.01"
+                    >
+                </div>
 
-    <hr>
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="observaciones">Observaciones</label>
+                    <input
+                        type="text"
+                        id="observaciones"
+                        class="form-input"
+                        placeholder="Variedad, color, calidad, notas de producción..."
+                    >
+                </div>
+            </div>
 
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="agregarInsumo()">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Agregar Insumo
+                </button>
+            </div>
+        </section>
 
+    </div>
 
-    <table id="tabla-detalle">
+    <!--
+        Post-procesador visual.
+        Observa cambios del JS y aplica estilos sin modificar detalle_arreglo.js.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
-        <thead>
+            // Chip de categoría: observa cuando el JS setee su textContent
+            var categoriaSpan = document.getElementById('categoria');
 
-            <tr>
+            function aplicarChipCategoria() {
+                var texto = categoriaSpan.textContent.trim();
+                if (texto && texto !== '—' && !categoriaSpan.dataset.chipped) {
+                    categoriaObserver.disconnect();
+                    var chip = document.createElement('span');
+                    chip.textContent = texto;
+                    chip.className = 'cat-chip';
+                    categoriaSpan.textContent = '';
+                    categoriaSpan.appendChild(chip);
+                    categoriaSpan.dataset.chipped = '1';
+                }
+            }
 
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Cantidad</th>
-                <th>Costo Real</th>
-                <th>Subtotal</th>
-                <th>observaciones</th>
-                <th>Acciones</th>
+            var categoriaObserver = new MutationObserver(aplicarChipCategoria);
+            categoriaObserver.observe(categoriaSpan, { childList: true, subtree: true });
 
-            </tr>
+            // Tabla de insumos del arreglo
+            var tbody = document.querySelector('#tabla-detalle tbody');
+            if (!tbody) return;
 
-        </thead>
+            function estilizarFila(row) {
+                // Prefijo $ en Costo Real (índice 3)
+                var costoCell = row.cells[3];
+                if (costoCell && !costoCell.dataset.prefixed) {
+                    var val = costoCell.textContent.trim();
+                    costoCell.innerHTML = '<span class="money-prefix">$</span>' + val;
+                    costoCell.dataset.prefixed = '1';
+                }
 
-        <tbody>
+                // Prefijo $ en Subtotal (índice 4)
+                var subtotalCell = row.cells[4];
+                if (subtotalCell && !subtotalCell.dataset.prefixed) {
+                    var sub = subtotalCell.textContent.trim();
+                    subtotalCell.innerHTML = '<span class="money-prefix">$</span>' + sub;
+                    subtotalCell.dataset.prefixed = '1';
+                }
 
-        </tbody>
+                // Botones de acción (índice 6)
+                var actionCell = row.cells[6];
+                if (actionCell && !actionCell.dataset.styled) {
+                    var btns = actionCell.querySelectorAll('button');
+                    actionCell.classList.add('action-cell');
+                    if (btns[0]) btns[0].className = 'btn btn-secondary btn-sm'; // Editar
+                    if (btns[1]) btns[1].className = 'btn btn-danger btn-sm';    // Eliminar
+                    actionCell.dataset.styled = '1';
+                }
+            }
 
-    </table>
+            var tableObserver = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    mutation.addedNodes.forEach(function (node) {
+                        if (node.nodeType === 1 && node.tagName === 'TR') {
+                            estilizarFila(node);
+                        }
+                    });
+                });
+            });
+
+            tableObserver.observe(tbody, { childList: true });
+        });
+    </script>
 
     <script src="config.js"></script>
     <script src="js/detalle_arreglo.js"></script>

@@ -1,0 +1,471 @@
+/* ============================================================
+   BloomLab · Module Pages — Shared Styles
+   Scope: body.module-page — reutilizable por clientes, insumos, arreglos, etc.
+   ============================================================ */
+
+/* --- Reset & Base --- */
+.module-page {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #f2f8ee 0%, #e9f3e3 55%, #f6faf3 100%);
+    -webkit-font-smoothing: antialiased;
+    color: #1a2e1e;
+}
+
+/* Anular estilos base de estilos.css para páginas de módulo */
+.module-page table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.module-page th,
+.module-page td {
+    border: none;
+    padding: 0;
+    text-align: left;
+    background: none;
+}
+
+/* --- Wrapper --- */
+.module-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ============================================================
+   Page Header
+   ============================================================ */
+
+.module-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding-bottom: 0.25rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #4a8c5c;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: color 0.2s ease, gap 0.2s ease;
+    width: fit-content;
+}
+
+.back-link:hover {
+    color: #2b5c3c;
+    gap: 0.6rem;
+}
+
+.back-link svg {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.back-link:hover svg {
+    transform: translateX(-3px);
+}
+
+.page-title-block {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.page-icon {
+    font-size: 1.75rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e8f5e0 0%, #d3eccc 100%);
+    border-radius: 14px;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.8),
+        0 2px 8px rgba(45, 90, 61, 0.1);
+    flex-shrink: 0;
+}
+
+.page-title {
+    font-size: clamp(1.4rem, 4vw, 1.85rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.2rem 0;
+    background: linear-gradient(135deg, #2b5c3c 0%, #4a8c5c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.page-subtitle {
+    font-size: 0.82rem;
+    color: #7aaa82;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+
+.card {
+    background: #ffffff;
+    border: 1.5px solid #e2ede5;
+    border-radius: 18px;
+    box-shadow:
+        0 1px 3px rgba(45, 90, 61, 0.05),
+        0 4px 16px rgba(45, 90, 61, 0.07);
+    overflow: hidden;
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #edf3ee;
+}
+
+.card-head .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a2e1e;
+    margin: 0 0 0.15rem 0;
+    letter-spacing: -0.01em;
+}
+
+.card-head .card-subtitle {
+    font-size: 0.78rem;
+    color: #a0bfa8;
+    margin: 0;
+}
+
+/* ============================================================
+   Table
+   ============================================================ */
+
+.table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.module-table,
+#tabla-eventos,
+#tabla-clientes,
+#tabla-insumos,
+#tabla-arreglos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.module-table thead th,
+#tabla-eventos thead th,
+#tabla-clientes thead th,
+#tabla-insumos thead th,
+#tabla-arreglos thead th {
+    background: #f7fbf7;
+    color: #4a7a5a;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    border-bottom: 1.5px solid #e2ede5;
+    white-space: nowrap;
+    border-right: none;
+    border-left: none;
+    border-top: none;
+}
+
+.module-table tbody tr,
+#tabla-eventos tbody tr,
+#tabla-clientes tbody tr,
+#tabla-insumos tbody tr,
+#tabla-arreglos tbody tr {
+    border-bottom: 1px solid #f0f5f0;
+    transition: background 0.15s ease;
+}
+
+.module-table tbody tr:last-child,
+#tabla-eventos tbody tr:last-child,
+#tabla-clientes tbody tr:last-child,
+#tabla-insumos tbody tr:last-child,
+#tabla-arreglos tbody tr:last-child {
+    border-bottom: none;
+}
+
+.module-table tbody tr:hover,
+#tabla-eventos tbody tr:hover,
+#tabla-clientes tbody tr:hover,
+#tabla-insumos tbody tr:hover,
+#tabla-arreglos tbody tr:hover {
+    background: #f7fbf7;
+}
+
+.module-table tbody td,
+#tabla-eventos tbody td,
+#tabla-clientes tbody td,
+#tabla-insumos tbody td,
+#tabla-arreglos tbody td {
+    padding: 0.875rem 1.25rem;
+    color: #374151;
+    vertical-align: middle;
+    border: none;
+}
+
+.module-table tbody td:last-child,
+#tabla-eventos tbody td:last-child {
+    white-space: nowrap;
+}
+
+/* ============================================================
+   Badges (para columnas de estatus)
+   ============================================================ */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.badge-cotizacion {
+    background: #fff8e1;
+    color: #b45309;
+    border-color: #fcd34d;
+}
+
+.badge-confirmado {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+.badge-completado {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+.badge-cancelado {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+.badge-default {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #d1d5db;
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem;
+    padding: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-group-full {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #4a7a5a;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.form-input,
+.form-select {
+    padding: 0.6rem 0.9rem;
+    border: 1.5px solid #d1e8d7;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: #1a2e1e;
+    background: #fafdfb;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+    border-color: #4a8c5c;
+    box-shadow: 0 0 0 3px rgba(74, 140, 92, 0.12);
+    background: #ffffff;
+}
+
+.form-input::placeholder {
+    color: #b0c8b4;
+}
+
+.form-select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath fill='none' stroke='%234a8c5c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    padding-right: 2.25rem;
+}
+
+.form-actions {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.35rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.btn:active {
+    transform: scale(0.97) !important;
+}
+
+.btn-sm {
+    padding: 0.32rem 0.72rem;
+    font-size: 0.775rem;
+    border-radius: 8px;
+    gap: 0.25rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2b5c3c 0%, #4a8c5c 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(45, 90, 61, 0.22);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #234d33 0%, #3d7a4f 100%);
+    box-shadow: 0 4px 14px rgba(45, 90, 61, 0.32);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #f0f7f1;
+    color: #2b5c3c;
+    border-color: #c5dfc9;
+}
+
+.btn-secondary:hover {
+    background: #e2ede5;
+    border-color: #9dc9a5;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+.btn-danger:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .module-wrapper {
+        padding: 1.25rem 1rem 2rem;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.3rem;
+    }
+
+    .card-head {
+        padding: 1rem 1.1rem;
+    }
+
+    .module-table thead th,
+    #tabla-eventos thead th {
+        padding: 0.75rem 1rem;
+    }
+
+    .module-table tbody td,
+    #tabla-eventos tbody td {
+        padding: 0.75rem 1rem;
+    }
+
+    .form-grid {
+        padding: 1rem;
+        gap: 0.875rem;
+    }
+
+    .form-actions {
+        padding: 0 1rem 1rem;
+    }
+}
