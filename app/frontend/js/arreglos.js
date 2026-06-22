@@ -1,5 +1,5 @@
-const CLOUDINARY_CLOUD_NAME    = dpft5hywe;
-const CLOUDINARY_UPLOAD_PRESET = ml_default;
+const CLOUDINARY_CLOUD_NAME    = "dpft5hywe";
+const CLOUDINARY_UPLOAD_PRESET = "ml_default";
 
 function abrirWidgetImagen() {
     const widget = cloudinary.createUploadWidget(

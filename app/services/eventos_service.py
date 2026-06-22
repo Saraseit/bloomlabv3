@@ -297,7 +297,7 @@ def obtener_evento(evento_id):
     # costo_base = costo_arreglos + comision (flete/montaje van aparte)
     # costo_arreglos = costo_base / (1 + comision_pct/100)
     if comision_pct > 0:
-        costo_arreglos = costo_base / (1 + comision_pct / 100)
+        costo_arreglos = float(costo_base) / (1 + comision_pct / 100)
     else:
         costo_arreglos = costo_base
 
