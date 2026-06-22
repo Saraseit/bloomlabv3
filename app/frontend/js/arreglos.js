@@ -174,33 +174,3 @@ function filtrarArreglos() {
         fila.style.display = coincide ? '' : 'none';
     });
 }
-
-const CLOUDINARY_CLOUD_NAME   = "tu_cloud_name";
-const CLOUDINARY_UPLOAD_PRESET = "tu_upload_preset";
-
-function abrirWidgetImagen() {
-    const widget = cloudinary.createUploadWidget(
-        {
-            cloudName: CLOUDINARY_CLOUD_NAME,
-            uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-            sources: ['local', 'camera', 'url'],
-            multiple: false,
-            maxFileSize: 5000000,           // 5MB
-            cropping: false,
-            language: 'es',
-            text: {
-                es: { menu: { files: 'Mis archivos', camera: 'Cámara' } }
-            }
-        },
-        (error, result) => {
-            if (!error && result && result.event === "success") {
-                const url = result.info.secure_url;
-                document.getElementById('imagen-url-arreglo').value = url;
-                const preview = document.getElementById('preview-imagen');
-                preview.src = url;
-                preview.style.display = 'block';
-            }
-        }
-    );
-    widget.open();
-}

@@ -256,7 +256,6 @@ def obtener_evento(evento_id):
             e.precio_minimo,
             e.precio_sugerido,
             e.precio_venta,
-            e.nota_autorizacion,
             e.activo,
             e.fecha_creacion
 
