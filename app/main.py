@@ -9,7 +9,7 @@ from app.routers.arreglo_detalle import router as arreglo_detalle_router
 from app.routers.clientes import router as clientes_router
 from app.routers.eventos import router as eventos_router
 from app.routers.evento_arreglo import router as evento_arreglo_router
-
+from app.routers.evento_gastos import router as evento_gastos_router
 
 app = FastAPI(
     title="BloomLab API",
@@ -36,6 +36,7 @@ app.include_router(arreglo_detalle_router)
 app.include_router(clientes_router)
 app.include_router(eventos_router)
 app.include_router(evento_arreglo_router)
+app.include_router(evento_gastos_router)
 
 # -------------------------
 # FRONTEND STATIC
