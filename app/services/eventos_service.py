@@ -265,6 +265,8 @@ def obtener_evento(evento_id):
             e.precio_minimo,
 
             e.precio_sugerido,
+                
+            e.precio_venta,
 
             e.activo,
 
@@ -322,6 +324,11 @@ def obtener_evento(evento_id):
     resultado["precio_sugerido"] = round(
         resultado["precio_sugerido"] or 0, 2
     )
+
+    resultado["precio_venta"] = round(
+            resultado["precio_venta"] or 0, 2
+        )
+
 
     resultado["importe_comision"] = round(
         resultado["costo_final"]

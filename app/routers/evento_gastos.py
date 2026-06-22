@@ -30,3 +30,23 @@ def actualizar_gastos(evento_id: int, data: GastosEvento):
     actualizar_totales_evento(evento_id)
 
     return {"mensaje": "Gastos actualizados"}
+
+class PrecioVenta(BaseModel):
+    precio_venta: float
+
+@router.put("/eventos/{evento_id}/precio-venta")
+def actualizar_precio_venta(evento_id: int, data: PrecioVenta):
+    conn = get_connection()
+    cur  = conn.cursor()
+
+    cur.execute("""
+        UPDATE eventos
+        SET precio_venta = %s
+        WHERE id = %s
+    """, (data.precio_venta, evento_id))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {"mensaje": "Precio de venta guardado"}

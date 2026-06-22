@@ -54,6 +54,13 @@ async function cargarEvento() {
 
         tbody.appendChild(fila);
     });
+
+    iniciarNegociacion(
+    evento.costo_final,
+    evento.precio_minimo,
+    evento.precio_sugerido,
+    evento.precio_venta
+    );
 }
 
 async function cargarArreglos() {
@@ -205,6 +212,145 @@ document.getElementById('modal-gastos')
     .addEventListener('click', function(e) {
         if (e.target === this) cerrarModalGastos();
     });
+
+// ── Negociación de precio ──────────────────────────
+
+let _costoFinal = 0;  // se actualiza cada vez que carga el evento
+
+function iniciarNegociacion(costoFinal, precioMinimo, precioSugerido, precioVenta) {
+    _costoFinal = costoFinal;
+
+    // Referencias visuales
+    document.getElementById('ref-precio-minimo').textContent   = precioMinimo.toFixed(2);
+    document.getElementById('ref-precio-sugerido').textContent = precioSugerido.toFixed(2);
+
+    // Si ya hay precio acordado, precarga los campos
+    if (precioVenta && precioVenta > 0) {
+        const margen = (1 - costoFinal / precioVenta) * 100;
+        const ganancia = precioVenta - costoFinal;
+        document.getElementById('input-precio-venta').value = precioVenta.toFixed(2);
+        document.getElementById('input-margen').value       = margen.toFixed(1);
+        document.getElementById('input-ganancia').value     = ganancia.toFixed(2);
+        actualizarHints(margen, precioMinimo, precioSugerido);
+    }
+}
+
+// Cuando el usuario escribe el margen
+document.getElementById('input-margen').addEventListener('input', function () {
+    if (!_costoFinal) return;
+    const margen = parseFloat(this.value);
+    if (isNaN(margen) || margen >= 100) return;
+
+    const precio   = _costoFinal / (1 - margen / 100);
+    const ganancia = precio - _costoFinal;
+
+    document.getElementById('input-precio-venta').value = precio.toFixed(2);
+    document.getElementById('input-ganancia').value     = ganancia.toFixed(2);
+
+    const minimo    = parseFloat(document.getElementById('ref-precio-minimo').textContent);
+    const sugerido  = parseFloat(document.getElementById('ref-precio-sugerido').textContent);
+    actualizarHints(margen, minimo, sugerido);
+});
+
+// Cuando el usuario escribe la ganancia
+document.getElementById('input-ganancia').addEventListener('input', function () {
+    if (!_costoFinal) return;
+    const ganancia = parseFloat(this.value);
+    if (isNaN(ganancia)) return;
+
+    const precio = _costoFinal + ganancia;
+    const margen = (1 - _costoFinal / precio) * 100;
+
+    document.getElementById('input-precio-venta').value = precio.toFixed(2);
+    document.getElementById('input-margen').value       = margen.toFixed(1);
+
+    const minimo   = parseFloat(document.getElementById('ref-precio-minimo').textContent);
+    const sugerido = parseFloat(document.getElementById('ref-precio-sugerido').textContent);
+    actualizarHints(margen, minimo, sugerido);
+});
+
+// Cuando el usuario escribe el precio directamente
+document.getElementById('input-precio-venta').addEventListener('input', function () {
+    if (!_costoFinal) return;
+    const precio = parseFloat(this.value);
+    if (isNaN(precio) || precio <= 0) return;
+
+    const margen   = (1 - _costoFinal / precio) * 100;
+    const ganancia = precio - _costoFinal;
+
+    document.getElementById('input-margen').value   = margen.toFixed(1);
+    document.getElementById('input-ganancia').value = ganancia.toFixed(2);
+
+    const minimo   = parseFloat(document.getElementById('ref-precio-minimo').textContent);
+    const sugerido = parseFloat(document.getElementById('ref-precio-sugerido').textContent);
+    actualizarHints(margen, minimo, sugerido);
+});
+
+function actualizarHints(margen, minimo, sugerido) {
+    const hintM = document.getElementById('hint-margen');
+    const hintG = document.getElementById('hint-ganancia');
+    const hintP = document.getElementById('hint-precio');
+
+    // Limpiar clases
+    [hintM, hintG, hintP].forEach(h => {
+        h.className = 'input-hint';
+        h.textContent = '';
+    });
+
+    if (margen < 30) {
+        hintM.textContent = '⚠️ Bajo el mínimo permitido (30%)';
+        hintM.classList.add('hint-error');
+        hintP.textContent = '⚠️ Precio por debajo del mínimo';
+        hintP.classList.add('hint-error');
+    } else if (margen < 40) {
+        const diff = (40 - margen).toFixed(1);
+        hintM.textContent = `A ${diff}% del objetivo`;
+        hintM.classList.add('hint-warn');
+        hintP.textContent = 'Entre mínimo y objetivo';
+        hintP.classList.add('hint-warn');
+    } else {
+        hintM.textContent = '✓ Por encima del objetivo';
+        hintM.classList.add('hint-ok');
+        hintP.textContent = '✓ Precio sobre objetivo';
+        hintP.classList.add('hint-ok');
+    }
+}
+
+async function guardarPrecioVenta() {
+    const precio = parseFloat(
+        document.getElementById('input-precio-venta').value
+    );
+
+    if (isNaN(precio) || precio <= 0) {
+        alert('Captura un precio válido');
+        return;
+    }
+
+    const minimo = parseFloat(
+        document.getElementById('ref-precio-minimo').textContent
+    );
+
+    if (precio < minimo) {
+        const confirmar = confirm(
+            `El precio $${precio.toFixed(2)} está por debajo del mínimo ($${minimo.toFixed(2)}). ¿Confirmar de todas formas?`
+        );
+        if (!confirmar) return;
+    }
+
+    const respuesta = await fetch(`${API_URL}/eventos/${eventoId}/precio-venta`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ precio_venta: precio })
+    });
+
+    if (!respuesta.ok) {
+        alert('Error al guardar precio');
+        return;
+    }
+
+    alert(`Precio $${precio.toFixed(2)} guardado correctamente`);
+}
+
 
 // INIT (UNA SOLA VEZ)
 cargarEvento();

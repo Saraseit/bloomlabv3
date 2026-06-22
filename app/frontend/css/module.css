@@ -513,3 +513,110 @@
     font-weight: 700;
     color: #1a2e1e;
 }
+
+/* ── Rangos de referencia ── */
+.precio-rangos {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+}
+
+.rango-flecha {
+    font-size: 1.2rem;
+    color: #9ca3af;
+}
+
+.rango-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+}
+
+.rango-minimo {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+}
+
+.rango-objetivo {
+    background: linear-gradient(135deg, #eaf6e1, #d3eccc);
+    border: 1px solid #a7d3b0;
+}
+
+.rango-label {
+    font-size: 0.69rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+}
+
+.rango-valor {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a2e1e;
+}
+
+.rango-pct {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* ── Grid de negociación ── */
+.negociacion-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .negociacion-grid { grid-template-columns: 1fr; }
+    .precio-rangos { flex-direction: column; }
+    .rango-flecha { transform: rotate(90deg); }
+}
+
+.input-con-sufijo {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-sufijo {
+    position: absolute;
+    right: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.input-prefijo {
+    position: absolute;
+    left: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.input-con-prefijo {
+    padding-left: 1.75rem;
+}
+
+.input-hint {
+    display: block;
+    font-size: 0.72rem;
+    margin-top: 0.3rem;
+    min-height: 1rem;
+    color: #6b7280;
+}
+
+.input-hint.hint-ok    { color: #2b5c3c; }
+.input-hint.hint-warn  { color: #d97706; }
+.input-hint.hint-error { color: #e11d48; }
