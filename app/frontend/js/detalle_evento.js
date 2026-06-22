@@ -351,6 +351,9 @@ async function guardarPrecioVenta() {
     alert(`Precio $${precio.toFixed(2)} guardado correctamente`);
 }
 
+function generarPDF(tipo) {
+    window.open(`${API_URL}/eventos/${eventoId}/pdf?tipo=${tipo}`, '_blank');
+}
 
 // INIT (UNA SOLA VEZ)
 cargarEvento();
