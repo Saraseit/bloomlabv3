@@ -1,12 +1,13 @@
 const parametros = new URLSearchParams(window.location.search);
 const arregloId = parametros.get("id");
 
+// ── Cloudinary ──
+const CLOUDINARY_CLOUD_NAME    = "dpft5hywe";
+const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+
 async function cargarDetalle() {
 
-    const respuesta = await fetch(
-        `${API_URL}/arreglos/${arregloId}`
-    );
-
+    const respuesta = await fetch(`${API_URL}/arreglos/${arregloId}`);
     const arreglo = await respuesta.json();
 
     document.getElementById("nombre-arreglo").textContent = arreglo.nombre;
@@ -15,8 +16,23 @@ async function cargarDetalle() {
     document.getElementById("descripcion").textContent = arreglo.descripcion ?? "";
     document.getElementById("costo-total").textContent = arreglo.costo_total ?? 0;
 
-    const tbody = document.querySelector("#tabla-detalle tbody");
+    // Foto del arreglo
+    const foto     = document.getElementById('foto-arreglo');
+    const hint     = document.getElementById('hint-imagen');
+    const inputUrl = document.getElementById('imagen-url-actual');
 
+    if (arreglo.imagen_url) {
+        foto.src = arreglo.imagen_url;
+        foto.style.display = 'block';
+        hint.textContent = '';
+        inputUrl.value = arreglo.imagen_url;
+    } else {
+        foto.style.display = 'none';
+        hint.textContent = 'Sin imagen asignada';
+        inputUrl.value = '';
+    }
+
+    const tbody = document.querySelector("#tabla-detalle tbody");
     tbody.innerHTML = "";
 
     (arreglo.insumos || []).forEach(insumo => {
@@ -56,48 +72,29 @@ cargarInsumos();
 async function cargarInsumos() {
 
     const respuesta = await fetch(`${API_URL}/insumos`);
-
     const insumos = await respuesta.json();
 
     const select = document.getElementById("insumo-select");
-
-    select.innerHTML = `
-        <option value="">Seleccionar insumo</option>
-    `;
+    select.innerHTML = `<option value="">Seleccionar insumo</option>`;
 
     insumos.forEach(insumo => {
-
         const option = document.createElement("option");
-
         option.value = insumo.id;
         option.textContent = `${insumo.codigo} - ${insumo.nombre}`;
-
         select.appendChild(option);
     });
 }
 
 async function agregarInsumo() {
 
-    const insumo_id = parseInt(
-        document.getElementById("insumo-select").value
-    );
-
-    const cantidad = parseFloat(
-        document.getElementById("cantidad").value
-    );
-
-    const costo_real = parseFloat(
-        document.getElementById("costo-real").value
-    );
-
-    const observaciones =
-        document.getElementById("observaciones").value;
+    const insumo_id = parseInt(document.getElementById("insumo-select").value);
+    const cantidad = parseFloat(document.getElementById("cantidad").value);
+    const costo_real = parseFloat(document.getElementById("costo-real").value);
+    const observaciones = document.getElementById("observaciones").value;
 
     const respuesta = await fetch(`${API_URL}/arreglo-detalle`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             arreglo_id: parseInt(arregloId),
             insumo_id,
@@ -121,9 +118,7 @@ async function eliminarDetalle(id) {
     const confirmar = confirm("¿Eliminar insumo?");
     if (!confirmar) return;
 
-    await fetch(`${API_URL}/arreglo-detalle/${id}`, {
-        method: "DELETE"
-    });
+    await fetch(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
 
     cargarDetalle();
 
@@ -133,12 +128,7 @@ async function eliminarDetalle(id) {
     document.getElementById("observaciones").value = "";
 }
 
-async function editarDetalle(
-    id,
-    cantidadActual,
-    costoActual,
-    observacionesActuales
-) {
+async function editarDetalle(id, cantidadActual, costoActual, observacionesActuales) {
 
     const cantidad = parseFloat(prompt("Cantidad", cantidadActual));
     const costo_real = parseFloat(prompt("Costo Real", costoActual));
@@ -146,14 +136,8 @@ async function editarDetalle(
 
     const respuesta = await fetch(`${API_URL}/arreglo-detalle/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            cantidad,
-            costo_real,
-            observaciones
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cantidad, costo_real, observaciones })
     });
 
     if (!respuesta.ok) {
@@ -164,4 +148,53 @@ async function editarDetalle(
 
     cargarDetalle();
     cargarInsumos();
+}
+
+// ── Imagen del arreglo ──────────────────────────
+
+function abrirWidgetImagenDetalle() {
+    const widget = cloudinary.createUploadWidget(
+        {
+            cloudName:    CLOUDINARY_CLOUD_NAME,
+            uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+            sources:      ['local', 'camera', 'url'],
+            multiple:     false,
+            maxFileSize:  5000000,
+            cropping:     false
+        },
+        async (error, result) => {
+            if (!error && result && result.event === "success") {
+                const url = result.info.secure_url;
+
+                const foto = document.getElementById('foto-arreglo');
+                foto.src = url;
+                foto.style.display = 'block';
+                document.getElementById('hint-imagen').textContent = '';
+                document.getElementById('imagen-url-actual').value = url;
+
+                await guardarImagenArreglo(url);
+            }
+        }
+    );
+    widget.open();
+}
+
+async function guardarImagenArreglo(url) {
+    const respuesta = await fetch(`${API_URL}/arreglos/${arregloId}`);
+    const arreglo   = await respuesta.json();
+
+    const update = await fetch(`${API_URL}/arreglos/${arregloId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            nombre:      arreglo.nombre,
+            categoria:   arreglo.categoria,
+            descripcion: arreglo.descripcion,
+            imagen_url:  url
+        })
+    });
+
+    if (!update.ok) {
+        alert('Error al guardar imagen');
+    }
 }

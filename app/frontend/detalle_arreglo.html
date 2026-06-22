@@ -252,6 +252,30 @@
                     <span class="info-label">Descripción</span>
                     <span class="info-value" id="descripcion">—</span>
                 </div>
+
+                <!-- Imagen de referencia -->
+                <div class="info-item info-item-full" id="bloque-imagen">
+                    <span class="info-label">Imagen de referencia</span>
+                    <div style="display:flex; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-top:0.3rem;">
+                        <img
+                            id="foto-arreglo"
+                            src=""
+                            alt="Imagen del arreglo"
+                            style="display:none; height:140px; width:140px;
+                                   object-fit:cover; border-radius:10px;
+                                   border:1px solid #e5e7eb;"
+                        >
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; justify-content:flex-end;">
+                            <button class="btn btn-secondary btn-sm" onclick="abrirWidgetImagenDetalle()">
+                                📷 Cambiar imagen
+                            </button>
+                            <span id="hint-imagen" style="font-size:0.72rem; color:#9ca3af;">
+                                Sin imagen asignada
+                            </span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="imagen-url-actual">
+                </div>
             </div>
         </section>
 
@@ -411,9 +435,9 @@
         });
     </script>
 
+    <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
     <script src="config.js"></script>
     <script src="js/detalle_arreglo.js"></script>
-
 </body>
 
 </html>

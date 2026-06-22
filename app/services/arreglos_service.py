@@ -97,6 +97,7 @@ def obtener_arreglo(arreglo_id):
             nombre,
             categoria,
             descripcion,
+            imagen_url,
             costo_total,
             activo,
             fecha_creacion
@@ -107,53 +108,34 @@ def obtener_arreglo(arreglo_id):
     arreglo = cur.fetchone()
 
     if not arreglo:
-
         cur.close()
         conn.close()
-
-        return {
-            "error": "Arreglo no encontrado"
-        }
+        return {"error": "Arreglo no encontrado"}
 
     columnas = [desc[0] for desc in cur.description]
-
     resultado = dict(zip(columnas, arreglo))
 
     # Detalle
     cur.execute("""
         SELECT
-
             ad.id,
-
             i.id AS insumo_id,
             i.codigo,
             i.nombre,
-
             ad.cantidad,
             ad.costo_real,
-
             (ad.cantidad * ad.costo_real) AS subtotal,
-
             ad.observaciones
         FROM arreglo_detalle ad
-
         INNER JOIN insumos i
             ON ad.insumo_id = i.id
-
         WHERE ad.arreglo_id = %s
-
         ORDER BY ad.id
-
     """, (arreglo_id,))
 
     filas = cur.fetchall()
-
     columnas = [desc[0] for desc in cur.description]
-
-    detalle = [
-        dict(zip(columnas, fila))
-        for fila in filas
-    ]
+    detalle = [dict(zip(columnas, fila)) for fila in filas]
 
     resultado["insumos"] = detalle
 
@@ -170,27 +152,24 @@ def editar_arreglo(arreglo_id, data):
     cur.execute("""
         UPDATE arreglos
         SET
-            nombre = %s,
-            categoria = %s,
-            descripcion = %s
+            nombre      = %s,
+            categoria   = %s,
+            descripcion = %s,
+            imagen_url  = %s
         WHERE id = %s
     """, (
-
         data.nombre,
         data.categoria,
         data.descripcion,
+        data.imagen_url,
         arreglo_id
-
     ))
 
     conn.commit()
-
     cur.close()
     conn.close()
 
-    return {
-        "mensaje": "Arreglo actualizado"
-    }
+    return {"mensaje": "Arreglo actualizado"}
 
 def eliminar_arreglo(arreglo_id):
 
