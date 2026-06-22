@@ -67,6 +67,36 @@
                 </a>
 
             </nav>
+
+            <!-- ── Calendario de eventos ── -->
+            <section class="cal-section">
+
+                <div class="cal-header">
+                    <div class="cal-header-left">
+                        <span class="cal-icon">📅</span>
+                        <h2 class="cal-title">Calendario de Eventos</h2>
+                    </div>
+                    <div class="cal-nav">
+                        <button class="cal-btn" onclick="mesAnterior()">&#8592;</button>
+                        <span id="cal-titulo" class="cal-mes"></span>
+                        <button class="cal-btn" onclick="mesSiguiente()">&#8594;</button>
+                    </div>
+                    <a href="eventos.html" class="cal-link-ver-todos">
+                        Ver todos los eventos &#8594;
+                    </a>
+                </div>
+
+                <!-- Leyenda de estatus -->
+                <div class="cal-leyenda">
+                    <span class="cal-leyenda-item" style="border-color:#93c5fd; color:#0c447c; background:#e6f1fb;">Cotización</span>
+                    <span class="cal-leyenda-item" style="border-color:#86efac; color:#1a5c2e; background:#eaf6e1;">Confirmado</span>
+                    <span class="cal-leyenda-item" style="border-color:#fde68a; color:#92400e; background:#fffbeb;">Pend. Autorización</span>
+                    <span class="cal-leyenda-item" style="border-color:#fca5a5; color:#991b1b; background:#fef2f2;">Cancelado</span>
+                </div>
+
+                <div id="cal-grid" class="cal-grid"></div>
+
+            </section>
         </main>
 
         <footer class="home-footer">
@@ -74,6 +104,9 @@
         </footer>
 
     </div>
+
+    <script src="config.js"></script>
+    <script src="js/index.js"></script>
 
 </body>
 
