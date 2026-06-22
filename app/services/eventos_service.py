@@ -22,11 +22,7 @@ def obtener_eventos():
             e.descripcion,
 
             e.estatus,
-                
-            e.costo_flete,
-                
-            e.costo_montaje,
-                
+
             e.costo_base,
 
             e.costo_final,
@@ -260,6 +256,10 @@ def obtener_evento(evento_id):
 
             e.costo_base,
 
+            e.costo_flete,
+
+            e.costo_montaje,
+
             e.costo_final,
 
             e.precio_minimo,
@@ -300,23 +300,27 @@ def obtener_evento(evento_id):
     )
 
     resultado["costo_base"] = round(
-        resultado["costo_base"] or 0,
-        2
+        resultado["costo_base"] or 0, 2
+    )
+
+    resultado["costo_flete"] = round(
+        resultado["costo_flete"] or 0, 2
+    )
+
+    resultado["costo_montaje"] = round(
+        resultado["costo_montaje"] or 0, 2
     )
 
     resultado["costo_final"] = round(
-        resultado["costo_final"] or 0,
-        2
+        resultado["costo_final"] or 0, 2
     )
 
     resultado["precio_minimo"] = round(
-        resultado["precio_minimo"] or 0,
-        2
+        resultado["precio_minimo"] or 0, 2
     )
 
     resultado["precio_sugerido"] = round(
-        resultado["precio_sugerido"] or 0,
-        2
+        resultado["precio_sugerido"] or 0, 2
     )
 
     resultado["importe_comision"] = round(
@@ -364,13 +368,8 @@ def obtener_evento(evento_id):
     ]
 
     arreglos = [
-
-        dict(
-            zip(columnas, fila)
-        )
-
+        dict(zip(columnas, fila))
         for fila in filas
-
     ]
 
     resultado["arreglos"] = arreglos
