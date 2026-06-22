@@ -187,7 +187,7 @@ def actualizar_totales_evento(evento_id):
     """, (evento_id,))
     costo_arreglos = float(cur.fetchone()[0])
 
-    # Gastos operativos del evento  ← NUEVO
+    # Gastos operativos del evento
     cur.execute("""
         SELECT costo_flete, costo_montaje
         FROM eventos
@@ -197,9 +197,7 @@ def actualizar_totales_evento(evento_id):
     costo_flete   = float(fila_gastos[0] or 0)
     costo_montaje = float(fila_gastos[1] or 0)
 
-    costo_base = costo_arreglos + costo_flete + costo_montaje  # ← NUEVO
-
-    # Comisión
+    # Comisión del cliente — SOLO sobre arreglos
     cur.execute("""
         SELECT c.comision_porcentaje
         FROM eventos e
@@ -209,17 +207,23 @@ def actualizar_totales_evento(evento_id):
     fila = cur.fetchone()
     comision_porcentaje = float(fila[0]) if fila and fila[0] is not None else 0
 
-    comision        = costo_base * (comision_porcentaje / 100)
-    costo_final     = costo_base + comision
+    comision = costo_arreglos * (comision_porcentaje / 100)   # ← solo arreglos
+
+    # costo_base ahora representa: arreglos + comisión (sin gastos)
+    costo_base = costo_arreglos + comision
+
+    # costo_final agrega los gastos operativos DESPUÉS de comisión
+    costo_final = costo_base + costo_flete + costo_montaje
+
     precio_minimo   = costo_final / (1 - MARGEN_MINIMO)
     precio_sugerido = costo_final / (1 - MARGEN_OBJETIVO)
 
     cur.execute("""
         UPDATE eventos
         SET
-            costo_base    = %s,
-            costo_final   = %s,
-            precio_minimo = %s,
+            costo_base      = %s,
+            costo_final     = %s,
+            precio_minimo   = %s,
             precio_sugerido = %s
         WHERE id = %s
     """, (costo_base, costo_final, precio_minimo, precio_sugerido, evento_id))
@@ -237,39 +241,23 @@ def obtener_evento(evento_id):
         SELECT
 
             e.id,
-
             e.cliente_id,
-
             c.nombre AS cliente,
-
             c.comision_porcentaje,
-
             e.nombre,
-
             e.fecha_evento,
-
             e.lugar,
-
             e.descripcion,
-
             e.estatus,
-
             e.costo_base,
-
             e.costo_flete,
-
             e.costo_montaje,
-
             e.costo_final,
-
             e.precio_minimo,
-
             e.precio_sugerido,
-                
             e.precio_venta,
-
+            e.nota_autorizacion,
             e.activo,
-
             e.fecha_creacion
 
         FROM eventos e
@@ -284,76 +272,50 @@ def obtener_evento(evento_id):
     evento = cur.fetchone()
 
     if not evento:
-
         cur.close()
         conn.close()
+        return {"error": "Evento no encontrado"}
 
-        return {
-            "error": "Evento no encontrado"
-        }
+    columnas = [desc[0] for desc in cur.description]
+    resultado = dict(zip(columnas, evento))
 
-    columnas = [
-        desc[0]
-        for desc in cur.description
-    ]
+    # Redondeos base
+    costo_base    = round(resultado["costo_base"]    or 0, 2)
+    costo_flete   = round(resultado["costo_flete"]   or 0, 2)
+    costo_montaje = round(resultado["costo_montaje"] or 0, 2)
+    costo_final   = round(resultado["costo_final"]   or 0, 2)
+    comision_pct  = float(resultado["comision_porcentaje"] or 0)
 
-    resultado = dict(
-        zip(columnas, evento)
-    )
+    resultado["costo_base"]    = costo_base
+    resultado["costo_flete"]   = costo_flete
+    resultado["costo_montaje"] = costo_montaje
+    resultado["costo_final"]   = costo_final
 
-    resultado["costo_base"] = round(
-        resultado["costo_base"] or 0, 2
-    )
+    resultado["precio_minimo"]   = round(resultado["precio_minimo"]   or 0, 2)
+    resultado["precio_sugerido"] = round(resultado["precio_sugerido"] or 0, 2)
+    resultado["precio_venta"]    = round(resultado["precio_venta"]    or 0, 2)
 
-    resultado["costo_flete"] = round(
-        resultado["costo_flete"] or 0, 2
-    )
+    # costo_base = costo_arreglos + comision (flete/montaje van aparte)
+    # costo_arreglos = costo_base / (1 + comision_pct/100)
+    if comision_pct > 0:
+        costo_arreglos = costo_base / (1 + comision_pct / 100)
+    else:
+        costo_arreglos = costo_base
 
-    resultado["costo_montaje"] = round(
-        resultado["costo_montaje"] or 0, 2
-    )
+    resultado["costo_arreglos"]   = round(costo_arreglos, 2)
+    resultado["importe_comision"] = round(costo_base - costo_arreglos, 2)
 
-    resultado["costo_final"] = round(
-        resultado["costo_final"] or 0, 2
-    )
-
-    resultado["precio_minimo"] = round(
-        resultado["precio_minimo"] or 0, 2
-    )
-
-    resultado["precio_sugerido"] = round(
-        resultado["precio_sugerido"] or 0, 2
-    )
-
-    resultado["precio_venta"] = round(
-            resultado["precio_venta"] or 0, 2
-        )
-
-
-    resultado["importe_comision"] = round(
-        resultado["costo_final"]
-        -
-        resultado["costo_base"],
-        2
-    )
-
+    # Arreglos del evento
     cur.execute("""
         SELECT
 
             ea.id,
-
             ea.arreglo_id,
-
             a.codigo,
-
             a.nombre,
-
             ea.cantidad,
-
             ea.costo_unitario,
-
             ea.subtotal,
-
             ea.observaciones
 
         FROM evento_arreglos ea
@@ -368,16 +330,8 @@ def obtener_evento(evento_id):
     """, (evento_id,))
 
     filas = cur.fetchall()
-
-    columnas = [
-        desc[0]
-        for desc in cur.description
-    ]
-
-    arreglos = [
-        dict(zip(columnas, fila))
-        for fila in filas
-    ]
+    columnas = [desc[0] for desc in cur.description]
+    arreglos = [dict(zip(columnas, fila)) for fila in filas]
 
     resultado["arreglos"] = arreglos
 
