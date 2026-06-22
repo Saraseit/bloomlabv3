@@ -278,11 +278,11 @@ def obtener_evento(evento_id):
     columnas = [desc[0] for desc in cur.description]
     resultado = dict(zip(columnas, evento))
 
-    # Redondeos base
-    costo_base    = round(resultado["costo_base"]    or 0, 2)
-    costo_flete   = round(resultado["costo_flete"]   or 0, 2)
-    costo_montaje = round(resultado["costo_montaje"] or 0, 2)
-    costo_final   = round(resultado["costo_final"]   or 0, 2)
+    # Redondeos base — forzar float para evitar mezclar Decimal con float
+    costo_base    = round(float(resultado["costo_base"]    or 0), 2)
+    costo_flete   = round(float(resultado["costo_flete"]   or 0), 2)
+    costo_montaje = round(float(resultado["costo_montaje"] or 0), 2)
+    costo_final   = round(float(resultado["costo_final"]   or 0), 2)
     comision_pct  = float(resultado["comision_porcentaje"] or 0)
 
     resultado["costo_base"]    = costo_base
@@ -290,14 +290,13 @@ def obtener_evento(evento_id):
     resultado["costo_montaje"] = costo_montaje
     resultado["costo_final"]   = costo_final
 
-    resultado["precio_minimo"]   = round(resultado["precio_minimo"]   or 0, 2)
-    resultado["precio_sugerido"] = round(resultado["precio_sugerido"] or 0, 2)
-    resultado["precio_venta"]    = round(resultado["precio_venta"]    or 0, 2)
+    resultado["precio_minimo"]   = round(float(resultado["precio_minimo"]   or 0), 2)
+    resultado["precio_sugerido"] = round(float(resultado["precio_sugerido"] or 0), 2)
+    resultado["precio_venta"]    = round(float(resultado["precio_venta"]    or 0), 2)
 
     # costo_base = costo_arreglos + comision (flete/montaje van aparte)
-    # costo_arreglos = costo_base / (1 + comision_pct/100)
     if comision_pct > 0:
-        costo_arreglos = float(costo_base) / (1 + comision_pct / 100)
+        costo_arreglos = costo_base / (1 + comision_pct / 100)
     else:
         costo_arreglos = costo_base
 
