@@ -132,3 +132,25 @@ async function eliminarArreglo(id) {
 
     cargarArreglos();
 }
+
+function filtrarArreglos() {
+    const texto = document.getElementById('buscador-arreglos')
+        .value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#tabla-arreglos tbody tr');
+
+    filas.forEach(fila => {
+        // Busca en: código (0), nombre (1), categoría (2), descripción (4)
+        const codigo      = fila.cells[0]?.textContent.toLowerCase() ?? '';
+        const nombre      = fila.cells[1]?.textContent.toLowerCase() ?? '';
+        const categoria   = fila.cells[2]?.textContent.toLowerCase() ?? '';
+        const descripcion = fila.cells[4]?.textContent.toLowerCase() ?? '';
+
+        const coincide = !texto ||
+            codigo.includes(texto) ||
+            nombre.includes(texto) ||
+            categoria.includes(texto) ||
+            descripcion.includes(texto);
+
+        fila.style.display = coincide ? '' : 'none';
+    });
+}

@@ -96,6 +96,20 @@
                 </div>
             </div>
 
+            <div class="search-bar">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input
+                    type="text"
+                    id="buscador-insumos"
+                    class="search-input"
+                    placeholder="Buscar por nombre, categoría o código..."
+                    oninput="filtrarInsumos()"
+                >
+            </div>
+
             <div class="table-scroll">
                 <table id="tabla-insumos">
                     <thead>

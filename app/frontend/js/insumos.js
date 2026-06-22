@@ -147,6 +147,26 @@ async function cargarCategorias() {
     });
 }
 
+function filtrarInsumos() {
+    const texto = document.getElementById('buscador-insumos')
+        .value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#tabla-insumos tbody tr');
+
+    filas.forEach(fila => {
+        // Busca en: código (0), nombre (1), categoría (2)
+        const codigo    = fila.cells[0]?.textContent.toLowerCase() ?? '';
+        const nombre    = fila.cells[1]?.textContent.toLowerCase() ?? '';
+        const categoria = fila.cells[2]?.textContent.toLowerCase() ?? '';
+
+        const coincide = !texto ||
+            codigo.includes(texto) ||
+            nombre.includes(texto) ||
+            categoria.includes(texto);
+
+        fila.style.display = coincide ? '' : 'none';
+    });
+}
+
 // INIT (IMPORTANTE: solo una vez)
 cargarInsumos();
 cargarCategorias();

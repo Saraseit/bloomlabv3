@@ -26,3 +26,30 @@ th {
 
     background-color: #f0f0f0;
 }
+
+/* ── Buscador ── */
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #6b7280;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.875rem;
+    color: #1a2e1e;
+    font-family: 'Inter', sans-serif;
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
