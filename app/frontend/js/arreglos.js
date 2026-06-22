@@ -1,3 +1,29 @@
+const CLOUDINARY_CLOUD_NAME    = dpft5hywe;
+const CLOUDINARY_UPLOAD_PRESET = ml_default;
+
+function abrirWidgetImagen() {
+    const widget = cloudinary.createUploadWidget(
+        {
+            cloudName:    CLOUDINARY_CLOUD_NAME,
+            uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+            sources:      ['local', 'camera', 'url'],
+            multiple:     false,
+            maxFileSize:  5000000,
+            cropping:     false
+        },
+        (error, result) => {
+            if (!error && result && result.event === "success") {
+                const url = result.info.secure_url;
+                document.getElementById('imagen-url-arreglo').value = url;
+                const preview = document.getElementById('preview-imagen');
+                preview.src     = url;
+                preview.style.display = 'block';
+            }
+        }
+    );
+    widget.open();
+}
+
 async function cargarArreglos() {
 
     const respuesta = await fetch(
