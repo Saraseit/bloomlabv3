@@ -469,3 +469,47 @@
         padding: 0 1rem 1rem;
     }
 }
+
+.gastos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+@media (max-width: 480px) {
+    .gastos-grid { grid-template-columns: 1fr; }
+}
+
+.gasto-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.gasto-icon { font-size: 1.5rem; line-height: 1; }
+
+.gasto-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.gasto-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #7aaa82;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.gasto-valor {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a2e1e;
+}

@@ -417,6 +417,90 @@
         </div>
 
         <!-- ══════════════════════════════════
+            Gastos Operativos del Evento
+            ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Gastos Operativos</h2>
+                    <p class="card-subtitle">Flete y montaje/desmontaje del evento</p>
+                </div>
+            </div>
+
+            <div class="gastos-grid">
+
+                <div class="gasto-item">
+                    <div class="gasto-icon">🚛</div>
+                    <div class="gasto-info">
+                        <span class="gasto-label">Flete</span>
+                        <span class="gasto-valor">
+                            $<span id="valor-flete">0.00</span>
+                        </span>
+                    </div>
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="abrirModalGastos()">
+                        Editar
+                    </button>
+                </div>
+
+                <div class="gasto-item">
+                    <div class="gasto-icon">🔧</div>
+                    <div class="gasto-info">
+                        <span class="gasto-label">Montaje / Desmontaje</span>
+                        <span class="gasto-valor">
+                            $<span id="valor-montaje">0.00</span>
+                        </span>
+                    </div>
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="abrirModalGastos()">
+                        Editar
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Modal de gastos -->
+        <div id="modal-gastos" style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.4); z-index:1000; align-items:center;
+            justify-content:center;">
+            <div style="background:#fff; border-radius:16px; padding:2rem;
+                        width:min(420px, 90vw); box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+
+                <h3 style="margin:0 0 1.5rem; color:#1a2e1e; font-size:1.1rem;">
+                    Gastos Operativos
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label class="form-label">🚛 Flete ($)</label>
+                        <input type="number" id="input-flete" class="form-input"
+                            placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label class="form-label">🔧 Montaje / Desmontaje ($)</label>
+                        <input type="number" id="input-montaje" class="form-input"
+                            placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:0.75rem; margin-top:1.5rem;
+                            justify-content:flex-end;">
+                    <button class="btn btn-secondary"
+                            onclick="cerrarModalGastos()">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-primary"
+                            onclick="guardarGastos()">
+                        Guardar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════
              Tabla de arreglos del evento
              ══════════════════════════════════ -->
         <section class="card">

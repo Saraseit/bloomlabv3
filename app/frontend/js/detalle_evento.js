@@ -15,6 +15,10 @@ async function cargarEvento() {
     document.getElementById("lugar").textContent = evento.lugar ?? "";
     document.getElementById("descripcion").textContent = evento.descripcion ?? "";
     document.getElementById("costo-base").textContent = evento.costo_base ?? 0;
+    document.getElementById('valor-flete').textContent   =
+    (evento.costo_flete   ?? 0).toFixed(2);
+    document.getElementById('valor-montaje').textContent =
+    (evento.costo_montaje ?? 0).toFixed(2);
     document.getElementById("comision-porcentaje").textContent = evento.comision_porcentaje ?? 0;
     document.getElementById("importe-comision").textContent = evento.importe_comision ?? 0;
     document.getElementById("costo-final").textContent = evento.costo_final ?? 0;
@@ -159,6 +163,48 @@ async function eliminarArreglo(id) {
 
     cargarEvento();
 }
+
+// ── Gastos operativos ──────────────────────────
+
+function abrirModalGastos() {
+    // Precarga con valores actuales
+    const flete   = document.getElementById('valor-flete').textContent;
+    const montaje = document.getElementById('valor-montaje').textContent;
+    document.getElementById('input-flete').value   = parseFloat(flete)   || 0;
+    document.getElementById('input-montaje').value = parseFloat(montaje) || 0;
+
+    const modal = document.getElementById('modal-gastos');
+    modal.style.display = 'flex';
+}
+
+function cerrarModalGastos() {
+    document.getElementById('modal-gastos').style.display = 'none';
+}
+
+async function guardarGastos() {
+    const costo_flete   = parseFloat(document.getElementById('input-flete').value)   || 0;
+    const costo_montaje = parseFloat(document.getElementById('input-montaje').value) || 0;
+
+    const respuesta = await fetch(`${API_URL}/eventos/${eventoId}/gastos`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ costo_flete, costo_montaje })
+    });
+
+    if (!respuesta.ok) {
+        alert('Error al guardar gastos');
+        return;
+    }
+
+    cerrarModalGastos();
+    cargarEvento(); // recarga KPIs y valores
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modal-gastos')
+    .addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalGastos();
+    });
 
 // INIT (UNA SOLA VEZ)
 cargarEvento();

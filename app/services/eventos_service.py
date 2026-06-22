@@ -22,7 +22,11 @@ def obtener_eventos():
             e.descripcion,
 
             e.estatus,
-
+                
+            e.costo_flete,
+                
+            e.costo_montaje,
+                
             e.costo_base,
 
             e.costo_final,
@@ -55,6 +59,7 @@ def obtener_eventos():
     resultado = [
         dict(zip(columnas, fila))
         for fila in filas
+        
     ]
 
     cur.close()
@@ -175,85 +180,55 @@ def actualizar_totales_evento(evento_id):
     conn = get_connection()
     cur = conn.cursor()
 
-    MARGEN_MINIMO = 0.30
+    MARGEN_MINIMO   = 0.30
     MARGEN_OBJETIVO = 0.40
 
-    # Obtener costo base
+    # Costo de arreglos
     cur.execute("""
-        SELECT
-            COALESCE(
-                SUM(subtotal),
-                0
-            )
+        SELECT COALESCE(SUM(subtotal), 0)
         FROM evento_arreglos
         WHERE evento_id = %s
     """, (evento_id,))
+    costo_arreglos = float(cur.fetchone()[0])
 
-    costo_base = float(
-        cur.fetchone()[0]
-    )
-
-    # Obtener comisión
+    # Gastos operativos del evento  ← NUEVO
     cur.execute("""
-        SELECT
-            c.comision_porcentaje
+        SELECT costo_flete, costo_montaje
+        FROM eventos
+        WHERE id = %s
+    """, (evento_id,))
+    fila_gastos = cur.fetchone()
+    costo_flete   = float(fila_gastos[0] or 0)
+    costo_montaje = float(fila_gastos[1] or 0)
 
+    costo_base = costo_arreglos + costo_flete + costo_montaje  # ← NUEVO
+
+    # Comisión
+    cur.execute("""
+        SELECT c.comision_porcentaje
         FROM eventos e
-
-        INNER JOIN clientes c
-            ON e.cliente_id = c.id
-
+        INNER JOIN clientes c ON e.cliente_id = c.id
         WHERE e.id = %s
     """, (evento_id,))
-
     fila = cur.fetchone()
+    comision_porcentaje = float(fila[0]) if fila and fila[0] is not None else 0
 
-    comision_porcentaje = (
-        float(fila[0])
-        if fila and fila[0] is not None
-        else 0
-    )
-
-    comision = (
-        costo_base *
-        (comision_porcentaje / 100)
-    )
-
-    costo_final = (
-        costo_base +
-        comision
-    )
-
-    precio_minimo = (
-        costo_final /
-        (1 - MARGEN_MINIMO)
-    )
-
-    precio_sugerido = (
-        costo_final /
-        (1 - MARGEN_OBJETIVO)
-    )
+    comision        = costo_base * (comision_porcentaje / 100)
+    costo_final     = costo_base + comision
+    precio_minimo   = costo_final / (1 - MARGEN_MINIMO)
+    precio_sugerido = costo_final / (1 - MARGEN_OBJETIVO)
 
     cur.execute("""
         UPDATE eventos
         SET
-            costo_base = %s,
-            costo_final = %s,
+            costo_base    = %s,
+            costo_final   = %s,
             precio_minimo = %s,
             precio_sugerido = %s
         WHERE id = %s
-    """, (
-
-        costo_base,
-        costo_final,
-        precio_minimo,
-        precio_sugerido,
-        evento_id
-
-    ))
+    """, (costo_base, costo_final, precio_minimo, precio_sugerido, evento_id))
 
     conn.commit()
-
     cur.close()
     conn.close()
 
