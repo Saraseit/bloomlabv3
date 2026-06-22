@@ -8,6 +8,8 @@ class ArregloCreate(BaseModel):
 
     descripcion: str | None = None
 
+    imagen_url: str | None = None
+
 
 from pydantic import BaseModel
 
@@ -18,3 +20,7 @@ class ArregloUpdate(BaseModel):
     categoria: str | None = None
 
     descripcion: str | None = None
+
+    imagen_url: str | None = None
+
+
