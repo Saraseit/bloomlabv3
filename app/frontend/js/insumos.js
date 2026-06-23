@@ -55,22 +55,31 @@ async function editarInsumo(insumo) {
 
 async function nuevoInsumo() {
 
-    const nombre = prompt("Nombre");
-    if (!nombre) return;
+    const nombre = document.getElementById("nombre-insumo").value.trim();
+    if (!nombre) {
+        alert("El nombre es obligatorio");
+        return;
+    }
 
     const categoria_id = parseInt(
         document.getElementById("categoria-select").value
     );
+    if (!categoria_id) {
+        alert("Selecciona una categoría");
+        return;
+    }
 
-    const unidad = prompt("Unidad");
-    const costo_referencia = parseFloat(prompt("Costo Referencia"));
-    const porcentaje_merma = parseFloat(prompt("Porcentaje Merma"));
+    const unidad = document.getElementById("unidad").value.trim();
+    const costo_referencia = parseFloat(
+        document.getElementById("costo-referencia").value
+    ) || 0;
+    const porcentaje_merma = parseFloat(
+        document.getElementById("porcentaje-merma").value
+    ) || 0;
 
     const respuesta = await fetch(`${API_URL}/insumos`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             nombre,
             categoria_id,
@@ -84,6 +93,13 @@ async function nuevoInsumo() {
         alert("Error al crear insumo");
         return;
     }
+
+    // Limpiar formulario
+    document.getElementById("nombre-insumo").value    = "";
+    document.getElementById("categoria-select").value = "";
+    document.getElementById("unidad").value           = "";
+    document.getElementById("costo-referencia").value = "";
+    document.getElementById("porcentaje-merma").value = "";
 
     cargarInsumos();
     cargarCategorias();
