@@ -81,10 +81,24 @@ async function cargarInsumos() {
         const option = document.createElement("option");
         option.value = insumo.id;
         option.textContent = `${insumo.codigo} - ${insumo.nombre}`;
+
+        // Costo final = costo_referencia * (1 + porcentaje_merma)
+        const costoFinal = insumo.costo_referencia * (1 + insumo.porcentaje_merma);
+        option.dataset.costoFinal = costoFinal.toFixed(2);
+
         select.appendChild(option);
     });
 }
+document.getElementById("insumo-select").addEventListener("change", function () {
+    const opcionSeleccionada = this.options[this.selectedIndex];
+    const costoInput = document.getElementById("costo-real");
 
+    if (opcionSeleccionada && opcionSeleccionada.dataset.costoFinal) {
+        costoInput.value = opcionSeleccionada.dataset.costoFinal;
+    } else {
+        costoInput.value = "";
+    }
+});
 async function agregarInsumo() {
 
     const insumo_id = parseInt(document.getElementById("insumo-select").value);
