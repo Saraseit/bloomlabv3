@@ -20,10 +20,21 @@ app = FastAPI(
 # -------------------------
 # CORS (IMPORTANTE si usas frontend)
 # -------------------------
+#
+# allow_origins=["*"] junto con allow_credentials=True es inválido según
+# la spec de CORS: el navegador rechaza la respuesta cuando la petición
+# lleva cookies. Hoy no se usan cookies y por eso no se notaba, pero la
+# combinación estaba rota de antemano.
+#
+# Si más adelante se implementa login con JWT en cookies, hay que cambiar
+# allow_origins por el dominio exacto del frontend en Render
+# (por ejemplo ["https://bloomlabv3.onrender.com"]) y recién entonces
+# poner allow_credentials=True. El comodín deja de ser válido.
+#
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # luego puedes restringirlo
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
