@@ -123,8 +123,8 @@ async function cargarInsumos() {
             <td>${insumo.nombre}</td>
             <td>${insumo.categoria}</td>
             <td>${insumo.unidad}</td>
-            <td>${insumo.costo_referencia}</td>
-            <td>${insumo.porcentaje_merma}%</td>
+            <td>${fmt(insumo.costo_referencia)}</td>
+            <td>${fmtPct(insumo.porcentaje_merma)}</td>
 
             <td>
                 <button onclick='editarInsumo(${JSON.stringify(insumo)})'>

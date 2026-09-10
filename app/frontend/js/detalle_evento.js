@@ -1,6 +1,18 @@
 const parametros = new URLSearchParams(window.location.search);
 const eventoId = parametros.get("id");
 
+// ────────────────────────────────────────────
+// Valores numéricos crudos del evento en curso.
+// La pantalla se pinta con fmt(), que agrega separador de miles
+// ("1,234.56"), y parseFloat("1,234.56") devuelve 1. Por eso los
+// cálculos leen estas variables y nunca el textContent.
+// ────────────────────────────────────────────
+let _costoFinal     = 0;
+let _precioMinimo   = 0;
+let _precioSugerido = 0;
+let _costoFlete     = 0;
+let _costoMontaje   = 0;
+
 async function cargarEvento() {
 
     const respuesta = await fetch(
@@ -14,16 +26,19 @@ async function cargarEvento() {
     document.getElementById("fecha-evento").textContent = evento.fecha_evento;
     document.getElementById("lugar").textContent = evento.lugar ?? "";
     document.getElementById("descripcion").textContent = evento.descripcion ?? "";
-    document.getElementById("costo-base").textContent = evento.costo_base ?? 0;
-    document.getElementById('valor-flete').textContent   =
-    (evento.costo_flete   ?? 0).toFixed(2);
-    document.getElementById('valor-montaje').textContent =
-    (evento.costo_montaje ?? 0).toFixed(2);
-    document.getElementById("comision-porcentaje").textContent = evento.comision_porcentaje ?? 0;
-    document.getElementById("importe-comision").textContent = evento.importe_comision ?? 0;
-    document.getElementById("costo-final").textContent = evento.costo_final ?? 0;
-    document.getElementById("precio-minimo").textContent = evento.precio_minimo ?? 0;
-    document.getElementById("precio-sugerido").textContent = evento.precio_sugerido ?? 0;
+    // Se guardan los valores crudos antes de formatear la pantalla
+    _costoFlete   = evento.costo_flete   ?? 0;
+    _costoMontaje = evento.costo_montaje ?? 0;
+
+    document.getElementById("costo-base").textContent = fmt(evento.costo_base);
+    document.getElementById('valor-flete').textContent   = fmt(_costoFlete);
+    document.getElementById('valor-montaje').textContent = fmt(_costoMontaje);
+    document.getElementById("comision-porcentaje").textContent =
+        fmtPct(evento.comision_porcentaje);
+    document.getElementById("importe-comision").textContent = fmt(evento.importe_comision);
+    document.getElementById("costo-final").textContent = fmt(evento.costo_final);
+    document.getElementById("precio-minimo").textContent = fmt(evento.precio_minimo);
+    document.getElementById("precio-sugerido").textContent = fmt(evento.precio_sugerido);
 
     const tbody = document.querySelector("#tabla-evento-arreglos tbody");
 
@@ -37,8 +52,8 @@ async function cargarEvento() {
             <td>${arreglo.codigo}</td>
             <td>${arreglo.nombre}</td>
             <td>${arreglo.cantidad}</td>
-            <td>${arreglo.costo_unitario}</td>
-            <td>${arreglo.subtotal}</td>
+            <td>${fmt(arreglo.costo_unitario)}</td>
+            <td>${fmt(arreglo.subtotal)}</td>
             <td>${arreglo.observaciones ?? ""}</td>
 
             <td>
@@ -174,11 +189,10 @@ async function eliminarArreglo(id) {
 // ── Gastos operativos ──────────────────────────
 
 function abrirModalGastos() {
-    // Precarga con valores actuales
-    const flete   = document.getElementById('valor-flete').textContent;
-    const montaje = document.getElementById('valor-montaje').textContent;
-    document.getElementById('input-flete').value   = parseFloat(flete)   || 0;
-    document.getElementById('input-montaje').value = parseFloat(montaje) || 0;
+    // Precarga con los valores crudos: la pantalla los muestra con
+    // separador de miles y un <input type="number"> no acepta comas.
+    document.getElementById('input-flete').value   = _costoFlete   || 0;
+    document.getElementById('input-montaje').value = _costoMontaje || 0;
 
     const modal = document.getElementById('modal-gastos');
     modal.style.display = 'flex';
@@ -215,16 +229,17 @@ document.getElementById('modal-gastos')
 
 // ── Negociación de precio ──────────────────────────
 
-let _costoFinal = 0;  // se actualiza cada vez que carga el evento
-
 function iniciarNegociacion(costoFinal, precioMinimo, precioSugerido, precioVenta) {
-    _costoFinal = costoFinal;
+    _costoFinal     = costoFinal;
+    _precioMinimo   = precioMinimo;
+    _precioSugerido = precioSugerido;
 
     // Referencias visuales
-    document.getElementById('ref-precio-minimo').textContent   = precioMinimo.toFixed(2);
-    document.getElementById('ref-precio-sugerido').textContent = precioSugerido.toFixed(2);
+    document.getElementById('ref-precio-minimo').textContent   = fmt(precioMinimo);
+    document.getElementById('ref-precio-sugerido').textContent = fmt(precioSugerido);
 
-    // Si ya hay precio acordado, precarga los campos
+    // Si ya hay precio acordado, precarga los campos.
+    // Son <input type="number">: no aceptan comas, van con toFixed().
     if (precioVenta && precioVenta > 0) {
         const margen = (1 - costoFinal / precioVenta) * 100;
         const ganancia = precioVenta - costoFinal;
@@ -247,9 +262,7 @@ document.getElementById('input-margen').addEventListener('input', function () {
     document.getElementById('input-precio-venta').value = precio.toFixed(2);
     document.getElementById('input-ganancia').value     = ganancia.toFixed(2);
 
-    const minimo    = parseFloat(document.getElementById('ref-precio-minimo').textContent);
-    const sugerido  = parseFloat(document.getElementById('ref-precio-sugerido').textContent);
-    actualizarHints(margen, minimo, sugerido);
+    actualizarHints(margen, _precioMinimo, _precioSugerido);
 });
 
 // Cuando el usuario escribe la ganancia
@@ -264,9 +277,7 @@ document.getElementById('input-ganancia').addEventListener('input', function () 
     document.getElementById('input-precio-venta').value = precio.toFixed(2);
     document.getElementById('input-margen').value       = margen.toFixed(1);
 
-    const minimo   = parseFloat(document.getElementById('ref-precio-minimo').textContent);
-    const sugerido = parseFloat(document.getElementById('ref-precio-sugerido').textContent);
-    actualizarHints(margen, minimo, sugerido);
+    actualizarHints(margen, _precioMinimo, _precioSugerido);
 });
 
 // Cuando el usuario escribe el precio directamente
@@ -281,9 +292,7 @@ document.getElementById('input-precio-venta').addEventListener('input', function
     document.getElementById('input-margen').value   = margen.toFixed(1);
     document.getElementById('input-ganancia').value = ganancia.toFixed(2);
 
-    const minimo   = parseFloat(document.getElementById('ref-precio-minimo').textContent);
-    const sugerido = parseFloat(document.getElementById('ref-precio-sugerido').textContent);
-    actualizarHints(margen, minimo, sugerido);
+    actualizarHints(margen, _precioMinimo, _precioSugerido);
 });
 
 function actualizarHints(margen, minimo, sugerido) {
@@ -326,13 +335,9 @@ async function guardarPrecioVenta() {
         return;
     }
 
-    const minimo = parseFloat(
-        document.getElementById('ref-precio-minimo').textContent
-    );
-
-    if (precio < minimo) {
+    if (precio < _precioMinimo) {
         const confirmar = confirm(
-            `El precio $${precio.toFixed(2)} está por debajo del mínimo ($${minimo.toFixed(2)}). ¿Confirmar de todas formas?`
+            `El precio $${fmt(precio)} está por debajo del mínimo ($${fmt(_precioMinimo)}). ¿Confirmar de todas formas?`
         );
         if (!confirmar) return;
     }
@@ -348,7 +353,7 @@ async function guardarPrecioVenta() {
         return;
     }
 
-    alert(`Precio $${precio.toFixed(2)} guardado correctamente`);
+    alert(`Precio $${fmt(precio)} guardado correctamente`);
 }
 
 function generarPDF(tipo) {

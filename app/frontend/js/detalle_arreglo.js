@@ -14,7 +14,7 @@ async function cargarDetalle() {
     document.getElementById("codigo").textContent = arreglo.codigo;
     document.getElementById("categoria").textContent = arreglo.categoria ?? "";
     document.getElementById("descripcion").textContent = arreglo.descripcion ?? "";
-    document.getElementById("costo-total").textContent = arreglo.costo_total ?? 0;
+    document.getElementById("costo-total").textContent = fmt(arreglo.costo_total);
 
     // Foto del arreglo
     const foto     = document.getElementById('foto-arreglo');
@@ -43,8 +43,8 @@ async function cargarDetalle() {
             <td>${insumo.codigo}</td>
             <td>${insumo.nombre}</td>
             <td>${insumo.cantidad}</td>
-            <td>${insumo.costo_real}</td>
-            <td>${insumo.subtotal}</td>
+            <td>${fmt(insumo.costo_real)}</td>
+            <td>${fmt(insumo.subtotal)}</td>
             <td>${insumo.observaciones ?? ""}</td>
             <td>
                 <button onclick="editarDetalle(

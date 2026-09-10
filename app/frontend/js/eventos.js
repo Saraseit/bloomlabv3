@@ -17,8 +17,8 @@ async function cargarEventos() {
             <td>${evento.fecha_evento ?? ""}</td>
             <td>${evento.lugar ?? ""}</td>
             <td>${evento.estatus ?? ""}</td>
-            <td>${evento.costo_final ?? 0}</td>
-            <td>${evento.precio_sugerido ?? 0}</td>
+            <td>${fmt(evento.costo_final)}</td>
+            <td>${fmt(evento.precio_sugerido)}</td>
 
             <td>
                 <button onclick="abrirEvento(${evento.id})">

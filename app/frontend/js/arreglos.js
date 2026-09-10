@@ -44,7 +44,7 @@ async function cargarArreglos() {
             <td>${arreglo.codigo}</td>
             <td>${arreglo.nombre}</td>
             <td>${arreglo.categoria ?? ""}</td>
-            <td>${arreglo.costo_total ?? 0}</td>
+            <td>${fmt(arreglo.costo_total)}</td>
             <td>${arreglo.descripcion ?? ""}</td>
             <td>
                 <button onclick="verDetalle(${arreglo.id})">
