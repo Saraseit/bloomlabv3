@@ -5,6 +5,14 @@ const arregloId = parametros.get("id");
 const CLOUDINARY_CLOUD_NAME    = "dpft5hywe";
 const CLOUDINARY_UPLOAD_PRESET = "ml_default";
 
+// Costo final por código de insumo, que llena cargarInsumos() y usa el
+// modal como sugerencia. Se declara aquí porque cargarInsumos() corre
+// antes de la sección del modal.
+const _costosCatalogo = {};
+
+// Renglón que se está editando; lo fija editarDetalle() al abrir el modal.
+let _detalleEditando = null;
+
 async function cargarDetalle() {
 
     const respuesta = await fetch(`${API_URL}/arreglos/${arregloId}`);
@@ -47,12 +55,7 @@ async function cargarDetalle() {
             <td>${fmt(insumo.subtotal)}</td>
             <td>${insumo.observaciones ?? ""}</td>
             <td>
-                <button onclick="editarDetalle(
-                    ${insumo.id},
-                    ${insumo.cantidad},
-                    ${insumo.costo_real},
-                    '${(insumo.observaciones ?? "").replace(/'/g, "\\'")}'
-                )">
+                <button onclick='editarDetalle(${JSON.stringify(insumo)})'>
                     Editar
                 </button>
 
@@ -87,6 +90,9 @@ async function cargarInsumos() {
         const costoFinal =
             insumo.costo_referencia * (1 + insumo.porcentaje_merma / 100);
         option.dataset.costoFinal = costoFinal.toFixed(2);
+
+        // Se guarda por código de insumo para sugerirlo en el modal de edición
+        _costosCatalogo[insumo.codigo] = costoFinal;
 
         select.appendChild(option);
     });
@@ -144,17 +150,66 @@ async function eliminarDetalle(id) {
     document.getElementById("observaciones").value = "";
 }
 
-async function editarDetalle(id, cantidadActual, costoActual, observacionesActuales) {
+// ── Modal de edición del detalle ───────────────
 
-    const cantidad = parseFloat(prompt("Cantidad", cantidadActual));
-    const costo_real = parseFloat(prompt("Costo Real", costoActual));
-    const observaciones = prompt("Observaciones", observacionesActuales);
+function editarDetalle(insumo) {
 
-    const respuesta = await fetch(`${API_URL}/arreglo-detalle/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cantidad, costo_real, observaciones })
-    });
+    _detalleEditando = insumo;
+
+    document.getElementById("modal-detalle-insumo").textContent =
+        `${insumo.codigo} — ${insumo.nombre}`;
+
+    document.getElementById("edit-cantidad").value      = insumo.cantidad ?? 0;
+    document.getElementById("edit-costo-real").value    = insumo.costo_real ?? 0;
+    document.getElementById("edit-observaciones").value = insumo.observaciones ?? "";
+
+    // El costo del catálogo se ofrece como referencia, sin pisar el capturado
+    const sugerido = _costosCatalogo[insumo.codigo];
+    document.getElementById("hint-costo-catalogo").textContent =
+        sugerido !== undefined
+            ? `Catálogo (con merma): $${fmt(sugerido)}`
+            : "";
+
+    document.getElementById("modal-detalle").style.display = "flex";
+    document.getElementById("edit-cantidad").focus();
+}
+
+function cerrarModalDetalle() {
+    document.getElementById("modal-detalle").style.display = "none";
+    _detalleEditando = null;
+}
+
+async function guardarDetalleEditado() {
+
+    if (!_detalleEditando) return;
+
+    const cantidad = parseFloat(
+        document.getElementById("edit-cantidad").value
+    );
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert("La cantidad debe ser mayor a 0");
+        return;
+    }
+
+    const costo_real = parseFloat(
+        document.getElementById("edit-costo-real").value
+    );
+    if (isNaN(costo_real) || costo_real < 0) {
+        alert("Captura un costo real válido");
+        return;
+    }
+
+    const observaciones =
+        document.getElementById("edit-observaciones").value;
+
+    const respuesta = await fetch(
+        `${API_URL}/arreglo-detalle/${_detalleEditando.id}`,
+        {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cantidad, costo_real, observaciones })
+        }
+    );
 
     if (!respuesta.ok) {
         console.log(await respuesta.text());
@@ -162,9 +217,24 @@ async function editarDetalle(id, cantidadActual, costoActual, observacionesActua
         return;
     }
 
+    cerrarModalDetalle();
     cargarDetalle();
     cargarInsumos();
 }
+
+// Cerrar al hacer clic fuera de la tarjeta
+document.getElementById("modal-detalle")
+    .addEventListener("click", function (e) {
+        if (e.target === this) cerrarModalDetalle();
+    });
+
+// Cerrar con Escape (accesibilidad de teclado)
+document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (document.getElementById("modal-detalle").style.display === "flex") {
+        cerrarModalDetalle();
+    }
+});
 
 // ── Imagen del arreglo ──────────────────────────
 
