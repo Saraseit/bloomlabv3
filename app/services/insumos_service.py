@@ -1,4 +1,21 @@
+from decimal import Decimal
+
 from app.database.connection import get_connection
+
+
+# ──────────────────────────────────────────────
+# Merma: la base guarda el decimal (0.10),
+# el usuario y el frontend usan el entero (10).
+# ──────────────────────────────────────────────
+
+def merma_a_decimal(valor):
+    """Entero capturado por el usuario (10) -> decimal para la base (0.10)."""
+    return (Decimal(str(valor or 0)) / 100)
+
+
+def merma_a_entero(valor):
+    """Decimal de la base (0.10) -> entero para el frontend (10)."""
+    return float(Decimal(str(valor or 0)) * 100)
 
 
 def obtener_insumos():
@@ -11,6 +28,7 @@ def obtener_insumos():
             i.id,
             i.codigo,
             i.nombre,
+            i.categoria_id,
             c.nombre AS categoria,
             i.unidad,
             i.costo_referencia,
@@ -32,6 +50,14 @@ def obtener_insumos():
         dict(zip(columnas, fila))
         for fila in filas
     ]
+
+    # La base guarda el decimal (0.10); el frontend siempre recibe
+    # el entero (10). Se multiplica sobre el Decimal para evitar
+    # errores de coma flotante (0.1 * 100 = 10.000000000000002).
+    for insumo in resultado:
+        insumo["porcentaje_merma"] = merma_a_entero(
+            insumo["porcentaje_merma"]
+        )
 
     cur.close()
     conn.close()
@@ -108,7 +134,7 @@ def crear_insumo(data):
         data.categoria_id,
         data.unidad,
         data.costo_referencia,
-        data.porcentaje_merma
+        merma_a_decimal(data.porcentaje_merma)
     ))
 
     nuevo_id = cur.fetchone()[0]
@@ -144,7 +170,7 @@ def actualizar_insumo(insumo_id, data):
         data.categoria_id,
         data.unidad,
         data.costo_referencia,
-        data.porcentaje_merma,
+        merma_a_decimal(data.porcentaje_merma),
         insumo_id
     ))
 

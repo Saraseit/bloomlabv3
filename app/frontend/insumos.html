@@ -234,10 +234,11 @@
                     costoCell.dataset.prefixed = '1';
                 }
 
-                // Sufijo % en merma (índice 5)
+                // Merma (índice 5): insumos.js ya renderiza el '%',
+                // aquí solo se le da el estilo del sufijo.
                 var mermaCell = row.cells[5];
                 if (mermaCell && !mermaCell.dataset.suffixed) {
-                    var mval = mermaCell.textContent.trim();
+                    var mval = mermaCell.textContent.trim().replace(/%$/, '');
                     mermaCell.innerHTML = mval + '<span class="merma-suffix">%</span>';
                     mermaCell.dataset.suffixed = '1';
                 }

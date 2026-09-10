@@ -82,8 +82,10 @@ async function cargarInsumos() {
         option.value = insumo.id;
         option.textContent = `${insumo.codigo} - ${insumo.nombre}`;
 
-        // Costo final = costo_referencia * (1 + porcentaje_merma)
-        const costoFinal = insumo.costo_referencia * (1 + insumo.porcentaje_merma);
+        // Costo final = costo_referencia * (1 + porcentaje_merma / 100)
+        // El API retorna la merma como entero (10), no como decimal (0.10).
+        const costoFinal =
+            insumo.costo_referencia * (1 + insumo.porcentaje_merma / 100);
         option.dataset.costoFinal = costoFinal.toFixed(2);
 
         select.appendChild(option);
