@@ -3,11 +3,21 @@ from fastapi.responses import Response
 from xhtml2pdf import pisa
 import io
 import base64
+import logging
 import requests as req_lib
+import urllib3
 
 from app.services.eventos_service import obtener_evento
 
 router = APIRouter()
+
+# Las imágenes vienen de Cloudinary y se descargan con verify=False
+# (ver imagen_a_base64), así que se silencia el aviso repetitivo de urllib3.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Cloudinary rechaza clientes sin User-Agent identificable.
+IMAGEN_HEADERS = {"User-Agent": "BloomLab/3.0"}
+IMAGEN_TIMEOUT = 8
 
 
 # ──────────────────────────────────────────────
@@ -20,13 +30,22 @@ def imagen_a_base64(url: str) -> str:
     if not url:
         return ""
     try:
-        r = req_lib.get(url, timeout=8)
+        r = req_lib.get(
+            url,
+            timeout=IMAGEN_TIMEOUT,
+            headers=IMAGEN_HEADERS,
+            verify=False,
+        )
         if r.status_code == 200:
             media_type = r.headers.get("Content-Type", "image/jpeg").split(";")[0]
             b64 = base64.b64encode(r.content).decode()
             return f"data:{media_type};base64,{b64}"
-    except Exception:
-        pass
+
+        logging.warning(
+            f"imagen_a_base64 falló: {url} — HTTP {r.status_code}"
+        )
+    except Exception as e:
+        logging.warning(f"imagen_a_base64 falló: {url} — {e}")
     return ""
 
 
@@ -70,10 +89,12 @@ def calcular_distribucion_cliente(evento):
 def construir_html_cliente(evento, dist):
     items_html = ""
     for item in dist["items"]:
+        # Si la descarga de Cloudinary falla, el hueco se rellena con el
+        # nombre del arreglo para que el PDF no quede con espacios vacíos.
         img_html = (
             f'<img src="{item["imagen_b64"]}" class="item-img">'
             if item["imagen_b64"]
-            else '<div class="item-img-placeholder">Sin imagen</div>'
+            else f'<div class="item-img-placeholder">{item["nombre"]}</div>'
         )
         items_html += f"""
         <tr>
@@ -339,6 +360,42 @@ def construir_html_interno(evento):
 </div>
 
 </body></html>"""
+
+
+# ──────────────────────────────────────────────
+# Diagnóstico
+# ──────────────────────────────────────────────
+
+@router.get("/debug/imagen")
+def debug_imagen(url: str):
+    """Verifica desde el navegador si el servidor alcanza Cloudinary.
+
+    Uso: /debug/imagen?url=https://res.cloudinary.com/...
+    """
+    if not url:
+        return {"ok": False, "error": "Falta el parámetro url"}
+
+    try:
+        r = req_lib.get(
+            url,
+            timeout=IMAGEN_TIMEOUT,
+            headers=IMAGEN_HEADERS,
+            verify=False,
+        )
+        return {
+            "ok": r.status_code == 200,
+            "url": url,
+            "status": r.status_code,
+            "content_type": r.headers.get("Content-Type"),
+            "bytes": len(r.content),
+        }
+    except Exception as e:
+        logging.warning(f"debug_imagen falló: {url} — {e}")
+        return {
+            "ok": False,
+            "url": url,
+            "error": f"{type(e).__name__}: {e}",
+        }
 
 
 # ──────────────────────────────────────────────

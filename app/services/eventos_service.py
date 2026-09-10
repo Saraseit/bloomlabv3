@@ -311,6 +311,7 @@ def obtener_evento(evento_id):
             ea.arreglo_id,
             a.codigo,
             a.nombre,
+            a.imagen_url,
             ea.cantidad,
             ea.costo_unitario,
             ea.subtotal,
