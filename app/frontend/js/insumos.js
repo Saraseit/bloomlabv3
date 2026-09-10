@@ -11,26 +11,80 @@ async function eliminarInsumo(id) {
     cargarCategorias();
 }
 
-async function editarInsumo(insumo) {
+// ── Modal de edición ───────────────────────────
 
-    const nombre = prompt("Nombre", insumo.nombre);
-    if (!nombre) return;
+// Insumo que se está editando; lo fija editarInsumo() al abrir el modal.
+let _insumoEditando = null;
+
+function editarInsumo(insumo) {
+
+    _insumoEditando = insumo;
+
+    // Se reaprovecha el catálogo ya cargado por cargarCategorias()
+    poblarSelectCategorias(
+        document.getElementById("edit-categoria"),
+        insumo.categoria_id
+    );
+
+    document.getElementById("edit-nombre").value  = insumo.nombre ?? "";
+    document.getElementById("edit-unidad").value  = insumo.unidad ?? "";
+    document.getElementById("edit-costo").value   = insumo.costo_referencia ?? "";
+    // El API entrega la merma como entero (10), igual que la captura
+    // el usuario; la conversión a decimal la hace el backend.
+    document.getElementById("edit-merma").value   = insumo.porcentaje_merma ?? 0;
+
+    document.getElementById("modal-insumo").style.display = "flex";
+    document.getElementById("edit-nombre").focus();
+}
+
+function cerrarModalInsumo() {
+    document.getElementById("modal-insumo").style.display = "none";
+    _insumoEditando = null;
+}
+
+async function guardarInsumoEditado() {
+
+    if (!_insumoEditando) return;
+
+    const nombre = document.getElementById("edit-nombre").value.trim();
+    if (!nombre) {
+        alert("El nombre es obligatorio");
+        return;
+    }
 
     const categoria_id = parseInt(
-        prompt("ID Categoría", insumo.categoria_id ?? 1)
+        document.getElementById("edit-categoria").value
     );
+    if (!categoria_id) {
+        alert("Selecciona una categoría");
+        return;
+    }
 
-    const unidad = prompt("Unidad", insumo.unidad);
+    const unidad = document.getElementById("edit-unidad").value.trim();
+    if (!unidad) {
+        alert("La unidad es obligatoria");
+        return;
+    }
 
     const costo_referencia = parseFloat(
-        prompt("Costo Referencia", insumo.costo_referencia)
-    );
+        document.getElementById("edit-costo").value
+    ) || 0;
+    if (costo_referencia <= 0) {
+        alert("El costo de referencia debe ser mayor a 0");
+        return;
+    }
 
+    // Se manda tal como lo escribe el usuario (10 = 10%),
+    // igual que en nuevoInsumo(); el backend divide entre 100.
     const porcentaje_merma = parseFloat(
-        prompt("Porcentaje Merma", insumo.porcentaje_merma)
-    );
+        document.getElementById("edit-merma").value
+    ) || 0;
+    if (porcentaje_merma < 0 || porcentaje_merma > 100) {
+        alert("La merma debe estar entre 0 y 100");
+        return;
+    }
 
-    const respuesta = await fetch(`${API_URL}/insumos/${insumo.id}`, {
+    const respuesta = await fetch(`${API_URL}/insumos/${_insumoEditando.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -49,9 +103,24 @@ async function editarInsumo(insumo) {
         return;
     }
 
+    cerrarModalInsumo();
     cargarInsumos();
     cargarCategorias();
 }
+
+// Cerrar al hacer clic fuera de la tarjeta
+document.getElementById("modal-insumo")
+    .addEventListener("click", function (e) {
+        if (e.target === this) cerrarModalInsumo();
+    });
+
+// Cerrar con Escape (accesibilidad de teclado)
+document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (document.getElementById("modal-insumo").style.display === "flex") {
+        cerrarModalInsumo();
+    }
+});
 
 async function nuevoInsumo() {
 
@@ -141,18 +210,16 @@ async function cargarInsumos() {
     });
 }
 
-async function cargarCategorias() {
+// Catálogo de categorías compartido por el formulario y el modal
+let _categorias = [];
 
-    const respuesta = await fetch(`${API_URL}/categorias`);
-    const categorias = await respuesta.json();
-
-    const select = document.getElementById("categoria-select");
+function poblarSelectCategorias(select, seleccionada) {
 
     select.innerHTML = `
         <option value="">Seleccionar categoría</option>
     `;
 
-    categorias.forEach(categoria => {
+    _categorias.forEach(categoria => {
 
         const option = document.createElement("option");
 
@@ -161,6 +228,20 @@ async function cargarCategorias() {
 
         select.appendChild(option);
     });
+
+    if (seleccionada !== undefined && seleccionada !== null) {
+        select.value = seleccionada;
+    }
+}
+
+async function cargarCategorias() {
+
+    const respuesta = await fetch(`${API_URL}/categorias`);
+    _categorias = await respuesta.json();
+
+    poblarSelectCategorias(
+        document.getElementById("categoria-select")
+    );
 }
 
 function filtrarInsumos() {

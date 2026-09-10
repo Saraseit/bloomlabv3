@@ -199,6 +199,66 @@
             </div>
         </section>
 
+        <!-- ── Modal: editar insumo ── -->
+        <div id="modal-insumo" style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.4); z-index:1000; align-items:center;
+            justify-content:center;">
+            <div role="dialog" aria-modal="true" aria-labelledby="modal-insumo-titulo"
+                 style="background:#fff; border-radius:16px; padding:2rem;
+                        width:min(520px, 92vw); max-height:90vh; overflow-y:auto;
+                        box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+
+                <h3 id="modal-insumo-titulo"
+                    style="margin:0 0 1.5rem; color:#1a2e1e; font-size:1.1rem;">
+                    Editar Insumo
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label class="form-label" for="edit-nombre">Nombre</label>
+                        <input type="text" id="edit-nombre" class="form-input"
+                               placeholder="Ej: Rosa roja, Follaje eucalipto...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit-categoria">Categoría</label>
+                        <select id="edit-categoria" class="form-select">
+                            <option value="">Seleccionar categoría</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit-unidad">Unidad</label>
+                        <input type="text" id="edit-unidad" class="form-input"
+                               placeholder="Ej: pieza, tallo, metro...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit-costo">Costo de Referencia ($)</label>
+                        <input type="number" id="edit-costo" class="form-input"
+                               placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit-merma">Porcentaje de Merma (%)</label>
+                        <input type="number" id="edit-merma" class="form-input"
+                               placeholder="0.00" step="0.01" min="0" max="100">
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:0.75rem; margin-top:1.5rem;
+                            justify-content:flex-end;">
+                    <button class="btn btn-secondary" onclick="cerrarModalInsumo()">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-primary" onclick="guardarInsumoEditado()">
+                        Guardar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <!--
