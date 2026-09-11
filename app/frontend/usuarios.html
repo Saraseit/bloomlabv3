@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* ═══════════════════════════════════════════
+           Usuarios — estilos específicos
+           ═══════════════════════════════════════════ */
+
+        #tabla-usuarios {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        #tabla-usuarios thead th {
+            background: #f7fbf7;
+            color: #4a7a5a;
+            font-size: 0.71rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.85rem 1.25rem;
+            text-align: left;
+            border: none;
+            border-bottom: 1.5px solid #e2ede5;
+            white-space: nowrap;
+        }
+
+        #tabla-usuarios tbody tr {
+            border-bottom: 1px solid #f0f5f0;
+            transition: background 0.15s ease;
+        }
+
+        #tabla-usuarios tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        #tabla-usuarios tbody tr:hover {
+            background: #f7fbf7;
+        }
+
+        #tabla-usuarios tbody td {
+            padding: 0.875rem 1.25rem;
+            color: #374151;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* Nombre */
+        #tabla-usuarios tbody td:nth-child(1) {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        /* Email */
+        #tabla-usuarios tbody td:nth-child(2) {
+            color: #6b7280;
+            font-size: 0.84rem;
+        }
+
+        /* Último acceso */
+        #tabla-usuarios tbody td:nth-child(4) {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        #tabla-usuarios tbody td:last-child {
+            white-space: nowrap;
+        }
+
+        /* Chips de rol */
+        .rol-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .rol-admin {
+            background: #1a2e1e;
+            color: #ffffff;
+            border: 1px solid #1a2e1e;
+        }
+
+        .rol-director {
+            background: #faf5ff;
+            color: #6d28d9;
+            border: 1px solid #e9d5ff;
+        }
+
+        .rol-vendedor {
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+        }
+
+        /* Estado */
+        .estado-activo {
+            color: #047857;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .estado-inactivo {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+
+        .fila-inactiva {
+            background: #fafafa;
+            opacity: 0.68;
+        }
+
+        .es-tu-usuario {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #6ee7b7;
+            margin-left: 0.45rem;
+        }
+
+        .sin-dato {
+            color: #9ca3af;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .tabla-vacia {
+            padding: 1.6rem 1.25rem;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.86rem;
+        }
+
+        /* Modal, mismo patrón que el resto del sistema */
+        .modal-fondo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            width: min(520px, 92vw);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-titulo {
+            margin: 0 0 1.5rem;
+            color: #1a2e1e;
+            font-size: 1.1rem;
+        }
+
+        .modal-acciones {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding-top: 0.4rem;
+        }
+
+        .check-row input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #2b5c3c;
+        }
+
+        .check-row label {
+            font-size: 0.88rem;
+            color: #374151;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="module-page">
+
+    <div class="module-wrapper">
+
+        <!-- ── Encabezado ── -->
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
+
+            <div class="page-title-block">
+                <div class="page-icon">&#128100;</div>
+                <div>
+                    <h1 class="page-title">Usuarios</h1>
+                    <p class="page-subtitle">Accesos, roles y permisos del equipo</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- ── Tabla ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Usuarios del Sistema</h2>
+                    <p class="card-subtitle">Quién puede entrar a BloomLab y con qué permisos</p>
+                </div>
+                <button class="btn btn-primary" onclick="abrirModalUsuario()">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Nuevo usuario
+                </button>
+            </div>
+
+            <div class="table-scroll">
+                <table id="tabla-usuarios">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Último acceso</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ── Referencia de roles ── -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Qué puede hacer cada rol</h2>
+                    <p class="card-subtitle">Permisos vigentes en el sistema</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <span class="rol-chip rol-vendedor" style="width:fit-content;">vendedor</span>
+                    <p class="card-subtitle" style="margin-top:0.4rem;">
+                        Ve y edita todo el catálogo y los eventos. No autoriza
+                        precios por debajo del margen mínimo ni gestiona usuarios.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <span class="rol-chip rol-director" style="width:fit-content;">director</span>
+                    <p class="card-subtitle" style="margin-top:0.4rem;">
+                        Todo lo del vendedor, más aprobar o rechazar los precios
+                        que quedan bajo el margen mínimo.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <span class="rol-chip rol-admin" style="width:fit-content;">admin</span>
+                    <p class="card-subtitle" style="margin-top:0.4rem;">
+                        Acceso total, incluida esta pantalla de gestión de
+                        usuarios.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Modal: alta / edición ── -->
+        <div id="modal-usuario" class="modal-fondo">
+            <div class="modal-card" role="dialog" aria-modal="true"
+                 aria-labelledby="modal-usuario-titulo">
+
+                <h3 id="modal-usuario-titulo" class="modal-titulo">Nuevo Usuario</h3>
+
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label class="form-label" for="usuario-nombre">Nombre</label>
+                        <input type="text" id="usuario-nombre" class="form-input"
+                               placeholder="Ej: María García">
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label class="form-label" for="usuario-email">Correo electrónico</label>
+                        <input type="email" id="usuario-email" class="form-input"
+                               placeholder="maria@empresa.com">
+                    </div>
+
+                    <!-- La contraseña solo se pide al crear: para cambiarla
+                         existe el endpoint /auth/cambiar-password -->
+                    <div class="form-group" id="grupo-password">
+                        <label class="form-label" for="usuario-password">Contraseña</label>
+                        <input type="password" id="usuario-password" class="form-input"
+                               placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="usuario-rol">Rol</label>
+                        <select id="usuario-rol" class="form-select">
+                            <option value="vendedor">vendedor</option>
+                            <option value="director">director</option>
+                            <option value="admin">admin</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-group-full check-row" id="grupo-activo">
+                        <input type="checkbox" id="usuario-activo" checked>
+                        <label for="usuario-activo">Usuario activo</label>
+                    </div>
+                </div>
+
+                <div class="modal-acciones">
+                    <button class="btn btn-secondary" onclick="cerrarModalUsuario()">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-primary" onclick="guardarUsuario()">
+                        Guardar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="config.js"></script>
+    <script src="js/usuarios.js"></script>
+
+</body>
+
+</html>
