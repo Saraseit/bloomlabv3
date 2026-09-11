@@ -1,6 +1,18 @@
 from app.database.connection import get_connection
 
 
+# ──────────────────────────────────────────────
+# Solo se registran pagos en eventos con estatus Confirmado.
+# Si se recibe un anticipo antes de confirmar, el flujo correcto es
+# confirmar el evento primero.
+#
+# Por eso la cobranza del cliente (total_facturado, total_cobrado y
+# deuda_total en clientes_service) se calcula únicamente sobre eventos
+# Confirmados: un evento en Cotización todavía no genera cuenta por
+# cobrar.
+# ──────────────────────────────────────────────
+
+
 def obtener_pagos_evento(evento_id):
 
     conn = get_connection()
