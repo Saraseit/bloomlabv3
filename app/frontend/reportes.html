@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* ═══════════════════════════════════════════
+           Reportes — estilos específicos
+           ═══════════════════════════════════════════ */
+
+        /* --- Etiqueta de sección --- */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: #4a7a5a;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            padding: 0.25rem 0;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #c5dfc9, transparent);
+        }
+
+        /* --- KPIs --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 1000px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border: 1.5px solid #e2ede5;
+            border-radius: 16px;
+            padding: 1.1rem 1.3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            box-shadow:
+                0 1px 3px rgba(45, 90, 61, 0.05),
+                0 2px 10px rgba(45, 90, 61, 0.07);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 4px 12px rgba(45, 90, 61, 0.1),
+                0 8px 24px rgba(45, 90, 61, 0.09);
+        }
+
+        .kpi-icon {
+            font-size: 1rem;
+            line-height: 1;
+            margin-bottom: 0.1rem;
+        }
+
+        .kpi-label {
+            font-size: 0.69rem;
+            font-weight: 600;
+            color: #7aaa82;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            line-height: 1.3;
+        }
+
+        .kpi-value {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #1a2e1e;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            display: flex;
+            align-items: baseline;
+            gap: 1px;
+        }
+
+        .kpi-currency {
+            font-size: 0.8em;
+            font-weight: 600;
+            opacity: 0.65;
+        }
+
+        /* ─ Variantes ─ */
+
+        .kpi-eventos { background: #f9fafb; border-color: #e2e8f0; }
+        .kpi-eventos .kpi-label { color: #9ca3af; }
+        .kpi-eventos .kpi-value { color: #374151; }
+
+        .kpi-ingresos {
+            background: linear-gradient(135deg, #1a2e1e 0%, #2b5c3c 100%);
+            border-color: transparent;
+        }
+        .kpi-ingresos .kpi-label { color: rgba(255, 255, 255, 0.72); }
+        .kpi-ingresos .kpi-value { color: #ffffff; }
+        .kpi-ingresos .kpi-currency { opacity: 0.8; }
+
+        .kpi-costos { background: #fff7ed; border-color: #fed7aa; }
+        .kpi-costos .kpi-label { color: #c2410c; }
+        .kpi-costos .kpi-value { color: #9a3412; }
+
+        .kpi-utilidad {
+            background: linear-gradient(135deg, #eaf6e1 0%, #d3eccc 100%);
+            border-color: #a7d3b0;
+        }
+        .kpi-utilidad .kpi-label { color: #2b5c3c; }
+        .kpi-utilidad .kpi-value { color: #1a3d28; }
+
+        .kpi-margen { background: #faf5ff; border-color: #e9d5ff; }
+        .kpi-margen .kpi-label { color: #7c3aed; }
+        .kpi-margen .kpi-value { color: #6d28d9; }
+
+        .kpi-cobrado { background: #ecfdf5; border-color: #6ee7b7; }
+        .kpi-cobrado .kpi-label { color: #047857; }
+        .kpi-cobrado .kpi-value { color: #065f46; }
+
+        /* La cartera alterna color según quede saldo por cobrar */
+        .kpi-cartera-pendiente { background: #fff1f2; border-color: #fecdd3; }
+        .kpi-cartera-pendiente .kpi-label { color: #e11d48; }
+        .kpi-cartera-pendiente .kpi-value { color: #be123c; }
+
+        .kpi-cartera-limpia { background: #ecfdf5; border-color: #6ee7b7; }
+        .kpi-cartera-limpia .kpi-label { color: #047857; }
+        .kpi-cartera-limpia .kpi-value { color: #065f46; }
+
+        /* --- Tablas de reportes --- */
+        .tabla-reporte {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .tabla-reporte thead th {
+            background: #f7fbf7;
+            color: #4a7a5a;
+            font-size: 0.71rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.85rem 1.25rem;
+            text-align: left;
+            border: none;
+            border-bottom: 1.5px solid #e2ede5;
+            white-space: nowrap;
+        }
+
+        .tabla-reporte tbody tr {
+            border-bottom: 1px solid #f0f5f0;
+            transition: background 0.15s ease;
+        }
+
+        .tabla-reporte tbody tr:last-child { border-bottom: none; }
+
+        .tabla-reporte tbody td {
+            padding: 0.8rem 1.25rem;
+            color: #374151;
+            vertical-align: middle;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .tabla-reporte tbody tr:not(.fila-perdida):not(.fila-buena):hover {
+            background: #f7fbf7;
+        }
+
+        /* Primera columna destacada */
+        .tabla-reporte tbody td:first-child {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        .col-num { text-align: right; }
+
+        .mes-mono {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: #4a7a5a;
+        }
+
+        /* Rentabilidad: fondo según el resultado */
+        .fila-perdida { background: #fff5f5; }
+        .fila-perdida:hover { background: #ffecec; }
+
+        .fila-buena { background: #f0fdf4; }
+        .fila-buena:hover { background: #e3fbea; }
+
+        .valor-negativo { color: #be123c; font-weight: 700; }
+        .valor-positivo { color: #2b5c3c; font-weight: 700; }
+        .deuda-pendiente { color: #be123c; font-weight: 600; }
+        .deuda-cero { color: #9ca3af; }
+
+        .enlace-evento {
+            color: #1a2e1e;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dotted #7aaa82;
+        }
+
+        .enlace-evento:hover {
+            color: #2b5c3c;
+            border-bottom-style: solid;
+        }
+
+        .tipo-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+        }
+
+        .sin-dato { color: #9ca3af; }
+
+        .tabla-vacia {
+            padding: 1.6rem 1.25rem;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.86rem;
+        }
+
+        .error-seccion {
+            padding: 1.2rem 1.25rem;
+            text-align: center;
+            color: #be123c;
+            background: #fff1f2;
+            border-radius: 12px;
+            font-size: 0.86rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body class="module-page">
+
+    <div class="module-wrapper">
+
+        <!-- ══════════════════════════════════
+             Encabezado
+             ══════════════════════════════════ -->
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
+
+            <div class="page-title-block">
+                <div class="page-icon">&#128202;</div>
+                <div>
+                    <h1 class="page-title">Reportes</h1>
+                    <p class="page-subtitle">Rentabilidad y desempeño del negocio</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- ══════════════════════════════════
+             1. KPIs globales
+             ══════════════════════════════════ -->
+        <div class="section-label">&#128200;&ensp;Resumen General</div>
+
+        <div id="error-resumen"></div>
+
+        <div class="kpi-grid">
+
+            <div class="kpi-card kpi-eventos">
+                <span class="kpi-icon">&#128197;</span>
+                <span class="kpi-label">Eventos Confirmados</span>
+                <span class="kpi-value"><span id="kpi-eventos">0</span></span>
+            </div>
+
+            <div class="kpi-card kpi-ingresos">
+                <span class="kpi-icon">&#128176;</span>
+                <span class="kpi-label">Ingresos Totales</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="kpi-ingresos">0.00</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-costos">
+                <span class="kpi-icon">&#128230;</span>
+                <span class="kpi-label">Costos Totales</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="kpi-costos">0.00</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-utilidad">
+                <span class="kpi-icon">&#9989;</span>
+                <span class="kpi-label">Utilidad Real</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="kpi-utilidad">0.00</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-margen">
+                <span class="kpi-icon">&#10024;</span>
+                <span class="kpi-label">Margen Promedio</span>
+                <span class="kpi-value"><span id="kpi-margen">0.00%</span></span>
+            </div>
+
+            <div class="kpi-card kpi-cobrado">
+                <span class="kpi-icon">&#129534;</span>
+                <span class="kpi-label">Total Cobrado</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="kpi-cobrado">0.00</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-cartera-limpia" id="kpi-card-cartera">
+                <span class="kpi-icon">&#9888;&#65039;</span>
+                <span class="kpi-label">Cartera Pendiente</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="kpi-cartera">0.00</span>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════
+             2. Ingresos por mes
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Ingresos por Mes</h2>
+                    <p class="card-subtitle">Eventos confirmados de los últimos 12 meses</p>
+                </div>
+            </div>
+
+            <div id="error-meses"></div>
+
+            <div class="table-scroll">
+                <table class="tabla-reporte" id="tabla-meses">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th class="col-num">Eventos</th>
+                            <th class="col-num">Ingresos</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════
+             3. Top clientes
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Top Clientes</h2>
+                    <p class="card-subtitle">Los diez con mayor facturación</p>
+                </div>
+            </div>
+
+            <div id="error-clientes"></div>
+
+            <div class="table-scroll">
+                <table class="tabla-reporte" id="tabla-top-clientes">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th class="col-num">Eventos</th>
+                            <th class="col-num">Facturado</th>
+                            <th class="col-num">Deuda</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════
+             4. Top arreglos
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Top Arreglos</h2>
+                    <p class="card-subtitle">Los más usados en eventos confirmados</p>
+                </div>
+            </div>
+
+            <div id="error-arreglos"></div>
+
+            <div class="table-scroll">
+                <table class="tabla-reporte" id="tabla-top-arreglos">
+                    <thead>
+                        <tr>
+                            <th>Arreglo</th>
+                            <th>Categoría</th>
+                            <th class="col-num">Veces usado</th>
+                            <th class="col-num">Unidades</th>
+                            <th class="col-num">Costo promedio</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════
+             5. Rentabilidad por evento
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Rentabilidad por Evento</h2>
+                    <p class="card-subtitle">
+                        Fondo rojo si la utilidad es negativa, verde si el margen supera 40%
+                    </p>
+                </div>
+            </div>
+
+            <div id="error-rentabilidad"></div>
+
+            <div class="table-scroll">
+                <table class="tabla-reporte" id="tabla-rentabilidad">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Evento</th>
+                            <th>Tipo</th>
+                            <th>Cliente</th>
+                            <th class="col-num">Precio venta</th>
+                            <th class="col-num">Costo final</th>
+                            <th class="col-num">Gastos reales</th>
+                            <th class="col-num">Utilidad</th>
+                            <th class="col-num">Margen %</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="config.js"></script>
+    <script src="js/reportes.js"></script>
+
+</body>
+
+</html>
