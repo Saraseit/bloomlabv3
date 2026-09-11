@@ -73,6 +73,21 @@
             gap: 0.4rem;
             align-items: center;
         }
+
+        /* Deuda: se destaca solo cuando hay saldo por cobrar */
+        #tabla-clientes tbody td:nth-child(6) {
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .deuda-pendiente {
+            color: #be123c;
+        }
+
+        .deuda-cero {
+            color: #9ca3af;
+            font-weight: 500;
+        }
     </style>
 </head>
 
@@ -117,6 +132,7 @@
                             <th>Teléfono</th>
                             <th>Email</th>
                             <th>Comisión</th>
+                            <th>Deuda</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -266,13 +282,14 @@
                     comCell.dataset.chipped = '1';
                 }
 
-                // Botones de acción (índice 5)
-                var actionCell = row.cells[5];
+                // Botones de acción (índice 6; el 5 es Deuda)
+                var actionCell = row.cells[6];
                 if (actionCell && !actionCell.dataset.styled) {
                     var btns = actionCell.querySelectorAll('button');
                     actionCell.classList.add('action-cell');
-                    if (btns[0]) btns[0].className = 'btn btn-secondary btn-sm'; // Editar
-                    if (btns[1]) btns[1].className = 'btn btn-danger btn-sm';    // Eliminar
+                    if (btns[0]) btns[0].className = 'btn btn-primary btn-sm';   // Ver detalle
+                    if (btns[1]) btns[1].className = 'btn btn-secondary btn-sm'; // Editar
+                    if (btns[2]) btns[2].className = 'btn btn-danger btn-sm';    // Eliminar
                     actionCell.dataset.styled = '1';
                 }
             }

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Cliente — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/module.css">
+    <style>
+        /* ═══════════════════════════════════════════
+           Detalle Cliente — estilos específicos
+           ═══════════════════════════════════════════ */
+
+        /* --- Ficha del cliente --- */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 1.25rem 1.5rem 0;
+            gap: 0;
+        }
+
+        @media (max-width: 640px) {
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            padding: 0.6rem 1rem 0.9rem 0;
+            border-bottom: 1px solid #f0f5f0;
+        }
+
+        .info-item-full {
+            grid-column: 1 / -1;
+            border-bottom: none;
+            padding-bottom: 1.4rem;
+        }
+
+        .info-label {
+            font-size: 0.69rem;
+            font-weight: 600;
+            color: #7aaa82;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .info-value {
+            font-size: 0.96rem;
+            color: #1a2e1e;
+            font-weight: 500;
+            min-height: 1.3em;
+        }
+
+        .contact-link {
+            color: #4a8c5c;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .contact-link:hover {
+            color: #2b5c3c;
+            text-decoration: underline;
+        }
+
+        .comision-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            width: fit-content;
+        }
+
+        /* --- Etiqueta de sección --- */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: #4a7a5a;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            padding: 0.25rem 0;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #c5dfc9, transparent);
+        }
+
+        /* --- Grid de KPIs --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .kpi-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border: 1.5px solid #e2ede5;
+            border-radius: 16px;
+            padding: 1.1rem 1.3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            box-shadow:
+                0 1px 3px rgba(45, 90, 61, 0.05),
+                0 2px 10px rgba(45, 90, 61, 0.07);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 4px 12px rgba(45, 90, 61, 0.1),
+                0 8px 24px rgba(45, 90, 61, 0.09);
+        }
+
+        .kpi-icon {
+            font-size: 1rem;
+            line-height: 1;
+            margin-bottom: 0.1rem;
+        }
+
+        .kpi-label {
+            font-size: 0.69rem;
+            font-weight: 600;
+            color: #7aaa82;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            line-height: 1.3;
+        }
+
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a2e1e;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            display: flex;
+            align-items: baseline;
+            gap: 1px;
+        }
+
+        .kpi-currency {
+            font-size: 0.8em;
+            font-weight: 600;
+            opacity: 0.65;
+        }
+
+        /* ─ Variantes ─ */
+
+        .kpi-eventos {
+            background: #f9fafb;
+            border-color: #e2e8f0;
+        }
+        .kpi-eventos .kpi-label { color: #9ca3af; }
+        .kpi-eventos .kpi-value { color: #374151; }
+
+        .kpi-confirmados {
+            background: linear-gradient(135deg, #eaf6e1 0%, #d3eccc 100%);
+            border-color: #a7d3b0;
+        }
+        .kpi-confirmados .kpi-label { color: #2b5c3c; }
+        .kpi-confirmados .kpi-value { color: #1a3d28; }
+
+        .kpi-facturado {
+            background: linear-gradient(135deg, #1a2e1e 0%, #2b5c3c 100%);
+            border-color: transparent;
+        }
+        .kpi-facturado .kpi-label { color: rgba(255, 255, 255, 0.72); }
+        .kpi-facturado .kpi-value { color: #ffffff; }
+        .kpi-facturado .kpi-currency { opacity: 0.8; }
+
+        .kpi-cobrado {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+        }
+        .kpi-cobrado .kpi-label { color: #047857; }
+        .kpi-cobrado .kpi-value { color: #065f46; }
+
+        /* La deuda alterna color según haya saldo o no */
+        .kpi-deuda-pendiente {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+        .kpi-deuda-pendiente .kpi-label { color: #e11d48; }
+        .kpi-deuda-pendiente .kpi-value { color: #be123c; }
+
+        .kpi-deuda-saldada {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+        }
+        .kpi-deuda-saldada .kpi-label { color: #047857; }
+        .kpi-deuda-saldada .kpi-value { color: #065f46; }
+
+        /* --- Historial de eventos --- */
+        #tabla-eventos-cliente {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        #tabla-eventos-cliente thead th {
+            background: #f7fbf7;
+            color: #4a7a5a;
+            font-size: 0.71rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.85rem 1.25rem;
+            text-align: left;
+            border: none;
+            border-bottom: 1.5px solid #e2ede5;
+            white-space: nowrap;
+        }
+
+        #tabla-eventos-cliente tbody tr {
+            border-bottom: 1px solid #f0f5f0;
+            transition: background 0.15s ease;
+        }
+
+        #tabla-eventos-cliente tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        #tabla-eventos-cliente tbody td {
+            padding: 0.875rem 1.25rem;
+            color: #374151;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* Fecha en monoespaciada */
+        #tabla-eventos-cliente tbody td:nth-child(1) {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        /* Nombre del evento */
+        #tabla-eventos-cliente tbody td:nth-child(2) {
+            font-weight: 600;
+            color: #1a2e1e;
+        }
+
+        #tabla-eventos-cliente tbody td:nth-child(5),
+        #tabla-eventos-cliente tbody td:nth-child(6),
+        #tabla-eventos-cliente tbody td:nth-child(7) {
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        /* Fondo según el saldo del evento */
+        .fila-con-saldo {
+            background: #fff5f5;
+        }
+
+        .fila-con-saldo:hover {
+            background: #ffecec;
+        }
+
+        .fila-liquidada {
+            background: #f0fdf4;
+        }
+
+        .fila-liquidada:hover {
+            background: #e3fbea;
+        }
+
+        #tabla-eventos-cliente tbody tr:not(.fila-con-saldo):not(.fila-liquidada):hover {
+            background: #f7fbf7;
+        }
+
+        .saldo-pendiente {
+            color: #be123c;
+        }
+
+        .saldo-cero {
+            color: #047857;
+        }
+
+        .tipo-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+            white-space: nowrap;
+        }
+
+        .sin-dato {
+            color: #9ca3af;
+        }
+
+        .tabla-vacia {
+            padding: 1.6rem 1.25rem;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.86rem;
+        }
+    </style>
+</head>
+
+<body class="module-page">
+
+    <div class="module-wrapper">
+
+        <!-- ══════════════════════════════════
+             Encabezado
+             ══════════════════════════════════ -->
+        <header class="module-header">
+            <a href="clientes.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Regresar a Clientes
+            </a>
+
+            <div class="page-title-block">
+                <div class="page-icon">&#128100;</div>
+                <div>
+                    <h1 class="page-title" id="nombre-cliente">Cargando...</h1>
+                    <p class="page-subtitle">Ficha comercial &middot; Historial de eventos y cobranza</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- ══════════════════════════════════
+             Datos de contacto
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Datos del Cliente</h2>
+                    <p class="card-subtitle">Contacto y comisión acordada</p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Empresa</span>
+                    <span class="info-value" id="empresa">—</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Teléfono</span>
+                    <span class="info-value" id="telefono">—</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="email">—</span>
+                </div>
+
+                <div class="info-item info-item-full">
+                    <span class="info-label">Comisión</span>
+                    <span class="info-value" id="comision">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════
+             Resumen comercial
+             ══════════════════════════════════ -->
+        <div class="section-label">&#128202;&ensp;Resumen Comercial</div>
+
+        <div class="kpi-grid">
+
+            <div class="kpi-card kpi-eventos">
+                <span class="kpi-icon">&#128197;</span>
+                <span class="kpi-label">Total Eventos</span>
+                <span class="kpi-value">
+                    <span id="total-eventos">0</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-confirmados">
+                <span class="kpi-icon">&#9989;</span>
+                <span class="kpi-label">Eventos Confirmados</span>
+                <span class="kpi-value">
+                    <span id="eventos-confirmados">0</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-facturado">
+                <span class="kpi-icon">&#129534;</span>
+                <span class="kpi-label">Total Facturado</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="total-facturado">0.00</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-cobrado">
+                <span class="kpi-icon">&#128176;</span>
+                <span class="kpi-label">Total Cobrado</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="total-cobrado">0.00</span>
+                </span>
+            </div>
+
+            <div class="kpi-card kpi-deuda-saldada" id="kpi-deuda">
+                <span class="kpi-icon">&#9888;&#65039;</span>
+                <span class="kpi-label">Deuda Total</span>
+                <span class="kpi-value">
+                    <span class="kpi-currency">$</span><span id="deuda-total">0.00</span>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════
+             Historial de eventos
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Historial de Eventos</h2>
+                    <p class="card-subtitle">Eventos del cliente con su estado de cobranza</p>
+                </div>
+            </div>
+
+            <div class="table-scroll">
+                <table id="tabla-eventos-cliente">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Estatus</th>
+                            <th>Precio Acordado</th>
+                            <th>Pagado</th>
+                            <th>Saldo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="config.js"></script>
+    <script src="js/detalle_cliente.js"></script>
+
+</body>
+
+</html>

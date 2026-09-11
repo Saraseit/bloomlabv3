@@ -12,14 +12,26 @@ async function cargarClientes() {
 
         const fila = document.createElement("tr");
 
+        // deuda_total viene calculada por el API en la misma consulta
+        const deuda = cliente.deuda_total ?? 0;
+
+        const celdaDeuda = deuda > 0
+            ? `<span class="deuda-pendiente">$${fmt(deuda)}</span>`
+            : `<span class="deuda-cero">$${fmt(0)}</span>`;
+
         fila.innerHTML = `
             <td>${cliente.nombre}</td>
             <td>${cliente.empresa ?? ""}</td>
             <td>${cliente.telefono ?? ""}</td>
             <td>${cliente.email ?? ""}</td>
             <td>${cliente.comision_porcentaje ?? 0}</td>
+            <td>${celdaDeuda}</td>
 
             <td>
+                <button onclick='verDetalleCliente(${cliente.id})'>
+                    Ver detalle
+                </button>
+
                 <button onclick='editarCliente(${JSON.stringify(cliente)})'>
                     Editar
                 </button>
@@ -35,6 +47,10 @@ async function cargarClientes() {
 }
 
 cargarClientes();
+
+function verDetalleCliente(id) {
+    window.location.href = `detalle_cliente.html?id=${id}`;
+}
 
 async function crearCliente() {
 
