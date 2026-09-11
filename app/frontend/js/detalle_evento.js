@@ -83,6 +83,29 @@ async function cargarEvento() {
     evento.precio_venta
     );
 
+    // Panel de autorización: solo para director y admin, y solo
+    // mientras el evento esté esperando la decisión.
+    const panelDir = document.getElementById('panel-director');
+    const u = obtenerUsuario();
+
+    if (evento.estatus === 'Pendiente Autorización' &&
+        u && (u.rol === 'director' || u.rol === 'admin')) {
+
+        const precio = evento.precio_venta ?? 0;
+        const margen = precio > 0
+            ? (1 - evento.costo_final / precio) * 100
+            : 0;
+
+        document.getElementById('aut-costo-final').textContent =
+            fmt(evento.costo_final);
+        document.getElementById('aut-precio-venta').textContent = fmt(precio);
+        document.getElementById('aut-margen').textContent = margen.toFixed(2);
+
+        panelDir.style.display = 'block';
+    } else {
+        panelDir.style.display = 'none';
+    }
+
     // Pagos y gastos reales solo existen para un evento ya contratado
     if (evento.estatus === 'Confirmado') {
         mostrarSeccionesContrato();
@@ -368,7 +391,84 @@ async function guardarPrecioVenta() {
         return;
     }
 
-    alert(`Precio $${fmt(precio)} guardado correctamente`);
+    const resultado = await respuesta.json();
+
+    if (resultado.requiere_autorizacion) {
+        mostrarBanner(
+            `Precio guardado. Margen ${resultado.margen}% — por debajo ` +
+            `del mínimo. El evento queda Pendiente de Autorización.`,
+            'warn'
+        );
+    } else {
+        mostrarBanner(
+            `Precio $${fmt(precio)} guardado. ` +
+            `Margen ${resultado.margen}%.`,
+            'ok'
+        );
+    }
+
+    // El estatus pudo cambiar: se relee el evento para que la pantalla
+    // refleje el nuevo estado y el panel del director si aplica.
+    cargarEvento();
+}
+
+
+// ── Autorización del director ──────────────────
+
+function mostrarBanner(mensaje, tipo) {
+
+    const banner = document.getElementById('banner-precio');
+    const icono = document.getElementById('banner-precio-icon');
+
+    document.getElementById('banner-precio-texto').textContent = mensaje;
+
+    banner.classList.remove('banner-warn', 'banner-ok', 'banner-error');
+    banner.classList.add(`banner-${tipo}`);
+
+    icono.innerHTML = tipo === 'ok' ? '&#9989;' : '&#9888;&#65039;';
+
+    banner.style.display = 'flex';
+}
+
+async function decidirAutorizacion(decision) {
+
+    const nota = document.getElementById('aut-nota').value.trim();
+
+    if (decision === 'rechazar' && !nota) {
+        alert('Captura la nota con el motivo del rechazo');
+        return;
+    }
+
+    const texto = decision === 'aprobar'
+        ? '¿Autorizar este precio por debajo del margen mínimo?'
+        : '¿Rechazar el precio? Se borrará el precio acordado y el evento ' +
+          'volverá a Cotización.';
+
+    if (!confirm(texto)) return;
+
+    const respuesta = await fetchAuth(
+        `${API_URL}/eventos/${eventoId}/autorizacion`,
+        {
+            method: 'PUT',
+            body: JSON.stringify({ decision, nota })
+        }
+    );
+
+    if (!respuesta.ok) {
+        alert('Error al registrar la decisión');
+        return;
+    }
+
+    const resultado = await respuesta.json();
+
+    document.getElementById('aut-nota').value = '';
+
+    mostrarBanner(
+        resultado.mensaje,
+        decision === 'aprobar' ? 'ok' : 'error'
+    );
+
+    cargarEvento();
 }
 
 async function generarPDF(tipo) {
