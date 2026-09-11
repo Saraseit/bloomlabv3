@@ -182,7 +182,15 @@ def cambiar_password(usuario_id: int, data):
             "error": "Usuario no encontrado"
         }
 
-    if not verify_password(data.password_actual, fila[0]):
+    # passlib lanza si el hash guardado no es legible (por ejemplo, uno
+    # escrito por otra versión de bcrypt). Sin este try, ese caso subiría
+    # como 500; así cualquier problema de hash termina en un 400 claro.
+    try:
+        valida = verify_password(data.password_actual, fila[0])
+    except Exception:
+        valida = False
+
+    if not valida:
 
         cur.close()
         conn.close()

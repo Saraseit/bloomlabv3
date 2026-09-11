@@ -126,6 +126,7 @@ function abrirModalUsuario() {
     // Al crear se pide contraseña; el estado activo no aplica todavía
     document.getElementById("grupo-password").style.display = "";
     document.getElementById("grupo-activo").style.display = "none";
+    document.getElementById("seccion-password").style.display = "none";
 
     document.getElementById("modal-usuario").style.display = "flex";
     document.getElementById("usuario-nombre").focus();
@@ -146,10 +147,22 @@ function editarUsuario(usuarioId) {
     document.getElementById("usuario-rol").value = u.rol ?? "vendedor";
     document.getElementById("usuario-activo").checked = Boolean(u.activo);
 
-    // La contraseña se cambia por separado, no desde aquí
+    // El campo de alta no aplica al editar
     document.getElementById("usuario-password").value = "";
     document.getElementById("grupo-password").style.display = "none";
     document.getElementById("grupo-activo").style.display = "";
+
+    // El cambio de contraseña solo se ofrece sobre tu propio usuario.
+    // POST /auth/cambiar-password actúa sobre el dueño del token, así que
+    // usarlo mientras editas a otra persona cambiaría tu propia
+    // contraseña sin avisar. Para reiniciar la de alguien más hace falta
+    // un endpoint de admin que todavía no existe.
+    const esTuUsuario = u.id === usuario.id;
+
+    document.getElementById("edit-password-actual").value = "";
+    document.getElementById("edit-password-nuevo").value = "";
+    document.getElementById("seccion-password").style.display =
+        esTuUsuario ? "block" : "none";
 
     document.getElementById("modal-usuario").style.display = "flex";
     document.getElementById("usuario-nombre").focus();
@@ -193,6 +206,11 @@ async function guardarUsuario() {
             alert(mensajeError(data, "Error al actualizar el usuario"));
             return;
         }
+
+        // El cambio de contraseña es opcional: solo se envía cuando los
+        // dos campos vienen llenos. El modal queda abierto si falla, para
+        // poder corregir sin perder lo capturado.
+        if (!await cambiarPasswordSiAplica()) return;
 
     } else {
 
@@ -240,6 +258,45 @@ async function desactivarUsuario(usuarioId) {
 
     cargarUsuarios();
 }
+
+// Devuelve true si no había nada que cambiar o si el cambio salió bien.
+// Devuelve false —dejando el modal abierto— cuando el cambio falló.
+async function cambiarPasswordSiAplica() {
+
+    const seccion = document.getElementById("seccion-password");
+
+    // Solo aplica sobre tu propio usuario
+    if (seccion.style.display === "none") return true;
+
+    const actual = document.getElementById("edit-password-actual").value;
+    const nuevo = document.getElementById("edit-password-nuevo").value;
+
+    // Con cualquiera de los dos vacío no se toca la contraseña
+    if (!actual || !nuevo) return true;
+
+    if (nuevo.length < 8) {
+        alert("La contraseña nueva debe tener al menos 8 caracteres");
+        return false;
+    }
+
+    const respuesta = await fetchAuth(`${API_URL}/auth/cambiar-password`, {
+        method: "POST",
+        body: JSON.stringify({
+            password_actual: actual,
+            password_nuevo: nuevo
+        })
+    });
+
+    if (!respuesta.ok) {
+        const data = await respuesta.json();
+        alert(mensajeError(data, "Error al cambiar la contraseña"));
+        return false;
+    }
+
+    alert("Contraseña actualizada");
+    return true;
+}
+
 
 // El backend manda detail como texto en los errores de negocio, pero
 // como lista en los 422 de validación de pydantic.

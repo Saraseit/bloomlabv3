@@ -207,6 +207,34 @@
             color: #374151;
             cursor: pointer;
         }
+
+        /* Separador de sección dentro del modal */
+        .form-section-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1rem 0 0.5rem;
+            color: #7aaa82;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .form-section-divider::before,
+        .form-section-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .nota-password {
+            margin: 0.1rem 0 0;
+            font-size: 0.76rem;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
     </style>
 </head>
 
@@ -342,6 +370,45 @@
                     <div class="form-group form-group-full check-row" id="grupo-activo">
                         <input type="checkbox" id="usuario-activo" checked>
                         <label for="usuario-activo">Usuario activo</label>
+                    </div>
+
+                    <!-- Cambio de contraseña, solo al editar tu propio
+                         usuario: el endpoint /auth/cambiar-password actúa
+                         sobre el dueño del token, no sobre el usuario de
+                         la fila. Ver la nota en usuarios.js. -->
+                    <div class="form-group form-group-full" id="seccion-password"
+                         style="display:none;">
+
+                        <div class="form-section-divider">
+                            <span>Cambiar contraseña (opcional)</span>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="edit-password-actual">
+                                    Contraseña actual
+                                </label>
+                                <input type="password" id="edit-password-actual"
+                                       class="form-input"
+                                       placeholder="Dejar vacío para no cambiar"
+                                       autocomplete="current-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="edit-password-nuevo">
+                                    Contraseña nueva
+                                </label>
+                                <input type="password" id="edit-password-nuevo"
+                                       class="form-input"
+                                       placeholder="Mínimo 8 caracteres"
+                                       autocomplete="new-password">
+                            </div>
+                        </div>
+
+                        <p class="nota-password">
+                            Llena los dos campos para cambiarla. Si los dejas
+                            vacíos solo se guardan nombre, correo y rol.
+                        </p>
                     </div>
                 </div>
 

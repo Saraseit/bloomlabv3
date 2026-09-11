@@ -5,10 +5,13 @@ if (!usuario) throw new Error("Sin sesión");
 document.getElementById("nombre-usuario").textContent =
     usuario.nombre;
 
-// El acceso a la gestión de usuarios solo existe para admin
+// El acceso a la gestión de usuarios solo existe para admin.
+// La tarjeta arranca oculta por la regla #enlace-usuarios{display:none},
+// así que hay que fijar el display de .menu-card: con style.display=""
+// solo se borra el estilo inline y el elemento vuelve a quedar oculto.
 if (usuario.rol === "admin") {
     const enlace = document.getElementById("enlace-usuarios");
-    if (enlace) enlace.style.display = "";
+    if (enlace) enlace.style.display = "flex";
 }
 
 const MESES = [

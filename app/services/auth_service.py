@@ -18,7 +18,14 @@ def login(email: str, password: str) -> dict:
 
     fila = cur.fetchone()
 
-    if not fila or not fila[6] or not verify_password(password, fila[4]):
+    # Igual que en cambiar_password: un hash ilegible se trata como
+    # credencial incorrecta, no como error del servidor.
+    try:
+        credencial_valida = bool(fila) and verify_password(password, fila[4])
+    except Exception:
+        credencial_valida = False
+
+    if not fila or not fila[6] or not credencial_valida:
         cur.close()
         conn.close()
         # Mismo mensaje para usuario inexistente y password incorrecta
