@@ -1,3 +1,7 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 const parametros = new URLSearchParams(window.location.search);
 const eventoId = parametros.get("id");
 
@@ -16,7 +20,7 @@ let _precioVenta    = 0;
 
 async function cargarEvento() {
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}`
     );
 
@@ -91,7 +95,7 @@ async function cargarEvento() {
 
 async function cargarArreglos() {
 
-    const respuesta = await fetch(`${API_URL}/arreglos`);
+    const respuesta = await fetchAuth(`${API_URL}/arreglos`);
 
     const arreglos = await respuesta.json();
 
@@ -128,7 +132,7 @@ async function agregarArreglo() {
         return;
     }
 
-    const respuesta = await fetch(`${API_URL}/evento-arreglos`, {
+    const respuesta = await fetchAuth(`${API_URL}/evento-arreglos`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -160,7 +164,7 @@ async function editarArreglo(arreglo) {
     const observaciones =
         prompt("Observaciones", arreglo.observaciones ?? "");
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/evento-arreglos/${arreglo.id}`,
         {
             method: "PUT",
@@ -187,7 +191,7 @@ async function eliminarArreglo(id) {
     const confirmar = confirm("¿Eliminar arreglo?");
     if (!confirmar) return;
 
-    await fetch(
+    await fetchAuth(
         `${API_URL}/evento-arreglos/${id}`,
         {
             method: "DELETE"
@@ -217,7 +221,7 @@ async function guardarGastos() {
     const costo_flete   = parseFloat(document.getElementById('input-flete').value)   || 0;
     const costo_montaje = parseFloat(document.getElementById('input-montaje').value) || 0;
 
-    const respuesta = await fetch(`${API_URL}/eventos/${eventoId}/gastos`, {
+    const respuesta = await fetchAuth(`${API_URL}/eventos/${eventoId}/gastos`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ costo_flete, costo_montaje })
@@ -353,7 +357,7 @@ async function guardarPrecioVenta() {
         if (!confirmar) return;
     }
 
-    const respuesta = await fetch(`${API_URL}/eventos/${eventoId}/precio-venta`, {
+    const respuesta = await fetchAuth(`${API_URL}/eventos/${eventoId}/precio-venta`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ precio_venta: precio })
@@ -367,8 +371,35 @@ async function guardarPrecioVenta() {
     alert(`Precio $${fmt(precio)} guardado correctamente`);
 }
 
-function generarPDF(tipo) {
-    window.open(`${API_URL}/eventos/${eventoId}/pdf?tipo=${tipo}`, '_blank');
+async function generarPDF(tipo) {
+
+    // window.open no puede mandar el header Authorization, y el endpoint
+    // del PDF ahora exige token. Se abre la pestaña primero —de forma
+    // sincrónica, para que el navegador no la bloquee como popup— y se le
+    // carga el PDF descargado con fetchAuth.
+    const ventana = window.open('', '_blank');
+
+    const respuesta = await fetchAuth(
+        `${API_URL}/eventos/${eventoId}/pdf?tipo=${tipo}`
+    );
+
+    if (!respuesta.ok) {
+        if (ventana) ventana.close();
+        alert('Error al generar el PDF');
+        return;
+    }
+
+    const blob = await respuesta.blob();
+    const url = URL.createObjectURL(blob);
+
+    if (ventana) {
+        ventana.location = url;
+    } else {
+        // La pestaña quedó bloqueada: al menos no se pierde el archivo
+        window.location.href = url;
+    }
+
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 // ══════════════════════════════════════════════
@@ -424,7 +455,7 @@ function escapar(texto) {
 
 async function cargarPagos() {
 
-    const respuesta = await fetch(`${API_URL}/eventos/${eventoId}/pagos`);
+    const respuesta = await fetchAuth(`${API_URL}/eventos/${eventoId}/pagos`);
     _pagos = await respuesta.json();
 
     const tbody = document.querySelector("#tabla-pagos tbody");
@@ -473,7 +504,7 @@ async function cargarPagos() {
 
 async function cargarResumenPagos() {
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}/pagos/resumen`
     );
 
@@ -571,7 +602,7 @@ async function guardarPago() {
         ? `${API_URL}/eventos/${eventoId}/pagos/${_pagoEditando.id}`
         : `${API_URL}/eventos/${eventoId}/pagos`;
 
-    const respuesta = await fetch(url, {
+    const respuesta = await fetchAuth(url, {
         method: _pagoEditando ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cuerpo)
@@ -594,7 +625,7 @@ async function eliminarPago(pagoId) {
     const confirmar = confirm('¿Eliminar este pago?');
     if (!confirmar) return;
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}/pagos/${pagoId}`,
         { method: 'DELETE' }
     );
@@ -612,7 +643,7 @@ async function eliminarPago(pagoId) {
 
 async function cargarGastosReales() {
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}/gastos-reales`
     );
 
@@ -669,7 +700,7 @@ async function cargarGastosReales() {
 
 async function cargarResumenGastosReales() {
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}/gastos-reales/resumen`
     );
 
@@ -781,7 +812,7 @@ async function guardarGastoReal() {
         ? `${API_URL}/eventos/${eventoId}/gastos-reales/${_gastoEditando.id}`
         : `${API_URL}/eventos/${eventoId}/gastos-reales`;
 
-    const respuesta = await fetch(url, {
+    const respuesta = await fetchAuth(url, {
         method: _gastoEditando ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cuerpo)
@@ -801,7 +832,7 @@ async function eliminarGastoReal(gastoId) {
     const confirmar = confirm('¿Eliminar este gasto?');
     if (!confirmar) return;
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}/gastos-reales/${gastoId}`,
         { method: 'DELETE' }
     );

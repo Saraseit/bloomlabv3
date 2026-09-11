@@ -1,3 +1,7 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 const parametros = new URLSearchParams(window.location.search);
 const arregloId = parametros.get("id");
 
@@ -15,7 +19,7 @@ let _detalleEditando = null;
 
 async function cargarDetalle() {
 
-    const respuesta = await fetch(`${API_URL}/arreglos/${arregloId}`);
+    const respuesta = await fetchAuth(`${API_URL}/arreglos/${arregloId}`);
     const arreglo = await respuesta.json();
 
     document.getElementById("nombre-arreglo").textContent = arreglo.nombre;
@@ -74,7 +78,7 @@ cargarInsumos();
 
 async function cargarInsumos() {
 
-    const respuesta = await fetch(`${API_URL}/insumos`);
+    const respuesta = await fetchAuth(`${API_URL}/insumos`);
     const insumos = await respuesta.json();
 
     const select = document.getElementById("insumo-select");
@@ -114,7 +118,7 @@ async function agregarInsumo() {
     const costo_real = parseFloat(document.getElementById("costo-real").value);
     const observaciones = document.getElementById("observaciones").value;
 
-    const respuesta = await fetch(`${API_URL}/arreglo-detalle`, {
+    const respuesta = await fetchAuth(`${API_URL}/arreglo-detalle`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -140,7 +144,7 @@ async function eliminarDetalle(id) {
     const confirmar = confirm("¿Eliminar insumo?");
     if (!confirmar) return;
 
-    await fetch(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
+    await fetchAuth(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
 
     cargarDetalle();
 
@@ -202,7 +206,7 @@ async function guardarDetalleEditado() {
     const observaciones =
         document.getElementById("edit-observaciones").value;
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/arreglo-detalle/${_detalleEditando.id}`,
         {
             method: "PUT",
@@ -266,10 +270,10 @@ function abrirWidgetImagenDetalle() {
 }
 
 async function guardarImagenArreglo(url) {
-    const respuesta = await fetch(`${API_URL}/arreglos/${arregloId}`);
+    const respuesta = await fetchAuth(`${API_URL}/arreglos/${arregloId}`);
     const arreglo   = await respuesta.json();
 
-    const update = await fetch(`${API_URL}/arreglos/${arregloId}`, {
+    const update = await fetchAuth(`${API_URL}/arreglos/${arregloId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

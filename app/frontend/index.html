@@ -10,11 +10,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/home.css">
+    <style>
+        /* Chip de sesión — mismos verdes del sistema */
+        .user-chip {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid #c5dfc9;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(26, 46, 30, 0.08);
+        }
+
+        .user-chip span {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #1a2e1e;
+            white-space: nowrap;
+        }
+
+        .user-chip button {
+            padding: 0.3rem 0.75rem;
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ffffff;
+            background: #2b5c3c;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .user-chip button:hover {
+            background: #1a2e1e;
+        }
+
+        @media (max-width: 560px) {
+            .user-chip {
+                position: static;
+                margin: 0 auto 1.25rem;
+                width: fit-content;
+            }
+        }
+
+        /* La tarjeta de usuarios solo se muestra a un admin (index.js) */
+        #enlace-usuarios {
+            display: none;
+        }
+    </style>
 </head>
 
 <body class="home-page">
 
-    <div class="home-wrapper">
+    <div class="home-wrapper" style="position: relative;">
+
+        <div class="user-chip">
+            <span id="nombre-usuario"></span>
+            <button onclick="cerrarSesion()">Salir</button>
+        </div>
 
         <header class="home-header">
             <div class="logo-area">
@@ -66,6 +124,15 @@
                     <span class="card-arrow">&#8594;</span>
                 </a>
 
+                <a href="usuarios.html" class="menu-card" id="enlace-usuarios">
+                    <div class="card-icon">&#128100;</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Usuarios</h3>
+                        <p class="card-desc">Gestiona accesos y roles del equipo</p>
+                    </div>
+                    <span class="card-arrow">&#8594;</span>
+                </a>
+
             </nav>
 
             <!-- ── Calendario de eventos ── -->
@@ -105,6 +172,7 @@
 
     </div>
 
+    <script src="auth.js"></script>
     <script src="config.js"></script>
     <script src="js/index.js"></script>
 

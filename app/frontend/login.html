@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════
+           Login — CSS propio de la pantalla.
+           No depende de estilos.css ni module.css:
+           es la única página fuera del layout de módulos.
+           ═══════════════════════════════════════════ */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+                         'Segoe UI', sans-serif;
+            background: #1a2e1e;
+            background-image:
+                radial-gradient(circle at 20% 15%,
+                    rgba(74, 140, 92, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%,
+                    rgba(43, 92, 60, 0.35) 0%, transparent 50%);
+            color: #1a2e1e;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem 2.25rem 2.25rem;
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.12),
+                0 20px 60px rgba(0, 0, 0, 0.28);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a2e1e;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .brand-flor {
+            color: #4a8c5c;
+            margin-right: 0.15em;
+        }
+
+        .brand-sub {
+            margin-top: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: #7aaa82;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .form-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #4a7a5a;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            font-family: inherit;
+            font-size: 0.94rem;
+            color: #1a2e1e;
+            background: #f7fbf7;
+            border: 1.5px solid #e2ede5;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .form-input:focus {
+            border-color: #4a8c5c;
+            background: #ffffff;
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.8rem 1rem;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #ffffff;
+            background: #2b5c3c;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #1a2e1e;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            background: #7aaa82;
+            cursor: not-allowed;
+        }
+
+        .error-msg {
+            min-height: 1.2rem;
+            margin-top: 0.9rem;
+            font-size: 0.83rem;
+            font-weight: 500;
+            color: #be123c;
+            text-align: center;
+        }
+
+        .pie {
+            margin-top: 1.75rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #f0f5f0;
+            font-size: 0.72rem;
+            color: #9ca3af;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="login-card">
+
+        <div class="brand">
+            <div class="brand-logo">
+                <span class="brand-flor">&#10047;</span>BloomLab
+            </div>
+            <div class="brand-sub">Sistema de Gestión Floral</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="email">Correo electrónico</label>
+            <input
+                type="email"
+                id="email"
+                class="form-input"
+                placeholder="tu@empresa.com"
+                autocomplete="username"
+                autofocus
+            >
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password">Contraseña</label>
+            <input
+                type="password"
+                id="password"
+                class="form-input"
+                placeholder="••••••••"
+                autocomplete="current-password"
+            >
+        </div>
+
+        <button class="btn" id="btn-login" onclick="iniciarSesion()">
+            Iniciar sesión
+        </button>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="pie">Acceso restringido a personal autorizado</div>
+
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="config.js"></script>
+    <script src="js/login.js"></script>
+
+</body>
+
+</html>

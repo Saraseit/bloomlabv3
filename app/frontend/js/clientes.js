@@ -1,6 +1,10 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 async function cargarClientes() {
 
-    const respuesta = await fetch(`${API_URL}/clientes`);
+    const respuesta = await fetchAuth(`${API_URL}/clientes`);
 
     const clientes = await respuesta.json();
 
@@ -63,7 +67,7 @@ async function crearCliente() {
         document.getElementById("comision").value || 0
     );
 
-    const respuesta = await fetch(`${API_URL}/clientes`, {
+    const respuesta = await fetchAuth(`${API_URL}/clientes`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -98,7 +102,7 @@ async function editarCliente(cliente) {
         prompt("Comisión %", cliente.comision_porcentaje ?? 0)
     );
 
-    const respuesta = await fetch(`${API_URL}/clientes/${cliente.id}`, {
+    const respuesta = await fetchAuth(`${API_URL}/clientes/${cliente.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -126,7 +130,7 @@ async function eliminarCliente(id) {
     const confirmar = confirm("¿Eliminar cliente?");
     if (!confirmar) return;
 
-    await fetch(`${API_URL}/clientes/${id}`, {
+    await fetchAuth(`${API_URL}/clientes/${id}`, {
         method: "DELETE"
     });
 

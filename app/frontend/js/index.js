@@ -1,3 +1,16 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
+document.getElementById("nombre-usuario").textContent =
+    usuario.nombre;
+
+// El acceso a la gestión de usuarios solo existe para admin
+if (usuario.rol === "admin") {
+    const enlace = document.getElementById("enlace-usuarios");
+    if (enlace) enlace.style.display = "";
+}
+
 const MESES = [
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
@@ -17,7 +30,7 @@ let anioActual = new Date().getFullYear();
 let todosLosEventos = [];
 
 async function cargarEventos() {
-    const respuesta = await fetch(`${API_URL}/eventos`);
+    const respuesta = await fetchAuth(`${API_URL}/eventos`);
     const data      = await respuesta.json();
     todosLosEventos = data;
     renderCalendario();

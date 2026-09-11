@@ -1,3 +1,7 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 const params = new URLSearchParams(window.location.search);
 const clienteId = params.get('id');
 
@@ -24,7 +28,7 @@ function claseEstatus(estatus) {
 
 async function cargarCliente() {
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/clientes/${clienteId}/detalle`
     );
 

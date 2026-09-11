@@ -1,9 +1,13 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 async function eliminarInsumo(id) {
 
     const confirmar = confirm("¿Eliminar este insumo?");
     if (!confirmar) return;
 
-    await fetch(`${API_URL}/insumos/${id}`, {
+    await fetchAuth(`${API_URL}/insumos/${id}`, {
         method: "DELETE"
     });
 
@@ -84,7 +88,7 @@ async function guardarInsumoEditado() {
         return;
     }
 
-    const respuesta = await fetch(`${API_URL}/insumos/${_insumoEditando.id}`, {
+    const respuesta = await fetchAuth(`${API_URL}/insumos/${_insumoEditando.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -146,7 +150,7 @@ async function nuevoInsumo() {
         document.getElementById("porcentaje-merma").value
     ) || 0;
 
-    const respuesta = await fetch(`${API_URL}/insumos`, {
+    const respuesta = await fetchAuth(`${API_URL}/insumos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -176,7 +180,7 @@ async function nuevoInsumo() {
 
 async function cargarInsumos() {
 
-    const respuesta = await fetch(`${API_URL}/insumos`);
+    const respuesta = await fetchAuth(`${API_URL}/insumos`);
     const insumos = await respuesta.json();
 
     const tbody = document.querySelector("#tabla-insumos tbody");
@@ -236,7 +240,7 @@ function poblarSelectCategorias(select, seleccionada) {
 
 async function cargarCategorias() {
 
-    const respuesta = await fetch(`${API_URL}/categorias`);
+    const respuesta = await fetchAuth(`${API_URL}/categorias`);
     _categorias = await respuesta.json();
 
     poblarSelectCategorias(

@@ -1,3 +1,7 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 const CLOUDINARY_CLOUD_NAME    = "dpft5hywe";
 const CLOUDINARY_UPLOAD_PRESET = "ml_default";
 
@@ -26,7 +30,7 @@ function abrirWidgetImagen() {
 
 async function cargarArreglos() {
 
-    const respuesta = await fetch(
+    const respuesta = await fetchAuth(
         `${API_URL}/arreglos`
     );
 
@@ -90,7 +94,7 @@ async function crearArreglo() {
     const descripcion = document.getElementById("descripcion-arreglo").value;
     const imagen_url  = document.getElementById("imagen-url-arreglo").value;  // ← NUEVO
 
-    const respuesta = await fetch(`${API_URL}/arreglos`, {
+    const respuesta = await fetchAuth(`${API_URL}/arreglos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, categoria, descripcion, imagen_url })  // ← NUEVO
@@ -116,7 +120,7 @@ async function editarArreglo(id, nombreActual, categoriaActual, descripcionActua
     const categoria = prompt("Categoría", categoriaActual);
     const descripcion = prompt("Descripción", descripcionActual);
 
-    const respuesta = await fetch(`${API_URL}/arreglos/${id}`, {
+    const respuesta = await fetchAuth(`${API_URL}/arreglos/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -141,7 +145,7 @@ async function eliminarArreglo(id) {
     const confirmar = confirm("¿Eliminar arreglo?");
     if (!confirmar) return;
 
-    const respuesta = await fetch(`${API_URL}/arreglos/${id}`, {
+    const respuesta = await fetchAuth(`${API_URL}/arreglos/${id}`, {
         method: "DELETE"
     });
 

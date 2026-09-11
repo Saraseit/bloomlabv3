@@ -1,6 +1,10 @@
+// Sesión: sin token se redirige a login antes de tocar la API
+const usuario = verificarAuth();
+if (!usuario) throw new Error("Sin sesión");
+
 async function cargarEventos() {
 
-    const respuesta = await fetch(`${API_URL}/eventos`);
+    const respuesta = await fetchAuth(`${API_URL}/eventos`);
     const eventos = await respuesta.json();
 
     const tbody = document.querySelector("#tabla-eventos tbody");
@@ -41,7 +45,7 @@ async function cargarEventos() {
 
 async function cargarClientes() {
 
-    const respuesta = await fetch(`${API_URL}/clientes`);
+    const respuesta = await fetchAuth(`${API_URL}/clientes`);
     const clientes = await respuesta.json();
 
     const select = document.getElementById("cliente-select");
@@ -71,7 +75,7 @@ async function crearEvento() {
     const lugar = document.getElementById("lugar").value;
     const descripcion = document.getElementById("descripcion").value;
 
-    const respuesta = await fetch(`${API_URL}/eventos`, {
+    const respuesta = await fetchAuth(`${API_URL}/eventos`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -112,7 +116,7 @@ async function editarEvento(evento) {
     const descripcion = prompt("Descripción", evento.descripcion ?? "");
     const estatus = prompt("Estatus", evento.estatus ?? "Cotizacion");
 
-    const respuesta = await fetch(`${API_URL}/eventos/${evento.id}`, {
+    const respuesta = await fetchAuth(`${API_URL}/eventos/${evento.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -141,7 +145,7 @@ async function eliminarEvento(id) {
     const confirmar = confirm("¿Eliminar evento?");
     if (!confirmar) return;
 
-    await fetch(`${API_URL}/eventos/${id}`, {
+    await fetchAuth(`${API_URL}/eventos/${id}`, {
         method: "DELETE"
     });
 
