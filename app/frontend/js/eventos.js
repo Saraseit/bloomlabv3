@@ -33,6 +33,10 @@ async function cargarEventos() {
                     Editar
                 </button>
 
+                <button onclick="duplicarEvento(${evento.id})">
+                    Duplicar
+                </button>
+
                 <button onclick='eliminarEvento(${evento.id})'>
                     Eliminar
                 </button>
@@ -138,6 +142,31 @@ async function editarEvento(evento) {
     }
 
     cargarEventos();
+}
+
+async function duplicarEvento(id) {
+
+    const confirmar = confirm(
+        "¿Duplicar este evento? Se creará una copia en estatus " +
+        "Cotización sin fecha ni precio acordado."
+    );
+    if (!confirmar) return;
+
+    const resp = await fetchAuth(
+        `${API_URL}/eventos/${id}/duplicar`,
+        { method: "POST" }
+    );
+
+    if (!resp.ok) {
+        alert("Error al duplicar el evento");
+        return;
+    }
+
+    const resultado = await resp.json();
+
+    // Se abre el duplicado para que el usuario lo ajuste en caliente
+    window.location.href =
+        `/frontend/detalle_evento.html?id=${resultado.id}`;
 }
 
 async function eliminarEvento(id) {

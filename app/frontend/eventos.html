@@ -201,9 +201,10 @@
                 if (actionCell && !actionCell.dataset.styled) {
                     var btns = actionCell.querySelectorAll('button');
                     actionCell.classList.add('action-cell');
-                    if (btns[0]) btns[0].className = 'btn btn-primary btn-sm';
-                    if (btns[1]) btns[1].className = 'btn btn-secondary btn-sm';
-                    if (btns[2]) btns[2].className = 'btn btn-danger btn-sm';
+                    if (btns[0]) btns[0].className = 'btn btn-primary btn-sm';   // Abrir
+                    if (btns[1]) btns[1].className = 'btn btn-secondary btn-sm'; // Editar
+                    if (btns[2]) btns[2].className = 'btn btn-secondary btn-sm'; // Duplicar
+                    if (btns[3]) btns[3].className = 'btn btn-danger btn-sm';    // Eliminar
                     actionCell.dataset.styled = '1';
                 }
             }

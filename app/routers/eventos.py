@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.dependencies import get_usuario_actual
 
@@ -12,7 +12,8 @@ from app.services.eventos_service import (
     crear_evento,
     actualizar_evento,
     eliminar_evento,
-    obtener_evento
+    obtener_evento,
+    duplicar_evento
 )
 
 router = APIRouter(
@@ -48,6 +49,23 @@ def editar_evento(
 def borrar_evento(evento_id: int, usuario=Depends(get_usuario_actual)):
 
     return eliminar_evento(evento_id)
+
+@router.post("/{evento_id}/duplicar")
+def clonar_evento(
+    evento_id: int,
+    usuario=Depends(get_usuario_actual)
+):
+
+    resultado = duplicar_evento(evento_id)
+
+    if "error" in resultado:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=resultado["error"]
+        )
+
+    return resultado
+
 
 @router.get("/{evento_id}")
 def detalle_evento(

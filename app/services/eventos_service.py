@@ -347,3 +347,114 @@ def obtener_evento(evento_id):
     conn.close()
 
     return resultado
+
+
+def duplicar_evento(evento_id: int):
+
+    """Crea una cotización nueva a partir de otro evento.
+
+    Se copian cliente, datos descriptivos, gastos operativos y los
+    arreglos con su costo_unitario tal como quedó guardado, sin
+    recalcularlo desde el catálogo: el duplicado conserva los precios
+    con los que se coticó el original.
+
+    No se copian fecha, precio de venta, pagos, gastos reales ni la
+    nota de autorización.
+    """
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            cliente_id,
+            nombre,
+            tipo_evento,
+            lugar,
+            descripcion,
+            costo_flete,
+            costo_montaje
+        FROM eventos
+        WHERE id = %s
+          AND activo = TRUE
+    """, (evento_id,))
+
+    original = cur.fetchone()
+
+    if not original:
+
+        cur.close()
+        conn.close()
+
+        return {
+            "error": "Evento no encontrado"
+        }
+
+    (cliente_id, nombre, tipo_evento, lugar,
+     descripcion, costo_flete, costo_montaje) = original
+
+    # Los totales entran en cero y los recalcula
+    # actualizar_totales_evento() al final.
+    cur.execute("""
+        INSERT INTO eventos (
+            cliente_id,
+            nombre,
+            tipo_evento,
+            lugar,
+            descripcion,
+            estatus,
+            costo_flete,
+            costo_montaje,
+            costo_base,
+            costo_final,
+            precio_minimo,
+            precio_sugerido,
+            activo
+        )
+        VALUES (
+            %s, %s, %s, %s, %s, 'Cotizacion', %s, %s, 0, 0, 0, 0, TRUE
+        )
+        RETURNING id
+    """, (
+        cliente_id,
+        nombre + " (copia)",
+        tipo_evento,
+        lugar,
+        descripcion,
+        costo_flete,
+        costo_montaje
+    ))
+
+    nuevo_id = cur.fetchone()[0]
+
+    cur.execute("""
+        INSERT INTO evento_arreglos (
+            evento_id,
+            arreglo_id,
+            cantidad,
+            costo_unitario,
+            subtotal,
+            observaciones
+        )
+        SELECT
+            %s,
+            arreglo_id,
+            cantidad,
+            costo_unitario,
+            subtotal,
+            observaciones
+        FROM evento_arreglos
+        WHERE evento_id = %s
+    """, (nuevo_id, evento_id))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    actualizar_totales_evento(nuevo_id)
+
+    return {
+        "mensaje": "Evento duplicado",
+        "id": nuevo_id
+    }
