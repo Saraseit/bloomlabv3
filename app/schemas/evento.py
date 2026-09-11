@@ -7,6 +7,8 @@ class EventoCreate(BaseModel):
 
     nombre: str
 
+    tipo_evento: str | None = None
+
     fecha_evento: str | None = None
 
     lugar: str | None = None
@@ -21,6 +23,8 @@ class EventoUpdate(BaseModel):
     cliente_id: int
 
     nombre: str
+
+    tipo_evento: str | None = None
 
     fecha_evento: str | None = None
 

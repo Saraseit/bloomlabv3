@@ -73,6 +73,7 @@ def crear_evento(data):
 
             cliente_id,
             nombre,
+            tipo_evento,
             fecha_evento,
             lugar,
             descripcion,
@@ -88,6 +89,7 @@ def crear_evento(data):
             %s,
             %s,
             %s,
+            %s,
             TRUE
 
         )
@@ -96,6 +98,7 @@ def crear_evento(data):
 
         data.cliente_id,
         data.nombre,
+        data.tipo_evento,
         data.fecha_evento,
         data.lugar,
         data.descripcion,
@@ -125,6 +128,7 @@ def actualizar_evento(evento_id, data):
         SET
             cliente_id = %s,
             nombre = %s,
+            tipo_evento = %s,
             fecha_evento = %s,
             lugar = %s,
             descripcion = %s,
@@ -134,6 +138,7 @@ def actualizar_evento(evento_id, data):
 
         data.cliente_id,
         data.nombre,
+        data.tipo_evento,
         data.fecha_evento,
         data.lugar,
         data.descripcion,
@@ -245,6 +250,7 @@ def obtener_evento(evento_id):
             c.nombre AS cliente,
             c.comision_porcentaje,
             e.nombre,
+            e.tipo_evento,
             e.fecha_evento,
             e.lugar,
             e.descripcion,

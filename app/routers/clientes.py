@@ -7,6 +7,7 @@ from app.schemas.cliente import (
 
 from app.services.clientes_service import (
     obtener_clientes,
+    obtener_cliente_detalle,
     crear_cliente,
     actualizar_cliente,
     eliminar_cliente
@@ -22,6 +23,12 @@ router = APIRouter(
 def listar_clientes():
 
     return obtener_clientes()
+
+
+@router.get("/{cliente_id}/detalle")
+def detalle_cliente(cliente_id: int):
+
+    return obtener_cliente_detalle(cliente_id)
 
 
 @router.post("")
