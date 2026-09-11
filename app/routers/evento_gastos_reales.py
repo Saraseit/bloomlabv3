@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 
 from app.schemas.evento_gasto_real import (
     EventoGastoRealCreate,
@@ -21,13 +23,13 @@ router = APIRouter(
 # /resumen va antes que las rutas con {gasto_id}
 # para que no lo capture un parámetro de ruta.
 @router.get("/eventos/{evento_id}/gastos-reales/resumen")
-def resumen_gastos_reales(evento_id: int):
+def resumen_gastos_reales(evento_id: int, usuario=Depends(get_usuario_actual)):
 
     return calcular_resumen_gastos_reales(evento_id)
 
 
 @router.get("/eventos/{evento_id}/gastos-reales")
-def listar_gastos_reales(evento_id: int):
+def listar_gastos_reales(evento_id: int, usuario=Depends(get_usuario_actual)):
 
     return obtener_gastos_reales(evento_id)
 
@@ -35,7 +37,8 @@ def listar_gastos_reales(evento_id: int):
 @router.post("/eventos/{evento_id}/gastos-reales")
 def nuevo_gasto_real(
     evento_id: int,
-    data: EventoGastoRealCreate
+    data: EventoGastoRealCreate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return agregar_gasto_real(
@@ -48,7 +51,8 @@ def nuevo_gasto_real(
 def actualizar_gasto_real(
     evento_id: int,
     gasto_id: int,
-    data: EventoGastoRealUpdate
+    data: EventoGastoRealUpdate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return editar_gasto_real(
@@ -60,7 +64,8 @@ def actualizar_gasto_real(
 @router.delete("/eventos/{evento_id}/gastos-reales/{gasto_id}")
 def borrar_gasto_real(
     evento_id: int,
-    gasto_id: int
+    gasto_id: int,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return eliminar_gasto_real(gasto_id)

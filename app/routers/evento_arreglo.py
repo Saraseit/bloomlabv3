@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 
 from app.schemas.evento_arreglo import (
     EventoArregloCreate,
@@ -20,7 +22,8 @@ router = APIRouter(
 
 @router.post("")
 def crear_detalle(
-    data: EventoArregloCreate
+    data: EventoArregloCreate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return agregar_arreglo_evento(data)
@@ -28,7 +31,8 @@ def crear_detalle(
 
 @router.get("/{evento_id}")
 def listar_detalle(
-    evento_id: int
+    evento_id: int,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return obtener_arreglos_evento(
@@ -38,7 +42,8 @@ def listar_detalle(
 @router.put("/{detalle_id}")
 def actualizar_detalle(
     detalle_id: int,
-    data: EventoArregloUpdate
+    data: EventoArregloUpdate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return editar_arreglo_evento(
@@ -48,7 +53,8 @@ def actualizar_detalle(
 
 @router.delete("/{detalle_id}")
 def borrar_detalle(
-    detalle_id: int
+    detalle_id: int,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return eliminar_arreglo_evento(

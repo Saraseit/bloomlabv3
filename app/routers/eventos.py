@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 
 from app.schemas.evento import (
     EventoCreate,
@@ -20,20 +22,21 @@ router = APIRouter(
 
 
 @router.get("")
-def listar_eventos():
+def listar_eventos(usuario=Depends(get_usuario_actual)):
 
     return obtener_eventos()
 
 
 @router.post("")
-def nuevo_evento(data: EventoCreate):
+def nuevo_evento(data: EventoCreate, usuario=Depends(get_usuario_actual)):
 
     return crear_evento(data)
 
 @router.put("/{evento_id}")
 def editar_evento(
     evento_id: int,
-    data: EventoUpdate
+    data: EventoUpdate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return actualizar_evento(
@@ -42,13 +45,14 @@ def editar_evento(
     )
 
 @router.delete("/{evento_id}")
-def borrar_evento(evento_id: int):
+def borrar_evento(evento_id: int, usuario=Depends(get_usuario_actual)):
 
     return eliminar_evento(evento_id)
 
 @router.get("/{evento_id}")
 def detalle_evento(
-    evento_id: int
+    evento_id: int,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return obtener_evento(

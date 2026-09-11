@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 
 from app.schemas.arreglo import (
     ArregloCreate,
@@ -19,18 +21,18 @@ router = APIRouter(
 
 
 @router.get("")
-def listar_arreglos():
+def listar_arreglos(usuario=Depends(get_usuario_actual)):
 
     return obtener_arreglos()
 
 @router.get("/{arreglo_id}")
-def obtener_un_arreglo(arreglo_id: int):
+def obtener_un_arreglo(arreglo_id: int, usuario=Depends(get_usuario_actual)):
 
     return obtener_arreglo(arreglo_id)
 
 
 @router.post("")
-def nuevo_arreglo(data: ArregloCreate):
+def nuevo_arreglo(data: ArregloCreate, usuario=Depends(get_usuario_actual)):
 
     return crear_arreglo(data)
 
@@ -38,7 +40,8 @@ def nuevo_arreglo(data: ArregloCreate):
 @router.put("/{arreglo_id}")
 def actualizar_arreglo(
     arreglo_id: int,
-    data: ArregloUpdate
+    data: ArregloUpdate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return editar_arreglo(
@@ -47,6 +50,6 @@ def actualizar_arreglo(
     )
 
 @router.delete("/{arreglo_id}")
-def borrar_arreglo(arreglo_id: int):
+def borrar_arreglo(arreglo_id: int, usuario=Depends(get_usuario_actual)):
 
     return eliminar_arreglo(arreglo_id)

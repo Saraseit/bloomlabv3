@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 
 from app.schemas.evento_pago import (
     EventoPagoCreate,
@@ -21,13 +23,13 @@ router = APIRouter(
 # /resumen va antes que las rutas con {pago_id}
 # para que no lo capture un parámetro de ruta.
 @router.get("/eventos/{evento_id}/pagos/resumen")
-def resumen_pagos(evento_id: int):
+def resumen_pagos(evento_id: int, usuario=Depends(get_usuario_actual)):
 
     return calcular_resumen_pagos(evento_id)
 
 
 @router.get("/eventos/{evento_id}/pagos")
-def listar_pagos(evento_id: int):
+def listar_pagos(evento_id: int, usuario=Depends(get_usuario_actual)):
 
     return obtener_pagos_evento(evento_id)
 
@@ -35,7 +37,8 @@ def listar_pagos(evento_id: int):
 @router.post("/eventos/{evento_id}/pagos")
 def nuevo_pago(
     evento_id: int,
-    data: EventoPagoCreate
+    data: EventoPagoCreate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return agregar_pago(
@@ -48,7 +51,8 @@ def nuevo_pago(
 def actualizar_pago(
     evento_id: int,
     pago_id: int,
-    data: EventoPagoUpdate
+    data: EventoPagoUpdate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return editar_pago(
@@ -60,7 +64,8 @@ def actualizar_pago(
 @router.delete("/eventos/{evento_id}/pagos/{pago_id}")
 def borrar_pago(
     evento_id: int,
-    pago_id: int
+    pago_id: int,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return eliminar_pago(pago_id)

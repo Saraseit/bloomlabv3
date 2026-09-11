@@ -3,6 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
+from app.routers.auth import router as auth_router
+from app.routers.usuarios import router as usuarios_router
 from app.routers.insumos import router as insumos_router
 from app.routers.arreglos import router as arreglos_router
 from app.routers.arreglo_detalle import router as arreglo_detalle_router
@@ -35,6 +37,10 @@ app = FastAPI(
 # (por ejemplo ["https://bloomlabv3.onrender.com"]) y recién entonces
 # poner allow_credentials=True. El comodín deja de ser válido.
 #
+# JWT viaja en Authorization: Bearer <token>, no en cookies.
+# allow_credentials=False + allow_origins=["*"] es válido
+# para este esquema. Si se migra a cookies, ver instrucciones
+# en el bloque de CORS original.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -46,6 +52,8 @@ app.add_middleware(
 # -------------------------
 # ROUTERS
 # -------------------------
+app.include_router(auth_router)
+app.include_router(usuarios_router)
 app.include_router(insumos_router)
 app.include_router(arreglos_router)
 app.include_router(arreglo_detalle_router)

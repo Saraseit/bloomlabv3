@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 from pydantic import BaseModel
 from app.services.eventos_service import actualizar_totales_evento
 from app.database.connection import get_connection
@@ -10,7 +12,7 @@ class GastosEvento(BaseModel):
     costo_montaje: float = 0
 
 @router.put("/eventos/{evento_id}/gastos")
-def actualizar_gastos(evento_id: int, data: GastosEvento):
+def actualizar_gastos(evento_id: int, data: GastosEvento, usuario=Depends(get_usuario_actual)):
     conn = get_connection()
     cur  = conn.cursor()
 
@@ -35,7 +37,7 @@ class PrecioVenta(BaseModel):
     precio_venta: float
 
 @router.put("/eventos/{evento_id}/precio-venta")
-def actualizar_precio_venta(evento_id: int, data: PrecioVenta):
+def actualizar_precio_venta(evento_id: int, data: PrecioVenta, usuario=Depends(get_usuario_actual)):
     conn = get_connection()
     cur  = conn.cursor()
 

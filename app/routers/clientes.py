@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 
 from app.schemas.cliente import (
     ClienteCreate,
@@ -20,26 +22,27 @@ router = APIRouter(
 
 
 @router.get("")
-def listar_clientes():
+def listar_clientes(usuario=Depends(get_usuario_actual)):
 
     return obtener_clientes()
 
 
 @router.get("/{cliente_id}/detalle")
-def detalle_cliente(cliente_id: int):
+def detalle_cliente(cliente_id: int, usuario=Depends(get_usuario_actual)):
 
     return obtener_cliente_detalle(cliente_id)
 
 
 @router.post("")
-def nuevo_cliente(data: ClienteCreate):
+def nuevo_cliente(data: ClienteCreate, usuario=Depends(get_usuario_actual)):
 
     return crear_cliente(data)
 
 @router.put("/{cliente_id}")
 def editar_cliente(
     cliente_id: int,
-    data: ClienteUpdate
+    data: ClienteUpdate,
+    usuario=Depends(get_usuario_actual)
 ):
 
     return actualizar_cliente(
@@ -48,6 +51,6 @@ def editar_cliente(
     )
 
 @router.delete("/{cliente_id}")
-def borrar_cliente(cliente_id: int):
+def borrar_cliente(cliente_id: int, usuario=Depends(get_usuario_actual)):
 
     return eliminar_cliente(cliente_id)

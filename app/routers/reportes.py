@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.dependencies import get_usuario_actual
 from fastapi.responses import Response
 from xhtml2pdf import pisa
 import io
@@ -367,7 +369,7 @@ def construir_html_interno(evento):
 # ──────────────────────────────────────────────
 
 @router.get("/debug/imagen")
-def debug_imagen(url: str):
+def debug_imagen(url: str, usuario=Depends(get_usuario_actual)):
     """Verifica desde el navegador si el servidor alcanza Cloudinary.
 
     Uso: /debug/imagen?url=https://res.cloudinary.com/...
@@ -403,7 +405,7 @@ def debug_imagen(url: str):
 # ──────────────────────────────────────────────
 
 @router.get("/eventos/{evento_id}/pdf")
-def generar_pdf(evento_id: int, tipo: str = "cliente"):
+def generar_pdf(evento_id: int, tipo: str = "cliente", usuario=Depends(get_usuario_actual)):
     evento = obtener_evento(evento_id)
 
     if "error" in evento:
