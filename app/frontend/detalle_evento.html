@@ -301,6 +301,243 @@
             gap: 0.4rem;
             align-items: center;
         }
+
+        /* ═══════════════════════════════════════════
+           Secciones de contrato (pagos y gastos reales)
+           ═══════════════════════════════════════════ */
+
+        /* Aviso cuando el evento aún no está confirmado */
+        .banner-contrato {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            background: #fffbeb;
+            border: 1.5px solid #fde68a;
+            border-radius: 16px;
+            padding: 1rem 1.3rem;
+            color: #92400e;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .banner-contrato-icon {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        /* Variantes de KPI propias del contrato */
+        .kpi-acordado {
+            background: linear-gradient(135deg, #1a2e1e 0%, #2b5c3c 100%);
+            border-color: transparent;
+        }
+        .kpi-acordado .kpi-label { color: rgba(255, 255, 255, 0.72); }
+        .kpi-acordado .kpi-value { color: #ffffff; }
+        .kpi-acordado .kpi-currency { opacity: 0.8; }
+
+        .kpi-pagado {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+        }
+        .kpi-pagado .kpi-label { color: #047857; }
+        .kpi-pagado .kpi-value { color: #065f46; }
+
+        /* El saldo alterna color según quede deuda o no */
+        .kpi-saldo-deuda {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+        .kpi-saldo-deuda .kpi-label { color: #e11d48; }
+        .kpi-saldo-deuda .kpi-value { color: #be123c; }
+
+        .kpi-saldo-liquidado {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+        }
+        .kpi-saldo-liquidado .kpi-label { color: #047857; }
+        .kpi-saldo-liquidado .kpi-value { color: #065f46; }
+
+        .kpi-gastos {
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+        .kpi-gastos .kpi-label { color: #c2410c; }
+        .kpi-gastos .kpi-value { color: #9a3412; }
+
+        .kpi-reembolsable {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        .kpi-reembolsable .kpi-label { color: #1d4ed8; }
+        .kpi-reembolsable .kpi-value { color: #1e40af; }
+
+        /* La utilidad real alterna color según sea positiva o negativa */
+        .kpi-utilidad-positiva {
+            background: linear-gradient(135deg, #eaf6e1 0%, #d3eccc 100%);
+            border-color: #a7d3b0;
+        }
+        .kpi-utilidad-positiva .kpi-label { color: #2b5c3c; }
+        .kpi-utilidad-positiva .kpi-value { color: #1a3d28; }
+
+        .kpi-utilidad-negativa {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+        .kpi-utilidad-negativa .kpi-label { color: #e11d48; }
+        .kpi-utilidad-negativa .kpi-value { color: #be123c; }
+
+        /* Tablas de pagos y gastos reales */
+        #tabla-pagos,
+        #tabla-gastos-reales {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        #tabla-pagos thead th,
+        #tabla-gastos-reales thead th {
+            background: #f7fbf7;
+            color: #4a7a5a;
+            font-size: 0.71rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.85rem 1.25rem;
+            text-align: left;
+            border: none;
+            border-bottom: 1.5px solid #e2ede5;
+            white-space: nowrap;
+        }
+
+        #tabla-pagos tbody tr,
+        #tabla-gastos-reales tbody tr {
+            border-bottom: 1px solid #f0f5f0;
+            transition: background 0.15s ease;
+        }
+
+        #tabla-pagos tbody tr:last-child,
+        #tabla-gastos-reales tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        #tabla-pagos tbody tr:hover,
+        #tabla-gastos-reales tbody tr:hover {
+            background: #f7fbf7;
+        }
+
+        #tabla-pagos tbody td,
+        #tabla-gastos-reales tbody td {
+            padding: 0.875rem 1.25rem;
+            color: #374151;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* Fecha en monoespaciada */
+        #tabla-pagos tbody td:nth-child(1),
+        #tabla-gastos-reales tbody td:nth-child(1) {
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        /* Monto destacado */
+        #tabla-pagos tbody td:nth-child(4),
+        #tabla-gastos-reales tbody td:nth-child(4) {
+            font-weight: 700;
+            color: #2b5c3c;
+            white-space: nowrap;
+        }
+
+        #tabla-pagos tbody td:last-child,
+        #tabla-gastos-reales tbody td:last-child {
+            white-space: nowrap;
+        }
+
+        .metodo-chip,
+        .categoria-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: #e8f5e0;
+            color: #2b5c3c;
+            border: 1px solid #c5dfc9;
+            white-space: nowrap;
+        }
+
+        .reembolsable-si {
+            color: #1d4ed8;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .reembolsable-no {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+
+        .tabla-vacia {
+            padding: 1.6rem 1.25rem;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.86rem;
+        }
+
+        /* Estructura compartida por los modales de esta pantalla */
+        .modal-fondo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            width: min(520px, 92vw);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-titulo {
+            margin: 0 0 1.5rem;
+            color: #1a2e1e;
+            font-size: 1.1rem;
+        }
+
+        .modal-acciones {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding-top: 0.4rem;
+        }
+
+        .check-row input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #2b5c3c;
+        }
+
+        .check-row label {
+            font-size: 0.88rem;
+            color: #374151;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -591,6 +828,272 @@
 
             </div>
         </div>
+
+        <!-- ══════════════════════════════════
+             Aviso: el contrato requiere evento Confirmado
+             ══════════════════════════════════ -->
+        <div id="banner-contrato" class="banner-contrato" style="display:none;">
+            <span class="banner-contrato-icon">&#9888;&#65039;</span>
+            <span>Confirma el evento para registrar pagos y gastos reales.</span>
+        </div>
+
+        <!-- ══════════════════════════════════
+             Pagos recibidos
+             ══════════════════════════════════ -->
+        <div id="seccion-pagos" style="display:none;">
+
+            <div class="section-label">&#128179;&ensp;Pagos Recibidos</div>
+
+            <div class="kpi-grid">
+
+                <div class="kpi-card kpi-acordado">
+                    <span class="kpi-icon">&#129309;</span>
+                    <span class="kpi-label">Precio Acordado</span>
+                    <span class="kpi-value">
+                        <span class="kpi-currency">$</span><span id="pago-precio-acordado">0.00</span>
+                    </span>
+                </div>
+
+                <div class="kpi-card kpi-pagado">
+                    <span class="kpi-icon">&#128176;</span>
+                    <span class="kpi-label">Total Pagado</span>
+                    <span class="kpi-value">
+                        <span class="kpi-currency">$</span><span id="pago-total-pagado">0.00</span>
+                    </span>
+                </div>
+
+                <div class="kpi-card kpi-saldo-liquidado" id="kpi-saldo">
+                    <span class="kpi-icon">&#129534;</span>
+                    <span class="kpi-label">Saldo Pendiente</span>
+                    <span class="kpi-value">
+                        <span class="kpi-currency">$</span><span id="pago-saldo">0.00</span>
+                    </span>
+                </div>
+
+            </div>
+
+            <section class="card">
+                <div class="card-head">
+                    <div>
+                        <h2 class="card-title">Historial de Pagos</h2>
+                        <p class="card-subtitle">Abonos recibidos del cliente por este evento</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="abrirModalPago()">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Registrar pago
+                    </button>
+                </div>
+
+                <div class="table-scroll">
+                    <table id="tabla-pagos">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Concepto</th>
+                                <th>Método</th>
+                                <th>Monto</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ══════════════════════════════════
+             Gastos reales del evento
+             ══════════════════════════════════ -->
+        <div id="seccion-gastos-reales" style="display:none;">
+
+            <div class="section-label">&#129534;&ensp;Gastos Reales del Evento</div>
+
+            <div class="kpi-grid">
+
+                <div class="kpi-card kpi-gastos">
+                    <span class="kpi-icon">&#128181;</span>
+                    <span class="kpi-label">Total Gastos Reales</span>
+                    <span class="kpi-value">
+                        <span class="kpi-currency">$</span><span id="gasto-total">0.00</span>
+                    </span>
+                </div>
+
+                <div class="kpi-card kpi-reembolsable">
+                    <span class="kpi-icon">&#128260;</span>
+                    <span class="kpi-label">Gastos Reembolsables</span>
+                    <span class="kpi-value">
+                        <span class="kpi-currency">$</span><span id="gasto-reembolsable">0.00</span>
+                    </span>
+                </div>
+
+                <div class="kpi-card kpi-utilidad-positiva" id="kpi-utilidad">
+                    <span class="kpi-icon">&#128200;</span>
+                    <span class="kpi-label">Utilidad Real</span>
+                    <span class="kpi-value">
+                        <span class="kpi-currency">$</span><span id="gasto-utilidad">0.00</span>
+                    </span>
+                </div>
+
+            </div>
+
+            <section class="card">
+                <div class="card-head">
+                    <div>
+                        <h2 class="card-title">Gastos Reales</h2>
+                        <p class="card-subtitle">Erogaciones efectivas de producción y operación</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="abrirModalGastoReal()">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Registrar gasto
+                    </button>
+                </div>
+
+                <div class="table-scroll">
+                    <table id="tabla-gastos-reales">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Categoría</th>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>¿Reembolsable?</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Modal: registrar / editar pago -->
+        <div id="modal-pago" class="modal-fondo">
+            <div class="modal-card" role="dialog" aria-modal="true"
+                 aria-labelledby="modal-pago-titulo">
+
+                <h3 id="modal-pago-titulo" class="modal-titulo">Registrar Pago</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="pago-fecha">Fecha</label>
+                        <input type="date" id="pago-fecha" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pago-monto">Monto ($)</label>
+                        <input type="number" id="pago-monto" class="form-input"
+                               placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label class="form-label" for="pago-concepto">Concepto</label>
+                        <input type="text" id="pago-concepto" class="form-input"
+                               placeholder="Ej: Anticipo, Segundo abono, Liquidación...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pago-metodo">Método</label>
+                        <select id="pago-metodo" class="form-select">
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pago-notas">Notas (opcional)</label>
+                        <input type="text" id="pago-notas" class="form-input"
+                               placeholder="Referencia, banco, observaciones...">
+                    </div>
+                </div>
+
+                <div class="modal-acciones">
+                    <button class="btn btn-secondary" onclick="cerrarModalPago()">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-primary" onclick="guardarPago()">
+                        Guardar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal: registrar / editar gasto real -->
+        <div id="modal-gasto-real" class="modal-fondo">
+            <div class="modal-card" role="dialog" aria-modal="true"
+                 aria-labelledby="modal-gasto-titulo">
+
+                <h3 id="modal-gasto-titulo" class="modal-titulo">Registrar Gasto Real</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="gasto-fecha">Fecha</label>
+                        <input type="date" id="gasto-fecha" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gasto-monto">Monto ($)</label>
+                        <input type="number" id="gasto-monto" class="form-input"
+                               placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gasto-categoria">Categoría</label>
+                        <input type="text" id="gasto-categoria" class="form-input"
+                               list="categorias-gasto" placeholder="Ej: Personal, Proveedor...">
+                        <datalist id="categorias-gasto">
+                            <option value="Personal"></option>
+                            <option value="Proveedor"></option>
+                            <option value="Gasolina"></option>
+                            <option value="Herramientas"></option>
+                            <option value="Hospedaje"></option>
+                            <option value="Otro"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gasto-concepto">Concepto</label>
+                        <input type="text" id="gasto-concepto" class="form-input"
+                               placeholder="Ej: Ayudantes de montaje, renta de estructura...">
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label class="form-label" for="gasto-notas">Notas (opcional)</label>
+                        <input type="text" id="gasto-notas" class="form-input"
+                               placeholder="Proveedor, factura, observaciones...">
+                    </div>
+
+                    <div class="form-group form-group-full check-row">
+                        <input type="checkbox" id="gasto-reembolsable-check">
+                        <label for="gasto-reembolsable-check">
+                            El cliente reembolsa este gasto
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-acciones">
+                    <button class="btn btn-secondary" onclick="cerrarModalGastoReal()">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-primary" onclick="guardarGastoReal()">
+                        Guardar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
 
         <section class="card">
             <div class="card-head">

@@ -12,6 +12,7 @@ let _precioMinimo   = 0;
 let _precioSugerido = 0;
 let _costoFlete     = 0;
 let _costoMontaje   = 0;
+let _precioVenta    = 0;
 
 async function cargarEvento() {
 
@@ -29,6 +30,7 @@ async function cargarEvento() {
     // Se guardan los valores crudos antes de formatear la pantalla
     _costoFlete   = evento.costo_flete   ?? 0;
     _costoMontaje = evento.costo_montaje ?? 0;
+    _precioVenta  = evento.precio_venta  ?? 0;
 
     document.getElementById("costo-base").textContent = fmt(evento.costo_base);
     document.getElementById('valor-flete').textContent   = fmt(_costoFlete);
@@ -76,6 +78,15 @@ async function cargarEvento() {
     evento.precio_sugerido,
     evento.precio_venta
     );
+
+    // Pagos y gastos reales solo existen para un evento ya contratado
+    if (evento.estatus === 'Confirmado') {
+        mostrarSeccionesContrato();
+        cargarPagos();
+        cargarGastosReales();
+    } else {
+        ocultarSeccionesContrato();
+    }
 }
 
 async function cargarArreglos() {
@@ -359,6 +370,479 @@ async function guardarPrecioVenta() {
 function generarPDF(tipo) {
     window.open(`${API_URL}/eventos/${eventoId}/pdf?tipo=${tipo}`, '_blank');
 }
+
+// ══════════════════════════════════════════════
+// Contrato: pagos recibidos y gastos reales
+//
+// Estas secciones solo aplican a eventos Confirmados. Los resúmenes
+// siempre se releen del API después de cada alta, edición o borrado:
+// nunca se acumulan totales en variables de JS.
+// ══════════════════════════════════════════════
+
+// Últimas listas traídas del API. Se usan para precargar los modales
+// por id, en vez de serializar el objeto dentro del onclick: un
+// concepto con apóstrofo rompería el atributo.
+let _pagos = [];
+let _gastosReales = [];
+
+// Registro que se está editando; null cuando es un alta.
+let _pagoEditando = null;
+let _gastoEditando = null;
+
+function mostrarSeccionesContrato() {
+    document.getElementById('banner-contrato').style.display = 'none';
+    document.getElementById('seccion-pagos').style.display = 'block';
+    document.getElementById('seccion-gastos-reales').style.display = 'block';
+}
+
+function ocultarSeccionesContrato() {
+    document.getElementById('banner-contrato').style.display = 'flex';
+    document.getElementById('seccion-pagos').style.display = 'none';
+    document.getElementById('seccion-gastos-reales').style.display = 'none';
+}
+
+// Fecha local de hoy en formato YYYY-MM-DD.
+// toISOString() daría la fecha en UTC y de noche adelantaría un día.
+function hoyISO() {
+    const d = new Date();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mes}-${dia}`;
+}
+
+// Los conceptos y notas son texto libre del usuario
+function escapar(texto) {
+    return String(texto ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+
+// ── Pagos ──────────────────────────────────────
+
+async function cargarPagos() {
+
+    const respuesta = await fetch(`${API_URL}/eventos/${eventoId}/pagos`);
+    _pagos = await respuesta.json();
+
+    const tbody = document.querySelector("#tabla-pagos tbody");
+    tbody.innerHTML = "";
+
+    if (_pagos.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="tabla-vacia">
+                    Todavía no hay pagos registrados para este evento.
+                </td>
+            </tr>
+        `;
+    }
+
+    _pagos.forEach(pago => {
+
+        const fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td>${pago.fecha}</td>
+            <td>${escapar(pago.concepto)}</td>
+            <td><span class="metodo-chip">${escapar(pago.metodo)}</span></td>
+            <td>$${fmt(pago.monto)}</td>
+
+            <td>
+                <div class="action-cell">
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="editarPago(${pago.id})">
+                        Editar
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                            onclick="eliminarPago(${pago.id})">
+                        Eliminar
+                    </button>
+                </div>
+            </td>
+        `;
+
+        tbody.appendChild(fila);
+    });
+
+    await cargarResumenPagos();
+}
+
+async function cargarResumenPagos() {
+
+    const respuesta = await fetch(
+        `${API_URL}/eventos/${eventoId}/pagos/resumen`
+    );
+
+    const resumen = await respuesta.json();
+
+    document.getElementById('pago-precio-acordado').textContent =
+        fmt(_precioVenta);
+    document.getElementById('pago-total-pagado').textContent =
+        fmt(resumen.total_pagado);
+
+    // saldo_pendiente es null mientras el evento no tenga precio acordado
+    const saldo = resumen.saldo_pendiente;
+    const tarjeta = document.getElementById('kpi-saldo');
+
+    document.getElementById('pago-saldo').textContent =
+        saldo === null ? '—' : fmt(saldo);
+
+    tarjeta.classList.remove('kpi-saldo-deuda', 'kpi-saldo-liquidado');
+    tarjeta.classList.add(
+        saldo !== null && saldo > 0
+            ? 'kpi-saldo-deuda'
+            : 'kpi-saldo-liquidado'
+    );
+}
+
+function abrirModalPago() {
+
+    _pagoEditando = null;
+
+    document.getElementById('modal-pago-titulo').textContent =
+        'Registrar Pago';
+
+    document.getElementById('pago-fecha').value    = hoyISO();
+    document.getElementById('pago-concepto').value = '';
+    document.getElementById('pago-monto').value    = '';
+    document.getElementById('pago-metodo').value   = 'Transferencia';
+    document.getElementById('pago-notas').value    = '';
+
+    document.getElementById('modal-pago').style.display = 'flex';
+    document.getElementById('pago-concepto').focus();
+}
+
+function editarPago(pagoId) {
+
+    const pago = _pagos.find(p => p.id === pagoId);
+    if (!pago) return;
+
+    _pagoEditando = pago;
+
+    document.getElementById('modal-pago-titulo').textContent =
+        'Editar Pago';
+
+    document.getElementById('pago-fecha').value    = pago.fecha ?? hoyISO();
+    document.getElementById('pago-concepto').value = pago.concepto ?? '';
+    // Campo numérico: sin separador de miles
+    document.getElementById('pago-monto').value    = Number(pago.monto).toFixed(2);
+    document.getElementById('pago-metodo').value   = pago.metodo ?? 'Transferencia';
+    document.getElementById('pago-notas').value    = pago.notas ?? '';
+
+    document.getElementById('modal-pago').style.display = 'flex';
+    document.getElementById('pago-concepto').focus();
+}
+
+function cerrarModalPago() {
+    document.getElementById('modal-pago').style.display = 'none';
+    _pagoEditando = null;
+}
+
+async function guardarPago() {
+
+    const fecha = document.getElementById('pago-fecha').value;
+    if (!fecha) {
+        alert('Captura la fecha del pago');
+        return;
+    }
+
+    const concepto = document.getElementById('pago-concepto').value.trim();
+    if (concepto.length < 2) {
+        alert('El concepto debe tener al menos 2 caracteres');
+        return;
+    }
+
+    const monto = parseFloat(document.getElementById('pago-monto').value);
+    if (isNaN(monto) || monto <= 0) {
+        alert('El monto debe ser mayor a 0');
+        return;
+    }
+
+    const metodo = document.getElementById('pago-metodo').value;
+    const notas  = document.getElementById('pago-notas').value;
+
+    const cuerpo = { fecha, concepto, monto, metodo, notas };
+
+    const url = _pagoEditando
+        ? `${API_URL}/eventos/${eventoId}/pagos/${_pagoEditando.id}`
+        : `${API_URL}/eventos/${eventoId}/pagos`;
+
+    const respuesta = await fetch(url, {
+        method: _pagoEditando ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo)
+    });
+
+    if (!respuesta.ok) {
+        alert('Error al guardar el pago');
+        return;
+    }
+
+    cerrarModalPago();
+
+    // Recarga el evento completo: KPIs del resumen financiero,
+    // pagos y gastos reales vuelven a leerse del API
+    cargarEvento();
+}
+
+async function eliminarPago(pagoId) {
+
+    const confirmar = confirm('¿Eliminar este pago?');
+    if (!confirmar) return;
+
+    const respuesta = await fetch(
+        `${API_URL}/eventos/${eventoId}/pagos/${pagoId}`,
+        { method: 'DELETE' }
+    );
+
+    if (!respuesta.ok) {
+        alert('Error al eliminar el pago');
+        return;
+    }
+
+    cargarEvento();
+}
+
+
+// ── Gastos reales ──────────────────────────────
+
+async function cargarGastosReales() {
+
+    const respuesta = await fetch(
+        `${API_URL}/eventos/${eventoId}/gastos-reales`
+    );
+
+    _gastosReales = await respuesta.json();
+
+    const tbody = document.querySelector("#tabla-gastos-reales tbody");
+    tbody.innerHTML = "";
+
+    if (_gastosReales.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="tabla-vacia">
+                    Todavía no hay gastos reales registrados para este evento.
+                </td>
+            </tr>
+        `;
+    }
+
+    _gastosReales.forEach(gasto => {
+
+        const fila = document.createElement("tr");
+
+        const reembolsable = gasto.es_reembolsable
+            ? '<span class="reembolsable-si">Sí</span>'
+            : '<span class="reembolsable-no">No</span>';
+
+        fila.innerHTML = `
+            <td>${gasto.fecha}</td>
+            <td><span class="categoria-chip">${escapar(gasto.categoria)}</span></td>
+            <td>${escapar(gasto.concepto)}</td>
+            <td>$${fmt(gasto.monto)}</td>
+            <td>${reembolsable}</td>
+
+            <td>
+                <div class="action-cell">
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="editarGastoReal(${gasto.id})">
+                        Editar
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                            onclick="eliminarGastoReal(${gasto.id})">
+                        Eliminar
+                    </button>
+                </div>
+            </td>
+        `;
+
+        tbody.appendChild(fila);
+    });
+
+    await cargarResumenGastosReales();
+}
+
+async function cargarResumenGastosReales() {
+
+    const respuesta = await fetch(
+        `${API_URL}/eventos/${eventoId}/gastos-reales/resumen`
+    );
+
+    const resumen = await respuesta.json();
+
+    document.getElementById('gasto-total').textContent =
+        fmt(resumen.total_gastos);
+    document.getElementById('gasto-reembolsable').textContent =
+        fmt(resumen.gastos_reembolsables);
+
+    // Utilidad real = precio acordado - costo final - gastos reales
+    const utilidad = _precioVenta - _costoFinal - resumen.total_gastos;
+
+    document.getElementById('gasto-utilidad').textContent = fmt(utilidad);
+
+    const tarjeta = document.getElementById('kpi-utilidad');
+    tarjeta.classList.remove('kpi-utilidad-positiva', 'kpi-utilidad-negativa');
+    tarjeta.classList.add(
+        utilidad < 0 ? 'kpi-utilidad-negativa' : 'kpi-utilidad-positiva'
+    );
+}
+
+function abrirModalGastoReal() {
+
+    _gastoEditando = null;
+
+    document.getElementById('modal-gasto-titulo').textContent =
+        'Registrar Gasto Real';
+
+    document.getElementById('gasto-fecha').value     = hoyISO();
+    document.getElementById('gasto-categoria').value = '';
+    document.getElementById('gasto-concepto').value  = '';
+    document.getElementById('gasto-monto').value     = '';
+    document.getElementById('gasto-notas').value     = '';
+    document.getElementById('gasto-reembolsable-check').checked = false;
+
+    document.getElementById('modal-gasto-real').style.display = 'flex';
+    document.getElementById('gasto-categoria').focus();
+}
+
+function editarGastoReal(gastoId) {
+
+    const gasto = _gastosReales.find(g => g.id === gastoId);
+    if (!gasto) return;
+
+    _gastoEditando = gasto;
+
+    document.getElementById('modal-gasto-titulo').textContent =
+        'Editar Gasto Real';
+
+    document.getElementById('gasto-fecha').value     = gasto.fecha ?? hoyISO();
+    document.getElementById('gasto-categoria').value = gasto.categoria ?? '';
+    document.getElementById('gasto-concepto').value  = gasto.concepto ?? '';
+    // Campo numérico: sin separador de miles
+    document.getElementById('gasto-monto').value     = Number(gasto.monto).toFixed(2);
+    document.getElementById('gasto-notas').value     = gasto.notas ?? '';
+    document.getElementById('gasto-reembolsable-check').checked =
+        Boolean(gasto.es_reembolsable);
+
+    document.getElementById('modal-gasto-real').style.display = 'flex';
+    document.getElementById('gasto-categoria').focus();
+}
+
+function cerrarModalGastoReal() {
+    document.getElementById('modal-gasto-real').style.display = 'none';
+    _gastoEditando = null;
+}
+
+async function guardarGastoReal() {
+
+    const fecha = document.getElementById('gasto-fecha').value;
+    if (!fecha) {
+        alert('Captura la fecha del gasto');
+        return;
+    }
+
+    const categoria = document.getElementById('gasto-categoria').value.trim();
+    if (categoria.length < 2) {
+        alert('La categoría debe tener al menos 2 caracteres');
+        return;
+    }
+
+    const concepto = document.getElementById('gasto-concepto').value.trim();
+    if (concepto.length < 2) {
+        alert('El concepto debe tener al menos 2 caracteres');
+        return;
+    }
+
+    const monto = parseFloat(document.getElementById('gasto-monto').value);
+    if (isNaN(monto) || monto <= 0) {
+        alert('El monto debe ser mayor a 0');
+        return;
+    }
+
+    const es_reembolsable =
+        document.getElementById('gasto-reembolsable-check').checked;
+    const notas = document.getElementById('gasto-notas').value;
+
+    const cuerpo = {
+        fecha,
+        categoria,
+        concepto,
+        monto,
+        es_reembolsable,
+        notas
+    };
+
+    const url = _gastoEditando
+        ? `${API_URL}/eventos/${eventoId}/gastos-reales/${_gastoEditando.id}`
+        : `${API_URL}/eventos/${eventoId}/gastos-reales`;
+
+    const respuesta = await fetch(url, {
+        method: _gastoEditando ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo)
+    });
+
+    if (!respuesta.ok) {
+        alert('Error al guardar el gasto');
+        return;
+    }
+
+    cerrarModalGastoReal();
+    cargarEvento();
+}
+
+async function eliminarGastoReal(gastoId) {
+
+    const confirmar = confirm('¿Eliminar este gasto?');
+    if (!confirmar) return;
+
+    const respuesta = await fetch(
+        `${API_URL}/eventos/${eventoId}/gastos-reales/${gastoId}`,
+        { method: 'DELETE' }
+    );
+
+    if (!respuesta.ok) {
+        alert('Error al eliminar el gasto');
+        return;
+    }
+
+    cargarEvento();
+}
+
+
+// ── Cierre de los modales de contrato ──────────
+
+// Clic fuera de la tarjeta
+document.getElementById('modal-pago')
+    .addEventListener('click', function (e) {
+        if (e.target === this) cerrarModalPago();
+    });
+
+document.getElementById('modal-gasto-real')
+    .addEventListener('click', function (e) {
+        if (e.target === this) cerrarModalGastoReal();
+    });
+
+// Escape cierra el modal abierto (accesibilidad de teclado)
+document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+
+    if (document.getElementById('modal-pago').style.display === 'flex') {
+        cerrarModalPago();
+    }
+    if (document.getElementById('modal-gasto-real').style.display === 'flex') {
+        cerrarModalGastoReal();
+    }
+    if (document.getElementById('modal-gastos').style.display === 'flex') {
+        cerrarModalGastos();
+    }
+});
+
 
 // INIT (UNA SOLA VEZ)
 cargarEvento();

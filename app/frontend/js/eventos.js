@@ -66,6 +66,7 @@ async function crearEvento() {
     );
 
     const nombre = document.getElementById("nombre").value;
+    const tipo_evento = document.getElementById("tipo_evento").value;
     const fecha_evento = document.getElementById("fecha_evento").value;
     const lugar = document.getElementById("lugar").value;
     const descripcion = document.getElementById("descripcion").value;
@@ -78,6 +79,7 @@ async function crearEvento() {
         body: JSON.stringify({
             cliente_id,
             nombre,
+            tipo_evento,
             fecha_evento,
             lugar,
             descripcion,
@@ -89,6 +91,8 @@ async function crearEvento() {
         alert("Error al crear evento");
         return;
     }
+
+    document.getElementById("tipo_evento").value = "";
 
     cargarEventos();
 }
@@ -102,6 +106,7 @@ async function editarEvento(evento) {
     const nombre = prompt("Nombre", evento.nombre);
     if (!nombre) return;
 
+    const tipo_evento = prompt("Tipo de evento", evento.tipo_evento ?? "");
     const fecha_evento = prompt("Fecha", evento.fecha_evento ?? "");
     const lugar = prompt("Lugar", evento.lugar ?? "");
     const descripcion = prompt("Descripción", evento.descripcion ?? "");
@@ -115,6 +120,7 @@ async function editarEvento(evento) {
         body: JSON.stringify({
             cliente_id: evento.cliente_id,
             nombre,
+            tipo_evento,
             fecha_evento,
             lugar,
             descripcion,

@@ -15,6 +15,8 @@ def obtener_eventos():
 
             e.nombre,
 
+            e.tipo_evento,
+
             e.fecha_evento,
 
             e.lugar,
