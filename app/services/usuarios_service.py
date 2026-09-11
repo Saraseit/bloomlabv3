@@ -218,6 +218,62 @@ def cambiar_password(usuario_id: int, data):
     }
 
 
+def resetear_password(usuario_id: int, nueva_password: str):
+
+    """Reset por un admin: no pide la contraseña actual.
+
+    Distinto de cambiar_password(), que actúa sobre el dueño del token y
+    sí exige la contraseña vigente.
+    """
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT id, activo
+        FROM usuarios
+        WHERE id = %s
+    """, (usuario_id,))
+
+    fila = cur.fetchone()
+
+    if not fila:
+
+        cur.close()
+        conn.close()
+
+        return {
+            "error": "Usuario no encontrado"
+        }
+
+    if not fila[1]:
+
+        cur.close()
+        conn.close()
+
+        return {
+            "error": "El usuario está inactivo"
+        }
+
+    cur.execute("""
+        UPDATE usuarios
+        SET password_hash = %s
+        WHERE id = %s
+    """, (
+        hash_password(nueva_password),
+        usuario_id
+    ))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "mensaje": "Contraseña reseteada correctamente"
+    }
+
+
 def eliminar_usuario(usuario_id: int, admin_id: int):
 
     if usuario_id == admin_id:

@@ -127,6 +127,8 @@ function abrirModalUsuario() {
     document.getElementById("grupo-password").style.display = "";
     document.getElementById("grupo-activo").style.display = "none";
     document.getElementById("seccion-password").style.display = "none";
+    document.getElementById("edit-reset-password").value = "";
+    document.getElementById("seccion-reset-admin").style.display = "none";
 
     document.getElementById("modal-usuario").style.display = "flex";
     document.getElementById("usuario-nombre").focus();
@@ -163,6 +165,12 @@ function editarUsuario(usuarioId) {
     document.getElementById("edit-password-nuevo").value = "";
     document.getElementById("seccion-password").style.display =
         esTuUsuario ? "block" : "none";
+
+    // Sobre otra persona, en cambio, sí se puede resetear sin conocer
+    // la contraseña vigente. Las dos secciones son excluyentes.
+    document.getElementById("edit-reset-password").value = "";
+    document.getElementById("seccion-reset-admin").style.display =
+        esTuUsuario ? "none" : "block";
 
     document.getElementById("modal-usuario").style.display = "flex";
     document.getElementById("usuario-nombre").focus();
@@ -212,6 +220,8 @@ async function guardarUsuario() {
         // poder corregir sin perder lo capturado.
         if (!await cambiarPasswordSiAplica()) return;
 
+        if (!await resetearPasswordSiAplica()) return;
+
     } else {
 
         const password = document.getElementById("usuario-password").value;
@@ -258,6 +268,51 @@ async function desactivarUsuario(usuarioId) {
 
     cargarUsuarios();
 }
+
+// Reset de un admin sobre otro usuario. Misma convención que
+// cambiarPasswordSiAplica(): true si no aplicaba o salió bien, false
+// —con el modal abierto— si falló.
+async function resetearPasswordSiAplica() {
+
+    const seccion = document.getElementById("seccion-reset-admin");
+
+    // Solo aplica sobre otra persona
+    if (seccion.style.display === "none") return true;
+
+    const nueva = document.getElementById("edit-reset-password").value;
+
+    // Vacío significa no tocar su contraseña
+    if (!nueva) return true;
+
+    if (nueva.length < 8) {
+        alert("La contraseña nueva debe tener al menos 8 caracteres");
+        return false;
+    }
+
+    const respuesta = await fetchAuth(
+        `${API_URL}/usuarios/${_usuarioEditando.id}/reset-password`,
+        {
+            method: "POST",
+            body: JSON.stringify({ nueva_password: nueva })
+        }
+    );
+
+    if (!respuesta.ok) {
+        const data = await respuesta.json();
+        alert("Error al resetear contraseña: " +
+              mensajeError(data, "Error"));
+        return false;
+    }
+
+    document.getElementById("edit-reset-password").value = "";
+
+    alert(
+        `Contraseña de ${_usuarioEditando.nombre} reseteada. ` +
+        `Compártesela por un canal seguro.`
+    );
+    return true;
+}
+
 
 // Devuelve true si no había nada que cambiar o si el cambio salió bien.
 // Devuelve false —dejando el modal abierto— cuando el cambio falló.

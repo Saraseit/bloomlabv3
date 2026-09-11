@@ -36,3 +36,8 @@ class CambioPassword(BaseModel):
     password_actual: str
 
     password_nuevo: str = Field(min_length=8)
+
+
+class ResetPasswordAdmin(BaseModel):
+
+    nueva_password: str = Field(min_length=8)

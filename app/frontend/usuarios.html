@@ -410,6 +410,33 @@
                             vacíos solo se guardan nombre, correo y rol.
                         </p>
                     </div>
+
+                    <!-- Reset de un admin sobre OTRO usuario: no pide la
+                         contraseña vigente. Solo visible al editar a
+                         alguien más. -->
+                    <div class="form-group form-group-full"
+                         id="seccion-reset-admin" style="display:none;">
+
+                        <div class="form-section-divider">
+                            <span>Reset de contraseña (admin)</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="edit-reset-password">
+                                Nueva contraseña para este usuario
+                            </label>
+                            <input type="password" id="edit-reset-password"
+                                   class="form-input"
+                                   placeholder="Mínimo 8 caracteres — el usuario deberá cambiarla"
+                                   autocomplete="new-password">
+                        </div>
+
+                        <p class="nota-password">
+                            Déjalo vacío para no tocar su contraseña. Al
+                            resetearla, avísale por un canal aparte: el
+                            sistema no se la envía.
+                        </p>
+                    </div>
                 </div>
 
                 <div class="modal-acciones">
