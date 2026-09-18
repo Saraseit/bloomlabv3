@@ -203,6 +203,8 @@
             align-items: center;
         }
     </style>
+    <link rel="stylesheet" href="css/dark.css">
+    <script src="js/theme.js"></script>
 </head>
 
 <body class="module-page">
@@ -269,7 +271,7 @@
                             <button class="btn btn-secondary btn-sm" onclick="abrirWidgetImagenDetalle()">
                                 📷 Cambiar imagen
                             </button>
-                            <span id="hint-imagen" style="font-size:0.72rem; color:#9ca3af;">
+                            <span id="hint-imagen" class="text-muted" style="font-size:0.72rem;">
                                 Sin imagen asignada
                             </span>
                         </div>
@@ -366,16 +368,18 @@
             background:rgba(0,0,0,0.4); z-index:1000; align-items:center;
             justify-content:center;">
             <div role="dialog" aria-modal="true" aria-labelledby="modal-detalle-titulo"
-                 style="background:#fff; border-radius:16px; padding:2rem;
+                 class="modal-card"
+                 style="border-radius:16px; padding:2rem;
                         width:min(520px, 92vw); max-height:90vh; overflow-y:auto;
                         box-shadow:0 20px 60px rgba(0,0,0,0.2);">
 
                 <h3 id="modal-detalle-titulo"
-                    style="margin:0 0 0.35rem; color:#1a2e1e; font-size:1.1rem;">
+                    class="modal-titulo"
+                    style="margin:0 0 0.35rem; font-size:1.1rem;">
                     Editar Insumo
                 </h3>
 
-                <p style="margin:0 0 1.5rem; font-size:0.84rem; color:#6b7280;">
+                <p class="text-muted" style="margin:0 0 1.5rem; font-size:0.84rem;">
                     <span id="modal-detalle-insumo">—</span>
                 </p>
 

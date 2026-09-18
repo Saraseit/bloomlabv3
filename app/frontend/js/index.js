@@ -21,11 +21,11 @@ const MESES = [
 
 const DIAS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 
-const COLORES_ESTATUS = {
-    "Cotizacion":             { bg: "#e6f1fb", text: "#0c447c", border: "#93c5fd" },
-    "Confirmado":             { bg: "#eaf6e1", text: "#1a5c2e", border: "#86efac" },
-    "Pendiente Autorización": { bg: "#fffbeb", text: "#92400e", border: "#fde68a" },
-    "Cancelado":              { bg: "#fef2f2", text: "#991b1b", border: "#fca5a5" },
+const CLASES_ESTATUS = {
+    "Cotizacion":             "estatus-cotizacion",
+    "Confirmado":             "estatus-confirmado",
+    "Pendiente Autorización": "estatus-pendiente",
+    "Cancelado":              "estatus-cancelado",
 };
 
 let mesActual  = new Date().getMonth();
@@ -91,16 +91,11 @@ function renderCalendario() {
         });
 
         eventosDelDia.forEach(evento => {
-            const color = COLORES_ESTATUS[evento.estatus] || COLORES_ESTATUS["Cotizacion"];
+            const clase = CLASES_ESTATUS[evento.estatus] || CLASES_ESTATUS["Cotizacion"];
             const chip  = document.createElement("a");
-            chip.className   = "cal-chip";
+            chip.className   = `cal-chip ${clase}`;
             chip.href        = `detalle_evento.html?id=${evento.id}`;
             chip.textContent = evento.nombre;
-            chip.style.cssText = `
-                background:${color.bg};
-                color:${color.text};
-                border-left: 3px solid ${color.border};
-            `;
             celda.appendChild(chip);
         });
 

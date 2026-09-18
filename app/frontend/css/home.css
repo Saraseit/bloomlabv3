@@ -390,3 +390,8 @@
     .cal-header { gap: 0.5rem; }
     .cal-link-ver-todos { width: 100%; }
 }
+/* Colores por estatus (leyenda y chips del calendario) */
+.estatus-cotizacion { background: #e6f1fb; color: #0c447c; border-color: #93c5fd; }
+.estatus-confirmado { background: #eaf6e1; color: #1a5c2e; border-color: #86efac; }
+.estatus-pendiente  { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.estatus-cancelado  { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }

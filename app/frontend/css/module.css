@@ -620,3 +620,7 @@
 .input-hint.hint-ok    { color: #2b5c3c; }
 .input-hint.hint-warn  { color: #d97706; }
 .input-hint.hint-error { color: #e11d48; }
+/* ── Modales y texto secundario (compartidos; el modo oscuro los sobrescribe) ── */
+.modal-card  { background: #ffffff; }
+.modal-titulo { color: #1a2e1e; }
+.text-muted  { color: #6b7280; }

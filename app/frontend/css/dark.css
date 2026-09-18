@@ -1,0 +1,942 @@
+/* ============================================================
+   BloomLab · Modo oscuro
+   Se activa con html[data-theme="dark"] (ver js/theme.js).
+   Cada regla repite el selector original con el prefijo del tema
+   para ganar en especificidad sin importar el orden de carga.
+   ============================================================ */
+
+/* ── Paleta ── */
+html[data-theme="dark"] {
+    --bl-bg:          #0f1a12;
+    --bl-bg-2:        #13201a;
+    --bl-surface:     #18241c;
+    --bl-surface-2:   #1f2d24;
+    --bl-surface-3:   #26362c;
+    --bl-border:      #2a3b30;
+    --bl-border-2:    #35503d;
+    --bl-text:        #e6efe8;
+    --bl-text-2:      #c3d2c7;
+    --bl-muted:       #9fb3a5;
+    --bl-faint:       #6b7f71;
+    --bl-accent:      #6fbf85;
+    --bl-accent-2:    #8fd1a0;
+    --bl-accent-deep: #4a8c5c;
+
+    color-scheme: dark;
+    background: var(--bl-bg);
+}
+
+/* ── Botón flotante de tema (ambos modos) ── */
+.theme-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid #c5dfc9;
+    background: rgba(255, 255, 255, 0.92);
+    color: #2b5c3c;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(26, 46, 30, 0.18);
+    z-index: 900;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    border-color: #9dc9a5;
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+html[data-theme="dark"] .theme-toggle {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border-2);
+    color: #fcd34d;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================================
+   estilos.css
+   ============================================================ */
+
+html[data-theme="dark"] body {
+    background: var(--bl-bg);
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] th,
+html[data-theme="dark"] td {
+    border-color: var(--bl-border);
+}
+
+html[data-theme="dark"] th {
+    background-color: var(--bl-surface-2);
+}
+
+html[data-theme="dark"] .search-bar {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border);
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .search-input {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .search-input::placeholder {
+    color: var(--bl-faint);
+}
+
+/* ============================================================
+   home.css
+   ============================================================ */
+
+html[data-theme="dark"] .home-page {
+    background: linear-gradient(160deg, #0f1a12 0%, #13201a 55%, #101c14 100%);
+}
+
+html[data-theme="dark"] .brand-name {
+    background: linear-gradient(135deg, #8fd1a0 0%, #6fbf85 60%, #a7d3b0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="dark"] .brand-tagline {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .menu-title {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .menu-subtitle {
+    color: var(--bl-faint);
+}
+
+html[data-theme="dark"] .menu-card {
+    background: var(--bl-surface);
+    border-color: var(--bl-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .menu-card:hover {
+    border-color: var(--bl-accent-deep);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .card-icon,
+html[data-theme="dark"] .page-icon {
+    background: linear-gradient(135deg, #24382a 0%, #1d2f22 100%);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="dark"] .card-title {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .card-desc {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .card-arrow {
+    color: var(--bl-faint);
+}
+
+html[data-theme="dark"] .menu-card:hover .card-arrow {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .home-footer {
+    color: var(--bl-faint);
+}
+
+/* Chip de sesión (index.html) */
+html[data-theme="dark"] .user-chip {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border-2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .user-chip span {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .user-chip button {
+    background: var(--bl-accent-deep);
+}
+
+html[data-theme="dark"] .user-chip button:hover {
+    background: var(--bl-accent);
+    color: #0f1a12;
+}
+
+/* Calendario */
+html[data-theme="dark"] .cal-section {
+    background: var(--bl-surface);
+    border-color: var(--bl-border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .cal-title,
+html[data-theme="dark"] .cal-mes {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .cal-btn {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border);
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .cal-btn:hover {
+    background: var(--bl-surface-3);
+}
+
+html[data-theme="dark"] .cal-link-ver-todos {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .cal-dia-header {
+    color: var(--bl-faint);
+}
+
+html[data-theme="dark"] .cal-celda {
+    background: var(--bl-surface);
+    border-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .cal-celda:hover {
+    background: var(--bl-surface-2);
+}
+
+html[data-theme="dark"] .cal-vacio {
+    background: transparent;
+    border-color: transparent;
+}
+
+html[data-theme="dark"] .cal-hoy {
+    background: #1b3324;
+    border-color: var(--bl-accent-deep);
+}
+
+html[data-theme="dark"] .cal-num {
+    color: var(--bl-text-2);
+}
+
+html[data-theme="dark"] .cal-hoy .cal-num {
+    color: var(--bl-accent-2);
+}
+
+/* Colores por estatus (leyenda y chips del calendario) */
+html[data-theme="dark"] .estatus-cotizacion {
+    background: rgba(96, 165, 250, 0.16);
+    color: #93c5fd;
+    border-color: #60a5fa;
+}
+
+html[data-theme="dark"] .estatus-confirmado {
+    background: rgba(52, 211, 153, 0.16);
+    color: #6ee7b7;
+    border-color: #34d399;
+}
+
+html[data-theme="dark"] .estatus-pendiente {
+    background: rgba(251, 191, 36, 0.16);
+    color: #fcd34d;
+    border-color: #fbbf24;
+}
+
+html[data-theme="dark"] .estatus-cancelado {
+    background: rgba(248, 113, 113, 0.16);
+    color: #fca5a5;
+    border-color: #f87171;
+}
+
+/* ============================================================
+   module.css
+   ============================================================ */
+
+html[data-theme="dark"] .module-page {
+    background: linear-gradient(160deg, #0f1a12 0%, #13201a 55%, #101c14 100%);
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .back-link {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .back-link:hover {
+    color: var(--bl-accent-2);
+}
+
+html[data-theme="dark"] .page-title {
+    background: linear-gradient(135deg, #8fd1a0 0%, #6fbf85 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="dark"] .page-subtitle {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .card {
+    background: var(--bl-surface);
+    border-color: var(--bl-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] .card-head {
+    border-bottom-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .card-head .card-title {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .card-head .card-subtitle {
+    color: var(--bl-muted);
+}
+
+/* Tablas (compartidas y específicas por página) */
+html[data-theme="dark"] .module-table thead th,
+html[data-theme="dark"] #tabla-eventos thead th,
+html[data-theme="dark"] #tabla-clientes thead th,
+html[data-theme="dark"] #tabla-insumos thead th,
+html[data-theme="dark"] #tabla-arreglos thead th,
+html[data-theme="dark"] #tabla-detalle thead th,
+html[data-theme="dark"] #tabla-eventos-cliente thead th,
+html[data-theme="dark"] #tabla-usuarios thead th,
+html[data-theme="dark"] #tabla-evento-arreglos thead th,
+html[data-theme="dark"] #tabla-pagos thead th,
+html[data-theme="dark"] #tabla-gastos-reales thead th,
+html[data-theme="dark"] .tabla-reporte thead th {
+    background: var(--bl-surface-2);
+    color: var(--bl-muted);
+    border-bottom-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .module-table tbody tr,
+html[data-theme="dark"] #tabla-eventos tbody tr,
+html[data-theme="dark"] #tabla-clientes tbody tr,
+html[data-theme="dark"] #tabla-insumos tbody tr,
+html[data-theme="dark"] #tabla-arreglos tbody tr,
+html[data-theme="dark"] #tabla-detalle tbody tr,
+html[data-theme="dark"] #tabla-eventos-cliente tbody tr,
+html[data-theme="dark"] #tabla-usuarios tbody tr,
+html[data-theme="dark"] #tabla-evento-arreglos tbody tr,
+html[data-theme="dark"] #tabla-pagos tbody tr,
+html[data-theme="dark"] #tabla-gastos-reales tbody tr,
+html[data-theme="dark"] .tabla-reporte tbody tr {
+    border-bottom-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .module-table tbody tr:hover,
+html[data-theme="dark"] #tabla-eventos tbody tr:hover,
+html[data-theme="dark"] #tabla-clientes tbody tr:hover,
+html[data-theme="dark"] #tabla-insumos tbody tr:hover,
+html[data-theme="dark"] #tabla-arreglos tbody tr:hover,
+html[data-theme="dark"] #tabla-detalle tbody tr:hover,
+html[data-theme="dark"] #tabla-usuarios tbody tr:hover,
+html[data-theme="dark"] #tabla-evento-arreglos tbody tr:hover,
+html[data-theme="dark"] #tabla-pagos tbody tr:hover,
+html[data-theme="dark"] #tabla-gastos-reales tbody tr:hover,
+html[data-theme="dark"] #tabla-eventos-cliente tbody tr:not(.fila-con-saldo):not(.fila-liquidada):hover,
+html[data-theme="dark"] .tabla-reporte tbody tr:not(.fila-perdida):not(.fila-buena):hover {
+    background: var(--bl-surface-2);
+}
+
+html[data-theme="dark"] .module-table tbody td,
+html[data-theme="dark"] #tabla-eventos tbody td,
+html[data-theme="dark"] #tabla-clientes tbody td,
+html[data-theme="dark"] #tabla-insumos tbody td,
+html[data-theme="dark"] #tabla-arreglos tbody td,
+html[data-theme="dark"] #tabla-detalle tbody td,
+html[data-theme="dark"] #tabla-eventos-cliente tbody td,
+html[data-theme="dark"] #tabla-usuarios tbody td,
+html[data-theme="dark"] #tabla-evento-arreglos tbody td,
+html[data-theme="dark"] #tabla-pagos tbody td,
+html[data-theme="dark"] #tabla-gastos-reales tbody td,
+html[data-theme="dark"] .tabla-reporte tbody td {
+    color: var(--bl-text-2);
+}
+
+/* Columnas "código" / secundarias (gris) */
+html[data-theme="dark"] #tabla-arreglos tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-arreglos tbody td:nth-child(5),
+html[data-theme="dark"] #tabla-insumos tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-clientes tbody td:nth-child(2),
+html[data-theme="dark"] #tabla-detalle tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-detalle tbody td:nth-child(6),
+html[data-theme="dark"] #tabla-eventos-cliente tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-usuarios tbody td:nth-child(2),
+html[data-theme="dark"] #tabla-usuarios tbody td:nth-child(4),
+html[data-theme="dark"] #tabla-evento-arreglos tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-pagos tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-gastos-reales tbody td:nth-child(1) {
+    color: var(--bl-muted);
+}
+
+/* Columnas "nombre" (texto principal) */
+html[data-theme="dark"] #tabla-arreglos tbody td:nth-child(2),
+html[data-theme="dark"] #tabla-insumos tbody td:nth-child(2),
+html[data-theme="dark"] #tabla-eventos tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-detalle tbody td:nth-child(2),
+html[data-theme="dark"] #tabla-eventos-cliente tbody td:nth-child(2),
+html[data-theme="dark"] #tabla-usuarios tbody td:nth-child(1),
+html[data-theme="dark"] #tabla-evento-arreglos tbody td:nth-child(2),
+html[data-theme="dark"] .tabla-reporte tbody td:first-child,
+html[data-theme="dark"] .client-name-text {
+    color: var(--bl-text);
+}
+
+/* Columnas de importe (verde) */
+html[data-theme="dark"] #tabla-arreglos tbody td:nth-child(4),
+html[data-theme="dark"] #tabla-insumos tbody td:nth-child(5),
+html[data-theme="dark"] #tabla-eventos tbody td:nth-child(3),
+html[data-theme="dark"] #tabla-eventos tbody td:nth-child(7),
+html[data-theme="dark"] #tabla-detalle tbody td:nth-child(5),
+html[data-theme="dark"] #tabla-evento-arreglos tbody td:nth-child(5),
+html[data-theme="dark"] #tabla-pagos tbody td:nth-child(4),
+html[data-theme="dark"] #tabla-gastos-reales tbody td:nth-child(4),
+html[data-theme="dark"] .valor-positivo,
+html[data-theme="dark"] .info-value-date,
+html[data-theme="dark"] .info-value-cost {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .cost-prefix,
+html[data-theme="dark"] .money-prefix,
+html[data-theme="dark"] .cost-currency {
+    color: var(--bl-accent-2);
+}
+
+html[data-theme="dark"] .merma-suffix,
+html[data-theme="dark"] .sin-dato,
+html[data-theme="dark"] .tabla-vacia,
+html[data-theme="dark"] .deuda-cero,
+html[data-theme="dark"] .estado-inactivo,
+html[data-theme="dark"] .reembolsable-no,
+html[data-theme="dark"] .nota-password,
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .rango-flecha,
+html[data-theme="dark"] .rango-pct,
+html[data-theme="dark"] .rango-label,
+html[data-theme="dark"] .input-sufijo,
+html[data-theme="dark"] .input-prefijo,
+html[data-theme="dark"] .input-hint {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .mes-mono,
+html[data-theme="dark"] .info-value-mono {
+    color: var(--bl-accent);
+}
+
+/* Badges de estatus */
+html[data-theme="dark"] .badge-cotizacion {
+    background: rgba(251, 191, 36, 0.14);
+    color: #fcd34d;
+    border-color: rgba(251, 191, 36, 0.45);
+}
+
+html[data-theme="dark"] .badge-confirmado {
+    background: rgba(52, 211, 153, 0.14);
+    color: #6ee7b7;
+    border-color: rgba(52, 211, 153, 0.45);
+}
+
+html[data-theme="dark"] .badge-completado {
+    background: rgba(96, 165, 250, 0.14);
+    color: #93c5fd;
+    border-color: rgba(96, 165, 250, 0.45);
+}
+
+html[data-theme="dark"] .badge-cancelado {
+    background: rgba(248, 113, 113, 0.14);
+    color: #fca5a5;
+    border-color: rgba(248, 113, 113, 0.45);
+}
+
+html[data-theme="dark"] .badge-default {
+    background: rgba(156, 163, 175, 0.12);
+    color: #b8c2cc;
+    border-color: rgba(156, 163, 175, 0.35);
+}
+
+/* Chips verdes genéricos */
+html[data-theme="dark"] .cat-chip,
+html[data-theme="dark"] .tipo-chip,
+html[data-theme="dark"] .metodo-chip,
+html[data-theme="dark"] .categoria-chip,
+html[data-theme="dark"] .rol-vendedor {
+    background: rgba(111, 191, 133, 0.14);
+    color: var(--bl-accent-2);
+    border-color: rgba(111, 191, 133, 0.4);
+}
+
+html[data-theme="dark"] .comision-chip,
+html[data-theme="dark"] .es-tu-usuario {
+    background: rgba(52, 211, 153, 0.14);
+    color: #6ee7b7;
+    border-color: rgba(52, 211, 153, 0.45);
+}
+
+html[data-theme="dark"] .rol-admin {
+    background: var(--bl-accent-2);
+    color: #0f1a12;
+    border-color: var(--bl-accent-2);
+}
+
+html[data-theme="dark"] .rol-director {
+    background: rgba(167, 139, 250, 0.14);
+    color: #c4b5fd;
+    border-color: rgba(167, 139, 250, 0.45);
+}
+
+html[data-theme="dark"] .client-avatar {
+    background: linear-gradient(135deg, #24382a 0%, #2f4a37 100%);
+    color: var(--bl-accent-2);
+    border-color: var(--bl-border-2);
+}
+
+html[data-theme="dark"] .contact-link,
+html[data-theme="dark"] .enlace-evento:hover {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .contact-link:hover {
+    color: var(--bl-accent-2);
+}
+
+html[data-theme="dark"] .enlace-evento {
+    color: var(--bl-text);
+    border-bottom-color: var(--bl-faint);
+}
+
+html[data-theme="dark"] .deuda-pendiente,
+html[data-theme="dark"] .saldo-pendiente,
+html[data-theme="dark"] .valor-negativo,
+html[data-theme="dark"] .dato-margen-bajo {
+    color: #fb7185;
+}
+
+html[data-theme="dark"] .saldo-cero,
+html[data-theme="dark"] .estado-activo {
+    color: #6ee7b7;
+}
+
+html[data-theme="dark"] .reembolsable-si {
+    color: #93c5fd;
+}
+
+html[data-theme="dark"] .fila-inactiva {
+    background: var(--bl-bg-2);
+}
+
+html[data-theme="dark"] .fila-con-saldo,
+html[data-theme="dark"] .fila-perdida {
+    background: rgba(248, 113, 113, 0.08);
+}
+
+html[data-theme="dark"] .fila-con-saldo:hover,
+html[data-theme="dark"] .fila-perdida:hover {
+    background: rgba(248, 113, 113, 0.14);
+}
+
+html[data-theme="dark"] .fila-liquidada,
+html[data-theme="dark"] .fila-buena {
+    background: rgba(52, 211, 153, 0.08);
+}
+
+html[data-theme="dark"] .fila-liquidada:hover,
+html[data-theme="dark"] .fila-buena:hover {
+    background: rgba(52, 211, 153, 0.14);
+}
+
+/* Formularios */
+html[data-theme="dark"] .form-label {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .form-input,
+html[data-theme="dark"] .form-select {
+    background: var(--bl-bg-2);
+    border-color: var(--bl-border-2);
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .form-input:focus,
+html[data-theme="dark"] .form-select:focus {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-accent);
+    box-shadow: 0 0 0 3px rgba(111, 191, 133, 0.2);
+}
+
+html[data-theme="dark"] .form-input::placeholder {
+    color: var(--bl-faint);
+}
+
+html[data-theme="dark"] .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath fill='none' stroke='%236fbf85' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+}
+
+html[data-theme="dark"] .form-select option {
+    background: var(--bl-surface);
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .check-row label {
+    color: var(--bl-text-2);
+}
+
+html[data-theme="dark"] .check-row input {
+    accent-color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .form-section-divider {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .form-section-divider::before,
+html[data-theme="dark"] .form-section-divider::after {
+    background: var(--bl-border);
+}
+
+html[data-theme="dark"] .input-hint.hint-ok    { color: var(--bl-accent); }
+html[data-theme="dark"] .input-hint.hint-warn  { color: #fbbf24; }
+html[data-theme="dark"] .input-hint.hint-error { color: #fb7185; }
+
+/* Botones */
+html[data-theme="dark"] .btn-primary {
+    background: linear-gradient(135deg, #2f6a44 0%, #4a8c5c 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .btn-primary:hover {
+    background: linear-gradient(135deg, #3a7a50 0%, #5aa06c 100%);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .btn-secondary {
+    background: var(--bl-surface-2);
+    color: var(--bl-accent-2);
+    border-color: var(--bl-border-2);
+}
+
+html[data-theme="dark"] .btn-secondary:hover {
+    background: var(--bl-surface-3);
+    border-color: var(--bl-accent-deep);
+}
+
+html[data-theme="dark"] .btn-danger {
+    background: rgba(248, 113, 113, 0.12);
+    color: #fca5a5;
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+html[data-theme="dark"] .btn-danger:hover {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: #f87171;
+}
+
+/* Gastos, rangos y negociación */
+html[data-theme="dark"] .gasto-item,
+html[data-theme="dark"] .precio-rangos {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .gasto-label {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .gasto-valor,
+html[data-theme="dark"] .rango-valor {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .rango-minimo {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.35);
+}
+
+html[data-theme="dark"] .rango-objetivo {
+    background: linear-gradient(135deg, #1f3a28, #24472f);
+    border-color: var(--bl-accent-deep);
+}
+
+/* ============================================================
+   Bloques compartidos por las páginas de detalle
+   ============================================================ */
+
+html[data-theme="dark"] .info-item {
+    border-bottom-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .info-label,
+html[data-theme="dark"] .kpi-label {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .info-value,
+html[data-theme="dark"] .kpi-value {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .section-label {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .section-label::after {
+    background: linear-gradient(to right, var(--bl-border-2), transparent);
+}
+
+html[data-theme="dark"] .kpi-card {
+    background: var(--bl-surface);
+    border-color: var(--bl-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .kpi-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* KPI: neutros */
+html[data-theme="dark"] .kpi-eventos,
+html[data-theme="dark"] .kpi-base {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border);
+}
+html[data-theme="dark"] .kpi-eventos .kpi-label,
+html[data-theme="dark"] .kpi-base .kpi-label { color: var(--bl-muted); }
+html[data-theme="dark"] .kpi-eventos .kpi-value,
+html[data-theme="dark"] .kpi-base .kpi-value { color: var(--bl-text); }
+
+/* KPI: verde claro (confirmados, utilidad, final) */
+html[data-theme="dark"] .kpi-confirmados,
+html[data-theme="dark"] .kpi-utilidad,
+html[data-theme="dark"] .kpi-final,
+html[data-theme="dark"] .kpi-utilidad-positiva {
+    background: linear-gradient(135deg, #1f3a28 0%, #24472f 100%);
+    border-color: var(--bl-accent-deep);
+}
+html[data-theme="dark"] .kpi-confirmados .kpi-label,
+html[data-theme="dark"] .kpi-utilidad .kpi-label,
+html[data-theme="dark"] .kpi-final .kpi-label,
+html[data-theme="dark"] .kpi-utilidad-positiva .kpi-label { color: var(--bl-accent); }
+html[data-theme="dark"] .kpi-confirmados .kpi-value,
+html[data-theme="dark"] .kpi-utilidad .kpi-value,
+html[data-theme="dark"] .kpi-final .kpi-value,
+html[data-theme="dark"] .kpi-utilidad-positiva .kpi-value { color: var(--bl-accent-2); }
+
+/* KPI: verde oscuro (facturado, ingresos, acordado) — ya son oscuros, se aclaran un poco */
+html[data-theme="dark"] .kpi-facturado,
+html[data-theme="dark"] .kpi-ingresos,
+html[data-theme="dark"] .kpi-acordado {
+    background: linear-gradient(135deg, #2b5c3c 0%, #3f7a52 100%);
+}
+
+/* KPI: precio sugerido */
+html[data-theme="dark"] .kpi-sugerido {
+    background: linear-gradient(135deg, #2f6a44 0%, #3f7a52 50%, #4a8c5c 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* KPI: esmeralda (cobrado, pagado, saldado) */
+html[data-theme="dark"] .kpi-cobrado,
+html[data-theme="dark"] .kpi-pagado,
+html[data-theme="dark"] .kpi-deuda-saldada,
+html[data-theme="dark"] .kpi-saldo-liquidado,
+html[data-theme="dark"] .kpi-cartera-limpia {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.4);
+}
+html[data-theme="dark"] .kpi-cobrado .kpi-label,
+html[data-theme="dark"] .kpi-pagado .kpi-label,
+html[data-theme="dark"] .kpi-deuda-saldada .kpi-label,
+html[data-theme="dark"] .kpi-saldo-liquidado .kpi-label,
+html[data-theme="dark"] .kpi-cartera-limpia .kpi-label { color: #34d399; }
+html[data-theme="dark"] .kpi-cobrado .kpi-value,
+html[data-theme="dark"] .kpi-pagado .kpi-value,
+html[data-theme="dark"] .kpi-deuda-saldada .kpi-value,
+html[data-theme="dark"] .kpi-saldo-liquidado .kpi-value,
+html[data-theme="dark"] .kpi-cartera-limpia .kpi-value { color: #6ee7b7; }
+
+/* KPI: rojo (deuda, mínimo, utilidad negativa, cartera pendiente) */
+html[data-theme="dark"] .kpi-deuda-pendiente,
+html[data-theme="dark"] .kpi-minimo,
+html[data-theme="dark"] .kpi-saldo-deuda,
+html[data-theme="dark"] .kpi-utilidad-negativa,
+html[data-theme="dark"] .kpi-cartera-pendiente {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.4);
+}
+html[data-theme="dark"] .kpi-deuda-pendiente .kpi-label,
+html[data-theme="dark"] .kpi-minimo .kpi-label,
+html[data-theme="dark"] .kpi-saldo-deuda .kpi-label,
+html[data-theme="dark"] .kpi-utilidad-negativa .kpi-label,
+html[data-theme="dark"] .kpi-cartera-pendiente .kpi-label { color: #f87171; }
+html[data-theme="dark"] .kpi-deuda-pendiente .kpi-value,
+html[data-theme="dark"] .kpi-minimo .kpi-value,
+html[data-theme="dark"] .kpi-saldo-deuda .kpi-value,
+html[data-theme="dark"] .kpi-utilidad-negativa .kpi-value,
+html[data-theme="dark"] .kpi-cartera-pendiente .kpi-value { color: #fca5a5; }
+
+/* KPI: naranja (costos, gastos) */
+html[data-theme="dark"] .kpi-costos,
+html[data-theme="dark"] .kpi-gastos {
+    background: rgba(251, 146, 60, 0.1);
+    border-color: rgba(251, 146, 60, 0.4);
+}
+html[data-theme="dark"] .kpi-costos .kpi-label,
+html[data-theme="dark"] .kpi-gastos .kpi-label { color: #fb923c; }
+html[data-theme="dark"] .kpi-costos .kpi-value,
+html[data-theme="dark"] .kpi-gastos .kpi-value { color: #fdba74; }
+
+/* KPI: morado (margen, comisión) */
+html[data-theme="dark"] .kpi-margen,
+html[data-theme="dark"] .kpi-comision {
+    background: rgba(167, 139, 250, 0.1);
+    border-color: rgba(167, 139, 250, 0.4);
+}
+html[data-theme="dark"] .kpi-margen .kpi-label,
+html[data-theme="dark"] .kpi-comision .kpi-label { color: #a78bfa; }
+html[data-theme="dark"] .kpi-margen .kpi-value,
+html[data-theme="dark"] .kpi-comision .kpi-value { color: #c4b5fd; }
+
+/* KPI: ámbar (importe) */
+html[data-theme="dark"] .kpi-importe {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+html[data-theme="dark"] .kpi-importe .kpi-label { color: #fbbf24; }
+html[data-theme="dark"] .kpi-importe .kpi-value { color: #fcd34d; }
+
+/* KPI: azul (reembolsable) */
+html[data-theme="dark"] .kpi-reembolsable {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: rgba(96, 165, 250, 0.4);
+}
+html[data-theme="dark"] .kpi-reembolsable .kpi-label { color: #60a5fa; }
+html[data-theme="dark"] .kpi-reembolsable .kpi-value { color: #93c5fd; }
+
+/* Banners y avisos */
+html[data-theme="dark"] .banner-contrato,
+html[data-theme="dark"] .banner-warn {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.45);
+    color: #fcd34d;
+}
+
+html[data-theme="dark"] .banner-ok {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: rgba(52, 211, 153, 0.45);
+    color: #6ee7b7;
+}
+
+html[data-theme="dark"] .banner-error,
+html[data-theme="dark"] .error-seccion {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fca5a5;
+}
+
+/* Panel del director */
+html[data-theme="dark"] .panel-director {
+    background: linear-gradient(135deg, #2a2412 0%, #24200f 100%);
+    border-color: rgba(251, 191, 36, 0.5);
+}
+
+html[data-theme="dark"] .panel-director .card-title {
+    color: #fcd34d;
+}
+
+html[data-theme="dark"] .dato-autorizacion {
+    background: rgba(0, 0, 0, 0.25);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+html[data-theme="dark"] .dato-autorizacion-label {
+    color: #fbbf24;
+}
+
+html[data-theme="dark"] .dato-autorizacion-valor {
+    color: #fcd34d;
+}
+
+/* Modales */
+html[data-theme="dark"] .modal-fondo {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+html[data-theme="dark"] .modal-card {
+    background: var(--bl-surface);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .modal-titulo {
+    color: var(--bl-text);
+}
+
+/* ============================================================
+   login.html
+   ============================================================ */
+
+html[data-theme="dark"] .login-card {
+    background: var(--bl-surface);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .login-card .brand-logo {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .login-card .brand-flor {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .login-card .brand-sub {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .login-card .form-input {
+    background: var(--bl-bg-2);
+    border-color: var(--bl-border-2);
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .login-card .form-input:focus {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .login-card .btn {
+    background: var(--bl-accent-deep);
+}
+
+html[data-theme="dark"] .login-card .btn:hover:not(:disabled) {
+    background: var(--bl-accent);
+    color: #0f1a12;
+}
+
+html[data-theme="dark"] .login-card .btn:disabled {
+    background: var(--bl-border-2);
+}
+
+html[data-theme="dark"] .login-card .error-msg {
+    color: #fb7185;
+}
+
+html[data-theme="dark"] .login-card .pie {
+    border-top-color: var(--bl-border);
+    color: var(--bl-faint);
+}
