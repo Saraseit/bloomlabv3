@@ -3,6 +3,9 @@ from app.database.connection import get_connection
 from app.services.eventos_service import (
     actualizar_totales_evento
 )
+from app.services.compras_service import (
+    congelar_insumos_arreglo
+)
 
 def agregar_arreglo_evento(data):
 
@@ -67,6 +70,10 @@ def agregar_arreglo_evento(data):
     ))
 
     nuevo_id = cur.fetchone()[0]
+
+    # Foto de insumos (cantidades, factor, costo de paquete) en la misma
+    # transacción: el renglón y su foto se guardan juntos o no se guardan.
+    congelar_insumos_arreglo(cur, nuevo_id, data.arreglo_id)
 
     conn.commit()
 

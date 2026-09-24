@@ -17,6 +17,7 @@ let _precioSugerido = 0;
 let _costoFlete     = 0;
 let _costoMontaje   = 0;
 let _precioVenta    = 0;
+let _estatusEvento  = null;
 
 async function cargarEvento() {
 
@@ -39,6 +40,9 @@ async function cargarEvento() {
     document.getElementById("costo-base").textContent = fmt(evento.costo_base);
     document.getElementById('valor-flete').textContent   = fmt(_costoFlete);
     document.getElementById('valor-montaje').textContent = fmt(_costoMontaje);
+    document.getElementById('valor-sobrante').textContent =
+        fmt(evento.costo_sobrante ?? 0);
+    _estatusEvento = evento.estatus;
     document.getElementById("comision-porcentaje").textContent =
         fmtPct(evento.comision_porcentaje);
     document.getElementById("importe-comision").textContent = fmt(evento.importe_comision);
@@ -105,6 +109,9 @@ async function cargarEvento() {
     } else {
         panelDir.style.display = 'none';
     }
+
+    // La lista de compras se ve siempre; comprar solo aplica ya confirmado
+    cargarPlanCompras();
 
     // Pagos y gastos reales solo existen para un evento ya contratado
     if (evento.estatus === 'Confirmado') {
@@ -837,6 +844,10 @@ function abrirModalGastoReal() {
     document.getElementById('gasto-notas').value     = '';
     document.getElementById('gasto-reembolsable-check').checked = false;
 
+    poblarSelectInsumoGasto(null);
+    document.getElementById('gasto-paquetes').value = '';
+    alCambiarInsumoGasto();
+
     document.getElementById('modal-gasto-real').style.display = 'flex';
     document.getElementById('gasto-categoria').focus();
 }
@@ -859,6 +870,11 @@ function editarGastoReal(gastoId) {
     document.getElementById('gasto-notas').value     = gasto.notas ?? '';
     document.getElementById('gasto-reembolsable-check').checked =
         Boolean(gasto.es_reembolsable);
+
+    poblarSelectInsumoGasto(gasto.insumo_id);
+    alCambiarInsumoGasto();
+    document.getElementById('gasto-paquetes').value =
+        gasto.paquetes_comprados ?? '';
 
     document.getElementById('modal-gasto-real').style.display = 'flex';
     document.getElementById('gasto-categoria').focus();
@@ -899,13 +915,30 @@ async function guardarGastoReal() {
         document.getElementById('gasto-reembolsable-check').checked;
     const notas = document.getElementById('gasto-notas').value;
 
+    const insumoTexto = document.getElementById('gasto-insumo').value;
+    const insumo_id = insumoTexto ? parseInt(insumoTexto) : null;
+
+    let paquetes_comprados = null;
+    if (insumo_id) {
+        const paqTexto = document.getElementById('gasto-paquetes').value.trim();
+        if (paqTexto !== '') {
+            paquetes_comprados = parseFloat(paqTexto);
+            if (isNaN(paquetes_comprados) || paquetes_comprados < 0) {
+                alert('La cantidad comprada no es válida');
+                return;
+            }
+        }
+    }
+
     const cuerpo = {
         fecha,
         categoria,
         concepto,
         monto,
         es_reembolsable,
-        notas
+        notas,
+        insumo_id,
+        paquetes_comprados
     };
 
     const url = _gastoEditando
@@ -943,6 +976,229 @@ async function eliminarGastoReal(gastoId) {
     }
 
     cargarEvento();
+}
+
+
+// ── Lista de compras (planeado vs comprado) ─────
+
+let _planCompras = [];
+
+// Cantidades sin ceros de relleno: 2, 1.5, 0.33
+function fmtCant(n) {
+    const v = Number(n) || 0;
+    return Number.isInteger(v)
+        ? String(v)
+        : v.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+}
+
+function textoDiferencia(dif) {
+    if (dif === null || dif === undefined) {
+        return '<span class="sin-dato">—</span>';
+    }
+    if (Math.abs(dif) < 0.005) {
+        return '<span class="dif-cero">$0.00</span>';
+    }
+    return dif > 0
+        ? `<span class="dif-mas">+$${fmt(dif)}</span>`
+        : `<span class="dif-menos">−$${fmt(Math.abs(dif))}</span>`;
+}
+
+async function cargarPlanCompras() {
+
+    const respuesta = await fetchAuth(
+        `${API_URL}/eventos/${eventoId}/plan-compras`
+    );
+
+    const tbody = document.querySelector('#tabla-plan-compras tbody');
+    const tfoot = document.querySelector('#tabla-plan-compras tfoot');
+
+    if (!respuesta.ok) {
+        tbody.innerHTML = `
+            <tr><td colspan="8" class="tabla-vacia">
+                No se pudo cargar la lista de compras.
+            </td></tr>`;
+        tfoot.innerHTML = '';
+        return;
+    }
+
+    const plan = await respuesta.json();
+    _planCompras = plan.insumos || [];
+
+    tbody.innerHTML = '';
+    tfoot.innerHTML = '';
+
+    if (_planCompras.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="8" class="tabla-vacia">
+                Agrega arreglos con insumos para ver la lista de compras.
+            </td></tr>`;
+        return;
+    }
+
+    const puedeComprar = _estatusEvento === 'Confirmado';
+
+    _planCompras.forEach(r => {
+
+        const fila = document.createElement('tr');
+
+        const chipNoPlaneado = r.no_planeado
+            ? '<span class="chip-no-planeado">No planeado</span>'
+            : '';
+
+        let uso = '<span class="sin-dato">—</span>';
+        if (!r.no_planeado) {
+            uso = `${fmtCant(r.uso_total)} ${escapar(r.unidad_uso)}`;
+            if (r.porcentaje_merma > 0) {
+                uso += `<span class="plan-sub">${fmtCant(r.uso_con_merma)} con ` +
+                       `${fmtCant(r.porcentaje_merma)}% merma</span>`;
+            }
+        }
+
+        let compra = '<span class="sin-dato">—</span>';
+        if (!r.no_planeado) {
+            compra = `${fmtCant(r.paquetes_planeados)} ${escapar(r.unidad_compra)}`;
+            compra += r.cobrar_paquete_completo
+                ? `<span class="plan-sub">${fmtCant(r.piezas_por_paquete)} ` +
+                  `${escapar(r.unidad_uso)} c/u · $${fmt(r.costo_paquete)}</span>`
+                : '<span class="plan-sub">Proporcional</span>';
+        }
+
+        const sobrante = r.costo_sobrante > 0
+            ? `${fmtCant(r.piezas_sobrantes)} ${escapar(r.unidad_uso)}` +
+              `<span class="plan-sub">$${fmt(r.costo_sobrante)}</span>`
+            : '<span class="sin-dato">—</span>';
+
+        let comprado = '<span class="sin-dato">Pendiente</span>';
+        if (r.num_compras > 0) {
+            comprado = r.paquetes_comprados
+                ? `${fmtCant(r.paquetes_comprados)} ${escapar(r.unidad_compra)}`
+                : `${r.num_compras} compra${r.num_compras > 1 ? 's' : ''}`;
+            comprado += `<span class="plan-sub">$${fmt(r.monto_comprado)}</span>`;
+        }
+
+        const accion = puedeComprar
+            ? `<button class="btn btn-secondary btn-sm"
+                       onclick="registrarCompraInsumo(${r.insumo_id})">
+                   Registrar compra
+               </button>`
+            : '';
+
+        fila.innerHTML = `
+            <td>
+                <span class="plan-nombre">${escapar(r.nombre)}</span>${chipNoPlaneado}
+                <span class="plan-sub">${escapar(r.codigo)}</span>
+            </td>
+            <td>${uso}</td>
+            <td>${compra}</td>
+            <td>${sobrante}</td>
+            <td class="col-num">$${fmt(r.costo_planeado)}</td>
+            <td>${comprado}</td>
+            <td class="col-num">${textoDiferencia(r.diferencia)}</td>
+            <td>${accion}</td>
+        `;
+
+        tbody.appendChild(fila);
+    });
+
+    const t = plan.totales;
+    const difTotal = t.insumos_comprados > 0 ? t.diferencia : null;
+    const notaDif = difTotal !== null
+        ? '<span class="plan-sub">vs planeado de lo comprado</span>'
+        : '';
+
+    tfoot.innerHTML = `
+        <tr>
+            <td colspan="3">Total</td>
+            <td>${t.costo_sobrante > 0 ? '$' + fmt(t.costo_sobrante) : '—'}</td>
+            <td class="col-num">$${fmt(t.costo_planeado)}</td>
+            <td>
+                $${fmt(t.monto_comprado)}
+                <span class="plan-sub">${t.insumos_comprados} de ${t.insumos_planeados} insumos</span>
+            </td>
+            <td class="col-num">${textoDiferencia(difTotal)}${notaDif}</td>
+            <td></td>
+        </tr>
+    `;
+}
+
+// Opciones del select de insumo del modal: los de la lista de compras,
+// más el ya ligado al gasto aunque no esté en la lista.
+function poblarSelectInsumoGasto(seleccionado) {
+
+    const select = document.getElementById('gasto-insumo');
+    select.innerHTML = '<option value="">Sin ligar a un insumo</option>';
+
+    _planCompras.forEach(r => {
+        const option = document.createElement('option');
+        option.value = r.insumo_id;
+        option.textContent = `${r.codigo} - ${r.nombre}`;
+        option.dataset.unidadCompra = r.unidad_compra ?? '';
+        option.dataset.nombre = r.nombre;
+        select.appendChild(option);
+    });
+
+    if (seleccionado) {
+        const existe = _planCompras.some(r => r.insumo_id === seleccionado);
+        if (!existe) {
+            const option = document.createElement('option');
+            option.value = seleccionado;
+            option.textContent = `Insumo #${seleccionado}`;
+            select.appendChild(option);
+        }
+        select.value = String(seleccionado);
+    }
+}
+
+function alCambiarInsumoGasto() {
+
+    const select   = document.getElementById('gasto-insumo');
+    const paquetes = document.getElementById('gasto-paquetes');
+    const unidad   = document.getElementById('gasto-paquetes-unidad');
+    const opcion   = select.options[select.selectedIndex];
+
+    if (!select.value) {
+        paquetes.disabled = true;
+        paquetes.value = '';
+        unidad.textContent = '';
+        return;
+    }
+
+    paquetes.disabled = false;
+    unidad.textContent = opcion.dataset.unidadCompra
+        ? `(${opcion.dataset.unidadCompra})`
+        : '';
+
+    // Sugerencias solo en campos vacíos: nunca se pisa lo capturado
+    const categoria = document.getElementById('gasto-categoria');
+    const concepto  = document.getElementById('gasto-concepto');
+    if (!categoria.value.trim()) categoria.value = 'Insumos';
+    if (!concepto.value.trim() && opcion.dataset.nombre) {
+        concepto.value = opcion.dataset.nombre;
+    }
+}
+
+// Abre el modal de gasto real ya ligado al insumo, con la compra planeada
+// como sugerencia (paquetes y monto).
+function registrarCompraInsumo(insumoId) {
+
+    const r = _planCompras.find(x => x.insumo_id === insumoId);
+    if (!r) return;
+
+    abrirModalGastoReal();
+
+    document.getElementById('gasto-categoria').value = 'Insumos';
+    document.getElementById('gasto-concepto').value  = r.nombre;
+    poblarSelectInsumoGasto(insumoId);
+    alCambiarInsumoGasto();
+
+    if (!r.no_planeado) {
+        document.getElementById('gasto-paquetes').value =
+            Math.round(r.paquetes_planeados * 100) / 100;
+        document.getElementById('gasto-monto').value =
+            Number(r.costo_planeado).toFixed(2);
+    }
+
+    document.getElementById('gasto-monto').focus();
 }
 
 

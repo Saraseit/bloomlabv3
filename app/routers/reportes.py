@@ -277,7 +277,7 @@ def construir_html_interno(evento):
 
   .kpis {{ padding: 16px 32px; }}
   .kpis table {{ width: 100%; border-collapse: collapse; }}
-  .kpis td {{ width: 25%; padding: 8px; }}
+  .kpis td {{ width: 20%; padding: 8px; }}
   .kpi-box {{ background-color: #f7fbf7; padding: 10px; }}
   .kpi-label {{ font-size: 8px; font-weight: bold; color: #7aaa82; text-transform: uppercase; }}
   .kpi-value {{ font-size: 15px; font-weight: bold; color: #1a2e1e; }}
@@ -339,6 +339,10 @@ def construir_html_interno(evento):
         <div class="kpi-label">Montaje</div>
         <div class="kpi-value">${evento["costo_montaje"]:,.2f}</div>
       </div></td>
+      <td><div class="kpi-box">
+        <div class="kpi-label">Sobrante paquetes</div>
+        <div class="kpi-value">${evento.get("costo_sobrante", 0):,.2f}</div>
+      </div></td>
     </tr>
     <tr>
       <td><div class="kpi-box kpi-final">
@@ -357,6 +361,7 @@ def construir_html_interno(evento):
         <div class="kpi-label">Precio acordado</div>
         <div class="kpi-value">${float(evento["precio_venta"] or 0):,.2f}</div>
       </div></td>
+      <td></td>
     </tr>
   </table>
 </div>

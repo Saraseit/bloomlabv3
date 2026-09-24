@@ -16,6 +16,7 @@ from app.routers.evento_pagos import router as evento_pagos_router
 from app.routers.evento_gastos_reales import (
     router as evento_gastos_reales_router
 )
+from app.routers.evento_compras import router as evento_compras_router
 from app.routers.reportes import router as reportes_router
 from app.routers.reportes_financieros import (
     router as reportes_fin_router
@@ -66,6 +67,7 @@ app.include_router(evento_arreglo_router)
 app.include_router(evento_gastos_router)
 app.include_router(evento_pagos_router)
 app.include_router(evento_gastos_reales_router)
+app.include_router(evento_compras_router)
 app.include_router(reportes_router)
 app.include_router(reportes_fin_router)
 

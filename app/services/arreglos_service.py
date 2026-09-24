@@ -122,6 +122,8 @@ def obtener_arreglo(arreglo_id):
             i.id AS insumo_id,
             i.codigo,
             i.nombre,
+            i.unidad AS unidad_compra,
+            COALESCE(NULLIF(TRIM(i.unidad_uso), ''), i.unidad) AS unidad_uso,
             ad.cantidad,
             ad.costo_real,
             (ad.cantidad * ad.costo_real) AS subtotal,

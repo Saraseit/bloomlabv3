@@ -33,6 +33,9 @@ def obtener_insumos():
             i.unidad,
             i.costo_referencia,
             i.porcentaje_merma,
+            i.unidad_uso,
+            i.piezas_por_paquete,
+            i.cobrar_paquete_completo,
             i.activo,
             i.fecha_creacion
         FROM insumos i
@@ -57,6 +60,11 @@ def obtener_insumos():
     for insumo in resultado:
         insumo["porcentaje_merma"] = merma_a_entero(
             insumo["porcentaje_merma"]
+        )
+        insumo["piezas_por_paquete"] = float(insumo["piezas_por_paquete"] or 1)
+        # Sin unidad de uso capturada, se usa la de compra
+        insumo["unidad_uso"] = (
+            (insumo["unidad_uso"] or "").strip() or insumo["unidad"]
         )
 
     cur.close()
@@ -116,9 +124,15 @@ def crear_insumo(data):
             unidad,
             costo_referencia,
             porcentaje_merma,
+            unidad_uso,
+            piezas_por_paquete,
+            cobrar_paquete_completo,
             activo
         )
         VALUES (
+            %s,
+            %s,
+            %s,
             %s,
             %s,
             %s,
@@ -134,7 +148,10 @@ def crear_insumo(data):
         data.categoria_id,
         data.unidad,
         data.costo_referencia,
-        merma_a_decimal(data.porcentaje_merma)
+        merma_a_decimal(data.porcentaje_merma),
+        _unidad_uso(data),
+        data.piezas_por_paquete,
+        data.cobrar_paquete_completo
     ))
 
     nuevo_id = cur.fetchone()[0]
@@ -150,10 +167,40 @@ def crear_insumo(data):
         "codigo": nuevo_codigo
     }
 
+def _unidad_uso(data):
+    """Unidad de uso capturada, o None si viene vacía (= unidad de compra)."""
+    return (data.unidad_uso or "").strip() or None
+
+
+def _normalizar(texto):
+    return (texto or "").strip().lower()
+
+
 def actualizar_insumo(insumo_id, data):
 
     conn = get_connection()
     cur = conn.cursor()
+
+    cur.execute("""
+        SELECT unidad, unidad_uso, piezas_por_paquete
+        FROM insumos
+        WHERE id = %s
+        FOR UPDATE
+    """, (insumo_id,))
+
+    anterior = cur.fetchone()
+
+    if not anterior:
+        cur.close()
+        conn.close()
+        return {
+            "error": "Insumo no encontrado"
+        }
+
+    unidad_ant, unidad_uso_ant, factor_ant = anterior
+    factor_ant = float(factor_ant or 1)
+    uso_ant = _normalizar(unidad_uso_ant) or _normalizar(unidad_ant)
+    uso_nuevo = _normalizar(data.unidad_uso) or _normalizar(data.unidad)
 
     cur.execute("""
         UPDATE insumos
@@ -162,33 +209,57 @@ def actualizar_insumo(insumo_id, data):
             categoria_id = %s,
             unidad = %s,
             costo_referencia = %s,
-            porcentaje_merma = %s
+            porcentaje_merma = %s,
+            unidad_uso = %s,
+            piezas_por_paquete = %s,
+            cobrar_paquete_completo = %s
         WHERE id = %s
-        RETURNING id
     """, (
         data.nombre,
         data.categoria_id,
         data.unidad,
         data.costo_referencia,
         merma_a_decimal(data.porcentaje_merma),
+        _unidad_uso(data),
+        data.piezas_por_paquete,
+        data.cobrar_paquete_completo,
         insumo_id
     ))
 
-    resultado = cur.fetchone()
+    # Si la unidad de compra sigue igual pero cambió la de uso y el factor
+    # (ej. "PAQ 24" con factor 1 pasa a "tallo" con factor 24), los arreglos
+    # del catálogo tenían la cantidad en la unidad vieja (0.5 paquete).
+    # Se convierten a la nueva (12 tallos) ajustando el costo por unidad en
+    # sentido inverso, así el subtotal de cada renglón no cambia.
+    # Las cotizaciones ya hechas no se tocan: usan su propia foto.
+    convertidos = 0
+    if (
+        _normalizar(unidad_ant) == _normalizar(data.unidad)
+        and uso_ant != uso_nuevo
+        and factor_ant != float(data.piezas_por_paquete)
+    ):
+        cur.execute("""
+            UPDATE arreglo_detalle
+            SET
+                cantidad   = cantidad   * %s::numeric / %s::numeric,
+                costo_real = costo_real * %s::numeric / %s::numeric
+            WHERE insumo_id = %s
+        """, (
+            data.piezas_por_paquete, factor_ant,
+            factor_ant, data.piezas_por_paquete,
+            insumo_id
+        ))
+        convertidos = cur.rowcount
 
     conn.commit()
 
     cur.close()
     conn.close()
 
-    if not resultado:
-        return {
-            "error": "Insumo no encontrado"
-        }
-
     return {
         "mensaje": "Insumo actualizado",
-        "id": resultado[0]
+        "id": insumo_id,
+        "detalles_convertidos": convertidos
     }
 
 def eliminar_insumo(insumo_id):

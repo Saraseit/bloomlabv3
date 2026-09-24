@@ -15,6 +15,11 @@ class EventoGastoRealCreate(BaseModel):
 
     notas: str = ""
 
+    # Opcional: liga el gasto a un insumo para la lista planeado vs comprado
+    insumo_id: int | None = None
+
+    paquetes_comprados: float | None = Field(default=None, ge=0)
+
 
 class EventoGastoRealUpdate(BaseModel):
 
@@ -29,3 +34,8 @@ class EventoGastoRealUpdate(BaseModel):
     es_reembolsable: bool = False
 
     notas: str = ""
+
+    # Opcional: liga el gasto a un insumo para la lista planeado vs comprado
+    insumo_id: int | None = None
+
+    paquetes_comprados: float | None = Field(default=None, ge=0)

@@ -1,4 +1,9 @@
 from app.database.connection import get_connection
+from app.services.compras_service import (
+    calcular_costo_sobrante,
+    copiar_insumos_congelados
+)
+
 def obtener_eventos():
 
     conn = get_connection()
@@ -219,8 +224,11 @@ def actualizar_totales_evento(evento_id):
     # costo_base ahora representa: arreglos + comisión (sin gastos)
     costo_base = costo_arreglos + comision
 
+    # Paquetes incompletos: va aparte, como el flete (sin comisión)
+    costo_sobrante = calcular_costo_sobrante(cur, evento_id)
+
     # costo_final agrega los gastos operativos DESPUÉS de comisión
-    costo_final = costo_base + costo_flete + costo_montaje
+    costo_final = costo_base + costo_flete + costo_montaje + costo_sobrante
 
     precio_minimo   = costo_final / (1 - MARGEN_MINIMO)
     precio_sugerido = costo_final / (1 - MARGEN_OBJETIVO)
@@ -229,11 +237,13 @@ def actualizar_totales_evento(evento_id):
         UPDATE eventos
         SET
             costo_base      = %s,
+            costo_sobrante  = %s,
             costo_final     = %s,
             precio_minimo   = %s,
             precio_sugerido = %s
         WHERE id = %s
-    """, (costo_base, costo_final, precio_minimo, precio_sugerido, evento_id))
+    """, (costo_base, costo_sobrante, costo_final, precio_minimo,
+          precio_sugerido, evento_id))
 
     conn.commit()
     cur.close()
@@ -260,6 +270,7 @@ def obtener_evento(evento_id):
             e.costo_base,
             e.costo_flete,
             e.costo_montaje,
+            e.costo_sobrante,
             e.costo_final,
             e.precio_minimo,
             e.precio_sugerido,
@@ -291,12 +302,14 @@ def obtener_evento(evento_id):
     costo_base    = round(float(resultado["costo_base"]    or 0), 2)
     costo_flete   = round(float(resultado["costo_flete"]   or 0), 2)
     costo_montaje = round(float(resultado["costo_montaje"] or 0), 2)
+    costo_sobrante = round(float(resultado["costo_sobrante"] or 0), 2)
     costo_final   = round(float(resultado["costo_final"]   or 0), 2)
     comision_pct  = float(resultado["comision_porcentaje"] or 0)
 
     resultado["costo_base"]    = costo_base
     resultado["costo_flete"]   = costo_flete
     resultado["costo_montaje"] = costo_montaje
+    resultado["costo_sobrante"] = costo_sobrante
     resultado["costo_final"]   = costo_final
 
     resultado["precio_minimo"]   = round(float(resultado["precio_minimo"]   or 0), 2)
@@ -427,25 +440,33 @@ def duplicar_evento(evento_id: int):
 
     nuevo_id = cur.fetchone()[0]
 
+    # Renglón por renglón para copiar también la foto de insumos
+    # (factor, costo de paquete) con la que se cotizó el original.
     cur.execute("""
-        INSERT INTO evento_arreglos (
-            evento_id,
-            arreglo_id,
-            cantidad,
-            costo_unitario,
-            subtotal,
-            observaciones
-        )
-        SELECT
-            %s,
-            arreglo_id,
-            cantidad,
-            costo_unitario,
-            subtotal,
-            observaciones
+        SELECT id, arreglo_id, cantidad, costo_unitario, subtotal, observaciones
         FROM evento_arreglos
         WHERE evento_id = %s
-    """, (nuevo_id, evento_id))
+        ORDER BY id
+    """, (evento_id,))
+
+    for (ea_id, arreglo_id, cantidad, costo_unitario,
+         subtotal, observaciones) in cur.fetchall():
+
+        cur.execute("""
+            INSERT INTO evento_arreglos (
+                evento_id,
+                arreglo_id,
+                cantidad,
+                costo_unitario,
+                subtotal,
+                observaciones
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, (nuevo_id, arreglo_id, cantidad, costo_unitario,
+              subtotal, observaciones))
+
+        copiar_insumos_congelados(cur, ea_id, cur.fetchone()[0])
 
     conn.commit()
 

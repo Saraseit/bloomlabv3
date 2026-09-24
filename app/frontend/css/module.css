@@ -624,3 +624,24 @@
 .modal-card  { background: #ffffff; }
 .modal-titulo { color: #1a2e1e; }
 .text-muted  { color: #6b7280; }
+
+/* ── Casilla con etiqueta en línea (compartida) ── */
+.check-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.55rem;
+    padding-top: 0.4rem;
+}
+
+.check-row input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #2b5c3c;
+}
+
+.check-row label {
+    font-size: 0.88rem;
+    color: #374151;
+    cursor: pointer;
+}

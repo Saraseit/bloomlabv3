@@ -630,6 +630,53 @@
         .dato-margen-bajo {
             color: #be123c;
         }
+
+        /* ═══════════════════════════════════════════
+           Lista de compras
+           ═══════════════════════════════════════════ */
+        .col-num { text-align: right; }
+
+        #tabla-plan-compras tbody td,
+        #tabla-plan-compras tfoot td {
+            white-space: nowrap;
+        }
+
+        #tabla-plan-compras tfoot td {
+            padding: 0.875rem 1.25rem;
+            font-weight: 700;
+            color: #1a2e1e;
+            border-top: 1.5px solid #e2ede5;
+        }
+
+        .plan-nombre { font-weight: 600; color: #1a2e1e; }
+
+        .plan-sub {
+            display: block;
+            font-size: 0.74rem;
+            color: #6b7280;
+            margin-top: 0.1rem;
+        }
+
+        .dif-mas   { color: #be123c; font-weight: 700; }
+        .dif-menos { color: #047857; font-weight: 700; }
+        .dif-cero  { color: #6b7280; font-weight: 600; }
+
+        .chip-no-planeado {
+            display: inline-flex;
+            padding: 0.1rem 0.5rem;
+            margin-left: 0.4rem;
+            border-radius: 999px;
+            font-size: 0.66rem;
+            font-weight: 600;
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .gasto-nota {
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
     </style>
     <link rel="stylesheet" href="css/dark.css">
     <script src="js/theme.js"></script>
@@ -920,7 +967,7 @@
             <div class="card-head">
                 <div>
                     <h2 class="card-title">Gastos Operativos</h2>
-                    <p class="card-subtitle">Flete y montaje/desmontaje del evento</p>
+                    <p class="card-subtitle">Flete, montaje/desmontaje y paquetes incompletos. Van aparte de la comisión</p>
                 </div>
             </div>
 
@@ -952,6 +999,17 @@
                             onclick="abrirModalGastos()">
                         Editar
                     </button>
+                </div>
+
+                <div class="gasto-item">
+                    <div class="gasto-icon">📦</div>
+                    <div class="gasto-info">
+                        <span class="gasto-label">Sobrante de paquetes</span>
+                        <span class="gasto-valor">
+                            $<span id="valor-sobrante">0.00</span>
+                        </span>
+                        <span class="gasto-nota">Se calcula solo con la lista de compras</span>
+                    </div>
                 </div>
 
             </div>
@@ -1220,6 +1278,7 @@
                         <input type="text" id="gasto-categoria" class="form-input"
                                list="categorias-gasto" placeholder="Ej: Personal, Proveedor...">
                         <datalist id="categorias-gasto">
+                            <option value="Insumos"></option>
                             <option value="Personal"></option>
                             <option value="Proveedor"></option>
                             <option value="Gasolina"></option>
@@ -1233,6 +1292,23 @@
                         <label class="form-label" for="gasto-concepto">Concepto</label>
                         <input type="text" id="gasto-concepto" class="form-input"
                                placeholder="Ej: Ayudantes de montaje, renta de estructura...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gasto-insumo">Insumo (opcional)</label>
+                        <select id="gasto-insumo" class="form-select"
+                                onchange="alCambiarInsumoGasto()">
+                            <option value="">Sin ligar a un insumo</option>
+                        </select>
+                        <span class="input-hint">Liga la compra a la lista de compras</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gasto-paquetes">
+                            Cantidad comprada <span id="gasto-paquetes-unidad"></span>
+                        </label>
+                        <input type="number" id="gasto-paquetes" class="form-input"
+                               placeholder="Ej: 2" step="any" min="0" disabled>
                     </div>
 
                     <div class="form-group form-group-full">
@@ -1305,6 +1381,41 @@
                         </tr>
                     </thead>
                     <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════
+             Lista de compras: planeado vs comprado
+             ══════════════════════════════════ -->
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Lista de Compras</h2>
+                    <p class="card-subtitle">
+                        Insumos de todos los arreglos, redondeados a paquetes completos
+                        cuando el insumo lo pide. Lo comprado sale de los gastos reales
+                        ligados a cada insumo.
+                    </p>
+                </div>
+            </div>
+
+            <div class="table-scroll">
+                <table id="tabla-plan-compras" class="module-table">
+                    <thead>
+                        <tr>
+                            <th>Insumo</th>
+                            <th>Uso</th>
+                            <th>Compra planeada</th>
+                            <th>Sobrante</th>
+                            <th class="col-num">Costo planeado</th>
+                            <th>Comprado</th>
+                            <th class="col-num">Diferencia</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot></tfoot>
                 </table>
             </div>
         </section>

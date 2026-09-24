@@ -940,3 +940,36 @@ html[data-theme="dark"] .login-card .pie {
     border-top-color: var(--bl-border);
     color: var(--bl-faint);
 }
+
+/* ============================================================
+   Lista de compras (detalle_evento.html)
+   ============================================================ */
+
+html[data-theme="dark"] #tabla-plan-compras tfoot td {
+    color: var(--bl-text);
+    border-top-color: var(--bl-border);
+}
+
+html[data-theme="dark"] .plan-nombre {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .plan-sub,
+html[data-theme="dark"] .gasto-nota,
+html[data-theme="dark"] .dif-cero {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .dif-mas {
+    color: #fb7185;
+}
+
+html[data-theme="dark"] .dif-menos {
+    color: #6ee7b7;
+}
+
+html[data-theme="dark"] .chip-no-planeado {
+    background: rgba(251, 191, 36, 0.14);
+    color: #fcd34d;
+    border-color: rgba(251, 191, 36, 0.45);
+}

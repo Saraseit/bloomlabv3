@@ -54,7 +54,7 @@ async function cargarDetalle() {
         fila.innerHTML = `
             <td>${insumo.codigo}</td>
             <td>${insumo.nombre}</td>
-            <td>${insumo.cantidad}</td>
+            <td>${Number(insumo.cantidad)} ${insumo.unidad_uso ?? ""}</td>
             <td>${fmt(insumo.costo_real)}</td>
             <td>${fmt(insumo.subtotal)}</td>
             <td>${insumo.observaciones ?? ""}</td>
@@ -87,13 +87,23 @@ async function cargarInsumos() {
     insumos.forEach(insumo => {
         const option = document.createElement("option");
         option.value = insumo.id;
-        option.textContent = `${insumo.codigo} - ${insumo.nombre}`;
+        option.textContent =
+            `${insumo.codigo} - ${insumo.nombre} (por ${insumo.unidad_uso})`;
 
-        // Costo final = costo_referencia * (1 + porcentaje_merma / 100)
+        // Costo por unidad de USO con merma:
+        // (costo de la unidad de compra / contenido) * (1 + merma / 100).
         // El API retorna la merma como entero (10), no como decimal (0.10).
+        // Se guarda con 4 decimales: $480 / 24 tallos no debe redondear
+        // a centavos antes de multiplicar por la cantidad.
+        const piezas = Number(insumo.piezas_por_paquete) || 1;
         const costoFinal =
-            insumo.costo_referencia * (1 + insumo.porcentaje_merma / 100);
-        option.dataset.costoFinal = costoFinal.toFixed(2);
+            (insumo.costo_referencia / piezas) *
+            (1 + insumo.porcentaje_merma / 100);
+        option.dataset.costoFinal = costoFinal.toFixed(4);
+        option.dataset.unidadUso  = insumo.unidad_uso;
+        option.dataset.presentacion = piezas !== 1
+            ? `${insumo.unidad} de ${piezas} ${insumo.unidad_uso} a $${fmt(insumo.costo_referencia)}`
+            : `${insumo.unidad} a $${fmt(insumo.costo_referencia)}`;
 
         // Se guarda por código de insumo para sugerirlo en el modal de edición
         _costosCatalogo[insumo.codigo] = costoFinal;
@@ -105,10 +115,16 @@ document.getElementById("insumo-select").addEventListener("change", function () 
     const opcionSeleccionada = this.options[this.selectedIndex];
     const costoInput = document.getElementById("costo-real");
 
+    const hint = document.getElementById("hint-unidad-uso");
+
     if (opcionSeleccionada && opcionSeleccionada.dataset.costoFinal) {
         costoInput.value = opcionSeleccionada.dataset.costoFinal;
+        hint.textContent =
+            `Cantidad en ${opcionSeleccionada.dataset.unidadUso}. ` +
+            `Se compra por ${opcionSeleccionada.dataset.presentacion}.`;
     } else {
         costoInput.value = "";
+        hint.textContent = "";
     }
 });
 async function agregarInsumo() {
@@ -171,7 +187,7 @@ function editarDetalle(insumo) {
     const sugerido = _costosCatalogo[insumo.codigo];
     document.getElementById("hint-costo-catalogo").textContent =
         sugerido !== undefined
-            ? `Catálogo (con merma): $${fmt(sugerido)}`
+            ? `Catálogo por ${insumo.unidad_uso ?? "unidad"} (con merma): $${Number(sugerido).toFixed(4)}`
             : "";
 
     document.getElementById("modal-detalle").style.display = "flex";

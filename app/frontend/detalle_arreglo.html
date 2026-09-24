@@ -321,23 +321,26 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="cantidad">Cantidad</label>
+                    <label class="form-label" for="cantidad">Cantidad (unidad de uso)</label>
                     <input
                         type="number"
                         id="cantidad"
                         class="form-input"
-                        placeholder="0"
+                        placeholder="Ej: 12"
+                        step="any"
+                        min="0"
                     >
+                    <span class="input-hint" id="hint-unidad-uso"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="costo-real">Costo Real ($)</label>
+                    <label class="form-label" for="costo-real">Costo por unidad de uso ($)</label>
                     <input
                         type="number"
                         id="costo-real"
                         class="form-input"
                         placeholder="0.00"
-                        step="0.01"
+                        step="any"
                     >
                 </div>
 
@@ -387,13 +390,13 @@
                     <div class="form-group">
                         <label class="form-label" for="edit-cantidad">Cantidad</label>
                         <input type="number" id="edit-cantidad" class="form-input"
-                               placeholder="0" step="0.01" min="0">
+                               placeholder="0" step="any" min="0">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="edit-costo-real">Costo Real ($)</label>
+                        <label class="form-label" for="edit-costo-real">Costo por unidad de uso ($)</label>
                         <input type="number" id="edit-costo-real" class="form-input"
-                               placeholder="0.00" step="0.01" min="0">
+                               placeholder="0.00" step="any" min="0">
                         <span class="input-hint" id="hint-costo-catalogo"></span>
                     </div>
 

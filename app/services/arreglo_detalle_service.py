@@ -67,6 +67,8 @@ def obtener_detalle_arreglo(arreglo_id):
             i.nombre,
             ci.nombre AS categoria,
 
+            i.unidad AS unidad_compra,
+            COALESCE(NULLIF(TRIM(i.unidad_uso), ''), i.unidad) AS unidad_uso,
             ad.cantidad,
             ad.costo_real,
 

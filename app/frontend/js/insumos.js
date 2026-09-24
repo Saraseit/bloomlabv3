@@ -36,6 +36,15 @@ function editarInsumo(insumo) {
     // El API entrega la merma como entero (10), igual que la captura
     // el usuario; la conversión a decimal la hace el backend.
     document.getElementById("edit-merma").value   = insumo.porcentaje_merma ?? 0;
+    document.getElementById("edit-piezas").value  = insumo.piezas_por_paquete ?? 1;
+    // Si la unidad de uso es igual a la de compra se deja vacía, así queda
+    // claro que no se ha definido una unidad de uso propia.
+    document.getElementById("edit-unidad-uso").value =
+        insumo.unidad_uso && insumo.unidad_uso !== insumo.unidad
+            ? insumo.unidad_uso
+            : "";
+    document.getElementById("edit-cobrar-paquete").checked =
+        Boolean(insumo.cobrar_paquete_completo);
 
     document.getElementById("modal-insumo").style.display = "flex";
     document.getElementById("edit-nombre").focus();
@@ -88,6 +97,13 @@ async function guardarInsumoEditado() {
         return;
     }
 
+    const piezas_por_paquete = leerPiezas("edit-piezas");
+    if (piezas_por_paquete === null) return;
+
+    const unidad_uso = document.getElementById("edit-unidad-uso").value.trim();
+    const cobrar_paquete_completo =
+        document.getElementById("edit-cobrar-paquete").checked;
+
     const respuesta = await fetchAuth(`${API_URL}/insumos/${_insumoEditando.id}`, {
         method: "PUT",
         headers: {
@@ -98,13 +114,24 @@ async function guardarInsumoEditado() {
             categoria_id,
             unidad,
             costo_referencia,
-            porcentaje_merma
+            porcentaje_merma,
+            unidad_uso,
+            piezas_por_paquete,
+            cobrar_paquete_completo
         })
     });
 
     if (!respuesta.ok) {
         alert("Error al actualizar");
         return;
+    }
+
+    const resultado = await respuesta.json();
+    if (resultado.detalles_convertidos > 0) {
+        alert(
+            `Se convirtieron ${resultado.detalles_convertidos} renglones de ` +
+            `arreglos a la nueva unidad de uso. Sus subtotales no cambian.`
+        );
     }
 
     cerrarModalInsumo();
@@ -150,6 +177,13 @@ async function nuevoInsumo() {
         document.getElementById("porcentaje-merma").value
     ) || 0;
 
+    const piezas_por_paquete = leerPiezas("piezas-por-paquete");
+    if (piezas_por_paquete === null) return;
+
+    const unidad_uso = document.getElementById("unidad-uso").value.trim();
+    const cobrar_paquete_completo =
+        document.getElementById("cobrar-paquete-completo").checked;
+
     const respuesta = await fetchAuth(`${API_URL}/insumos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -158,7 +192,10 @@ async function nuevoInsumo() {
             categoria_id,
             unidad,
             costo_referencia,
-            porcentaje_merma
+            porcentaje_merma,
+            unidad_uso,
+            piezas_por_paquete,
+            cobrar_paquete_completo
         })
     });
 
@@ -173,6 +210,9 @@ async function nuevoInsumo() {
     document.getElementById("unidad").value           = "";
     document.getElementById("costo-referencia").value = "";
     document.getElementById("porcentaje-merma").value = "";
+    document.getElementById("piezas-por-paquete").value = "1";
+    document.getElementById("unidad-uso").value       = "";
+    document.getElementById("cobrar-paquete-completo").checked = false;
 
     cargarInsumos();
     cargarCategorias();
@@ -196,6 +236,7 @@ async function cargarInsumos() {
             <td>${insumo.nombre}</td>
             <td>${insumo.categoria}</td>
             <td>${insumo.unidad}</td>
+            <td>${textoPresentacion(insumo)}</td>
             <td>${fmt(insumo.costo_referencia)}</td>
             <td>${fmtPct(insumo.porcentaje_merma)}</td>
 
@@ -212,6 +253,35 @@ async function cargarInsumos() {
 
         tbody.appendChild(fila);
     });
+}
+
+// Contenido de la unidad de compra: vacío o >0; vacío cuenta como 1.
+// Devuelve null (y avisa) si el valor no es válido.
+function leerPiezas(idCampo) {
+    const texto = document.getElementById(idCampo).value.trim();
+    if (texto === "") return 1;
+    const piezas = parseFloat(texto);
+    if (isNaN(piezas) || piezas <= 0) {
+        alert("El contenido por unidad de compra debe ser mayor a 0");
+        return null;
+    }
+    return piezas;
+}
+
+// "24 tallo · $20.00 c/u · paquete completo"
+function textoPresentacion(insumo) {
+    const piezas = Number(insumo.piezas_por_paquete) || 1;
+    const partes = [];
+
+    if (piezas !== 1 || insumo.unidad_uso !== insumo.unidad) {
+        partes.push(`${piezas} ${insumo.unidad_uso}`);
+        partes.push(`$${fmt(insumo.costo_referencia / piezas)} c/u`);
+    }
+    if (insumo.cobrar_paquete_completo) {
+        partes.push("paquete completo");
+    }
+
+    return partes.length ? partes.join(" · ") : "—";
 }
 
 // Catálogo de categorías compartido por el formulario y el modal

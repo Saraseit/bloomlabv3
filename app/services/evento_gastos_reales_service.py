@@ -1,6 +1,11 @@
 from app.database.connection import get_connection
 
 
+def _paquetes(data):
+    """Los paquetes solo tienen sentido si el gasto está ligado a un insumo."""
+    return data.paquetes_comprados if data.insumo_id else None
+
+
 def obtener_gastos_reales(evento_id):
 
     conn = get_connection()
@@ -24,6 +29,10 @@ def obtener_gastos_reales(evento_id):
             es_reembolsable,
 
             notas,
+
+            insumo_id,
+
+            paquetes_comprados,
 
             creado_en
 
@@ -49,6 +58,8 @@ def obtener_gastos_reales(evento_id):
     # monto viaja como Decimal desde la base; el frontend lo usa como número
     for gasto in resultado:
         gasto["monto"] = float(gasto["monto"])
+        if gasto["paquetes_comprados"] is not None:
+            gasto["paquetes_comprados"] = float(gasto["paquetes_comprados"])
 
     cur.close()
     conn.close()
@@ -70,11 +81,15 @@ def agregar_gasto_real(evento_id, data):
             concepto,
             monto,
             es_reembolsable,
-            notas
+            notas,
+            insumo_id,
+            paquetes_comprados
 
         )
         VALUES (
 
+            %s,
+            %s,
             %s,
             %s,
             %s,
@@ -93,7 +108,9 @@ def agregar_gasto_real(evento_id, data):
         data.concepto,
         data.monto,
         data.es_reembolsable,
-        data.notas
+        data.notas,
+        data.insumo_id,
+        _paquetes(data)
 
     ))
 
@@ -123,7 +140,9 @@ def editar_gasto_real(gasto_id, data):
             concepto = %s,
             monto = %s,
             es_reembolsable = %s,
-            notas = %s
+            notas = %s,
+            insumo_id = %s,
+            paquetes_comprados = %s
         WHERE id = %s
         RETURNING id
     """, (
@@ -134,6 +153,8 @@ def editar_gasto_real(gasto_id, data):
         data.monto,
         data.es_reembolsable,
         data.notas,
+        data.insumo_id,
+        _paquetes(data),
         gasto_id
 
     ))
