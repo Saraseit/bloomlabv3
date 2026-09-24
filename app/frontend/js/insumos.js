@@ -218,10 +218,24 @@ async function nuevoInsumo() {
     cargarCategorias();
 }
 
+// Insumos cargados, por id: los botones de la fila los buscan aquí en vez
+// de incrustar el objeto en el onclick (un apóstrofo en el nombre lo rompía).
+let _insumosPorId = {};
+
+function escaparHtml(texto) {
+    return String(texto ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
 async function cargarInsumos() {
 
     const respuesta = await fetchAuth(`${API_URL}/insumos`);
     const insumos = await respuesta.json();
+
+    _insumosPorId = {};
 
     const tbody = document.querySelector("#tabla-insumos tbody");
 
@@ -229,30 +243,45 @@ async function cargarInsumos() {
 
     insumos.forEach(insumo => {
 
+        _insumosPorId[insumo.id] = insumo;
+
         const fila = document.createElement("tr");
 
+        // La fila sale completa con sus estilos (chip, $, %, botones).
+        // Antes un post-procesador en insumos.html los aplicaba por
+        // posición de columna, y un JS en caché con otra cantidad de
+        // columnas borraba los botones.
+        const merma = fmtPct(insumo.porcentaje_merma).replace(/%$/, "");
+
         fila.innerHTML = `
-            <td>${insumo.codigo}</td>
-            <td>${insumo.nombre}</td>
-            <td>${insumo.categoria}</td>
-            <td>${insumo.unidad}</td>
-            <td>${textoPresentacion(insumo)}</td>
-            <td>${fmt(insumo.costo_referencia)}</td>
-            <td>${fmtPct(insumo.porcentaje_merma)}</td>
+            <td>${escaparHtml(insumo.codigo)}</td>
+            <td>${escaparHtml(insumo.nombre)}</td>
+            <td><span class="cat-chip">${escaparHtml(insumo.categoria)}</span></td>
+            <td>${escaparHtml(insumo.unidad)}</td>
+            <td>${escaparHtml(textoPresentacion(insumo))}</td>
+            <td><span class="cost-prefix">$</span>${fmt(insumo.costo_referencia)}</td>
+            <td>${merma}<span class="merma-suffix">%</span></td>
 
             <td>
-                <button onclick='editarInsumo(${JSON.stringify(insumo)})'>
-                    Editar
-                </button>
+                <div class="action-cell">
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="editarInsumo(_insumosPorId[${insumo.id}])">
+                        Editar
+                    </button>
 
-                <button onclick="eliminarInsumo(${insumo.id})">
-                    Eliminar
-                </button>
+                    <button class="btn btn-danger btn-sm"
+                            onclick="eliminarInsumo(${insumo.id})">
+                        Eliminar
+                    </button>
+                </div>
             </td>
         `;
 
         tbody.appendChild(fila);
     });
+
+    // Si hay una búsqueda escrita, se reaplica sobre la tabla nueva
+    filtrarInsumos();
 }
 
 // Contenido de la unidad de compra: vacío o >0; vacío cuenta como 1.

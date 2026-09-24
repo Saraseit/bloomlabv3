@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/module.css">
+    <link rel="stylesheet" href="css/estilos.css?v=20260924">
+    <link rel="stylesheet" href="css/module.css?v=20260924">
     <style>
         /* Estilos específicos de Insumos */
         #tabla-insumos tbody td:nth-child(1) {
@@ -62,8 +62,8 @@
             align-items: center;
         }
     </style>
-    <link rel="stylesheet" href="css/dark.css">
-    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/dark.css?v=20260924">
+    <script src="js/theme.js?v=20260924"></script>
 </head>
 
 <body class="module-page">
@@ -323,76 +323,10 @@
 
     </div>
 
-    <!--
-        Post-procesador visual.
-        Observa el tbody y aplica estilos sin modificar insumos.js
-        ni los IDs/funciones existentes.
-    -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var tbody = document.querySelector('#tabla-insumos tbody');
-            if (!tbody) return;
 
-            function estilizarFila(row) {
-                // Categoría chip (índice 2)
-                var catCell = row.cells[2];
-                if (catCell && !catCell.dataset.chipped) {
-                    var texto = catCell.textContent.trim();
-                    if (texto) {
-                        var chip = document.createElement('span');
-                        chip.textContent = texto;
-                        chip.className = 'cat-chip';
-                        catCell.textContent = '';
-                        catCell.appendChild(chip);
-                    }
-                    catCell.dataset.chipped = '1';
-                }
-
-                // Prefijo $ en costo (índice 5)
-                var costoCell = row.cells[5];
-                if (costoCell && !costoCell.dataset.prefixed) {
-                    var val = costoCell.textContent.trim();
-                    costoCell.innerHTML = '<span class="cost-prefix">$</span>' + val;
-                    costoCell.dataset.prefixed = '1';
-                }
-
-                // Merma (índice 6): insumos.js ya renderiza el '%',
-                // aquí solo se le da el estilo del sufijo.
-                var mermaCell = row.cells[6];
-                if (mermaCell && !mermaCell.dataset.suffixed) {
-                    var mval = mermaCell.textContent.trim().replace(/%$/, '');
-                    mermaCell.innerHTML = mval + '<span class="merma-suffix">%</span>';
-                    mermaCell.dataset.suffixed = '1';
-                }
-
-                // Botones de acción (índice 7)
-                var actionCell = row.cells[7];
-                if (actionCell && !actionCell.dataset.styled) {
-                    var btns = actionCell.querySelectorAll('button');
-                    actionCell.classList.add('action-cell');
-                    if (btns[0]) btns[0].className = 'btn btn-secondary btn-sm'; // Editar
-                    if (btns[1]) btns[1].className = 'btn btn-danger btn-sm';    // Eliminar
-                    actionCell.dataset.styled = '1';
-                }
-            }
-
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    mutation.addedNodes.forEach(function (node) {
-                        if (node.nodeType === 1 && node.tagName === 'TR') {
-                            estilizarFila(node);
-                        }
-                    });
-                });
-            });
-
-            observer.observe(tbody, { childList: true });
-        });
-    </script>
-
-    <script src="auth.js"></script>
-    <script src="config.js"></script>
-    <script src="js/insumos.js"></script>
+    <script src="auth.js?v=20260924"></script>
+    <script src="config.js?v=20260924"></script>
+    <script src="js/insumos.js?v=20260924"></script>
 
 </body>
 

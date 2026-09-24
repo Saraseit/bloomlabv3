@@ -78,10 +78,25 @@ app.include_router(reportes_fin_router)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
+class FrontendSinCache(StaticFiles):
+    """Archivos del frontend que el navegador revalida en cada carga.
+
+    Sin Cache-Control el navegador aplica caché heurística y, tras un
+    despliegue, puede mezclar un HTML nuevo con un JS viejo. no-cache no
+    impide guardar el archivo: obliga a preguntar con el ETag, y si no
+    cambió el servidor responde 304 sin volver a mandarlo.
+    """
+
+    async def get_response(self, path, scope):
+        respuesta = await super().get_response(path, scope)
+        respuesta.headers["Cache-Control"] = "no-cache"
+        return respuesta
+
+
 if os.path.exists(FRONTEND_DIR):
     app.mount(
         "/frontend",
-        StaticFiles(directory=FRONTEND_DIR, html=True),
+        FrontendSinCache(directory=FRONTEND_DIR, html=True),
         name="frontend"
     )
 
