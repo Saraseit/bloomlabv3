@@ -26,11 +26,25 @@ if not DATABASE_URL:
 
 pool = ConnectionPool(
     conninfo=DATABASE_URL,
-    kwargs={"sslmode": "require"},
+    kwargs={
+        "sslmode": "require",
+        # Neon atiende por un PgBouncer en modo transacción. psycopg prepara
+        # en el servidor las consultas que se repiten (5+ veces), y cuando
+        # Neon suspende la base y PgBouncer reasigna la conexión real, esas
+        # consultas preparadas ya no existen: cada request fallaba con 500
+        # hasta reiniciar la app. Sin preparar, no hay estado que perder.
+        "prepare_threshold": None,
+    },
     min_size=1,
     max_size=5,
     max_waiting=10,
     timeout=10.0,
+    # Antes de prestar una conexión se comprueba que siga viva; si no,
+    # el pool la descarta y abre otra en lugar de entregarla rota.
+    check=ConnectionPool.check_connection,
+    # Neon suspende la base tras ~5 min sin uso. Las conexiones inactivas
+    # se renuevan antes de eso para no quedarse con sesiones muertas.
+    max_idle=240,
     open=False,
 )
 
