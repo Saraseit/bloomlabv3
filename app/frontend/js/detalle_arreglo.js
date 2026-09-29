@@ -76,12 +76,27 @@ async function cargarDetalle() {
 cargarDetalle();
 cargarInsumos();
 
+// Catálogo cargado; el buscador filtra sobre este arreglo
+let _insumosCatalogo = [];
+
+// Costo por unidad de USO con merma:
+// (costo de la unidad de compra / contenido) * (1 + merma / 100).
+// El API retorna la merma como entero (10), no como decimal (0.10).
+function costoPorUso(insumo) {
+    const piezas = Number(insumo.piezas_por_paquete) || 1;
+    return (insumo.costo_referencia / piezas) *
+        (1 + insumo.porcentaje_merma / 100);
+}
+
 async function cargarInsumos() {
 
     const respuesta = await fetchAuth(`${API_URL}/insumos`);
     const insumos = await respuesta.json();
+    _insumosCatalogo = insumos;
 
     const select = document.getElementById("insumo-select");
+    // Se conserva la elección al recargar (p. ej. tras editar un renglón)
+    const elegidoAntes = select.value;
     select.innerHTML = `<option value="">Seleccionar insumo</option>`;
 
     insumos.forEach(insumo => {
@@ -90,15 +105,10 @@ async function cargarInsumos() {
         option.textContent =
             `${insumo.codigo} - ${insumo.nombre} (por ${insumo.unidad_uso})`;
 
-        // Costo por unidad de USO con merma:
-        // (costo de la unidad de compra / contenido) * (1 + merma / 100).
-        // El API retorna la merma como entero (10), no como decimal (0.10).
         // Se guarda con 4 decimales: $480 / 24 tallos no debe redondear
         // a centavos antes de multiplicar por la cantidad.
         const piezas = Number(insumo.piezas_por_paquete) || 1;
-        const costoFinal =
-            (insumo.costo_referencia / piezas) *
-            (1 + insumo.porcentaje_merma / 100);
+        const costoFinal = costoPorUso(insumo);
         option.dataset.costoFinal = costoFinal.toFixed(4);
         option.dataset.unidadUso  = insumo.unidad_uso;
         option.dataset.presentacion = piezas !== 1
@@ -110,7 +120,49 @@ async function cargarInsumos() {
 
         select.appendChild(option);
     });
+
+    select.value = elegidoAntes;
 }
+
+// Buscador de insumos: escribir muestra las coincidencias resaltadas.
+// Al elegir una, se fija en el select oculto y se dispara su "change",
+// que llena el costo sugerido y la pista de unidad como antes.
+const _buscadorInsumo = crearAutocompletado({
+    input: document.getElementById("insumo-buscar"),
+    lista: document.getElementById("insumo-sugerencias"),
+    obtenerItems: () => _insumosCatalogo,
+    textos: i => [i.codigo, i.nombre, i.categoria],
+    etiqueta: i => `${i.codigo} - ${i.nombre}`,
+    pintar: (i, q) => `
+        <span class="combo-principal">
+            <span class="combo-codigo">${resaltarCoincidencias(i.codigo, q)}</span>
+            <span class="combo-nombre">${resaltarCoincidencias(i.nombre, q)}</span>
+        </span>
+        <span class="combo-meta">
+            ${resaltarCoincidencias(i.categoria, q)} ·
+            $${fmt(costoPorUso(i))} por ${
+                i.unidad_uso && i.unidad_uso.trim() !== "-"
+                    ? escaparTextoHtml(i.unidad_uso)
+                    : "unidad"
+            }
+        </span>`,
+    alElegir: item => {
+        const select = document.getElementById("insumo-select");
+        select.value = item ? String(item.id) : "";
+        select.dispatchEvent(new Event("change"));
+        if (item) document.getElementById("cantidad").focus();
+    },
+});
+
+function limpiarFormularioInsumo() {
+    _buscadorInsumo.limpiar();
+    document.getElementById("insumo-select").value = "";
+    document.getElementById("cantidad").value = "";
+    document.getElementById("costo-real").value = "";
+    document.getElementById("observaciones").value = "";
+    document.getElementById("hint-unidad-uso").textContent = "";
+}
+
 document.getElementById("insumo-select").addEventListener("change", function () {
     const opcionSeleccionada = this.options[this.selectedIndex];
     const costoInput = document.getElementById("costo-real");
@@ -134,6 +186,20 @@ async function agregarInsumo() {
     const costo_real = parseFloat(document.getElementById("costo-real").value);
     const observaciones = document.getElementById("observaciones").value;
 
+    if (!insumo_id) {
+        alert("Escribe y elige un insumo de la lista");
+        _buscadorInsumo.enfocar();
+        return;
+    }
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert("La cantidad debe ser mayor a 0");
+        return;
+    }
+    if (isNaN(costo_real) || costo_real < 0) {
+        alert("Captura un costo válido");
+        return;
+    }
+
     const respuesta = await fetchAuth(`${API_URL}/arreglo-detalle`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,8 +217,10 @@ async function agregarInsumo() {
         return;
     }
 
+    // Listo para capturar el siguiente insumo
+    limpiarFormularioInsumo();
+    _buscadorInsumo.enfocar();
     cargarDetalle();
-    cargarInsumos();
 }
 
 async function eliminarDetalle(id) {
@@ -163,11 +231,7 @@ async function eliminarDetalle(id) {
     await fetchAuth(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
 
     cargarDetalle();
-
-    document.getElementById("insumo-select").value = "";
-    document.getElementById("cantidad").value = "";
-    document.getElementById("costo-real").value = "";
-    document.getElementById("observaciones").value = "";
+    limpiarFormularioInsumo();
 }
 
 // ── Modal de edición del detalle ───────────────

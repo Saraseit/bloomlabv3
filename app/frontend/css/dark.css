@@ -973,3 +973,42 @@ html[data-theme="dark"] .chip-no-planeado {
     color: #fcd34d;
     border-color: rgba(251, 191, 36, 0.45);
 }
+
+/* ============================================================
+   Búsqueda y sugerencias (js/buscador.js)
+   ============================================================ */
+
+html[data-theme="dark"] mark {
+    background: rgba(251, 191, 36, 0.35);
+    color: #fef3c7;
+}
+
+html[data-theme="dark"] .search-count {
+    color: var(--bl-accent);
+}
+
+html[data-theme="dark"] .combo-lista {
+    background: var(--bl-surface);
+    border-color: var(--bl-border-2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .combo-lista [role=option][aria-selected=true],
+html[data-theme="dark"] .combo-lista [role=option]:hover {
+    background: var(--bl-surface-3);
+}
+
+html[data-theme="dark"] .combo-nombre {
+    color: var(--bl-text);
+}
+
+html[data-theme="dark"] .combo-codigo,
+html[data-theme="dark"] .combo-meta,
+html[data-theme="dark"] .combo-vacio,
+html[data-theme="dark"] .combo-mas {
+    color: var(--bl-muted);
+}
+
+html[data-theme="dark"] .combo-mas {
+    border-top-color: var(--bl-border);
+}

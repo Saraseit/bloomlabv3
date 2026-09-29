@@ -246,6 +246,7 @@ async function cargarInsumos() {
         _insumosPorId[insumo.id] = insumo;
 
         const fila = document.createElement("tr");
+        fila.dataset.id = insumo.id;
 
         // La fila sale completa con sus estilos (chip, $, %, botones).
         // Antes un post-procesador en insumos.html los aplicaba por
@@ -254,9 +255,9 @@ async function cargarInsumos() {
         const merma = fmtPct(insumo.porcentaje_merma).replace(/%$/, "");
 
         fila.innerHTML = `
-            <td>${escaparHtml(insumo.codigo)}</td>
-            <td>${escaparHtml(insumo.nombre)}</td>
-            <td><span class="cat-chip">${escaparHtml(insumo.categoria)}</span></td>
+            <td class="celda-codigo">${escaparHtml(insumo.codigo)}</td>
+            <td class="celda-nombre">${escaparHtml(insumo.nombre)}</td>
+            <td><span class="cat-chip celda-categoria">${escaparHtml(insumo.categoria)}</span></td>
             <td>${escaparHtml(insumo.unidad)}</td>
             <td>${escaparHtml(textoPresentacion(insumo))}</td>
             <td><span class="cost-prefix">$</span>${fmt(insumo.costo_referencia)}</td>
@@ -347,24 +348,38 @@ async function cargarCategorias() {
     );
 }
 
+// Filtra la tabla mientras se escribe. Ignora acentos y mayúsculas,
+// acepta varias palabras en cualquier orden ("rosa blan") y resalta
+// lo que coincidió en código, nombre y categoría.
 function filtrarInsumos() {
-    const texto = document.getElementById('buscador-insumos')
-        .value.toLowerCase().trim();
+    const consulta = document.getElementById('buscador-insumos').value.trim();
     const filas = document.querySelectorAll('#tabla-insumos tbody tr');
+    let visibles = 0;
 
     filas.forEach(fila => {
-        // Busca en: código (0), nombre (1), categoría (2)
-        const codigo    = fila.cells[0]?.textContent.toLowerCase() ?? '';
-        const nombre    = fila.cells[1]?.textContent.toLowerCase() ?? '';
-        const categoria = fila.cells[2]?.textContent.toLowerCase() ?? '';
+        const insumo = _insumosPorId[fila.dataset.id];
+        if (!insumo) return;
 
-        const coincide = !texto ||
-            codigo.includes(texto) ||
-            nombre.includes(texto) ||
-            categoria.includes(texto);
+        const coincide = coincideBusqueda(
+            [insumo.codigo, insumo.nombre, insumo.categoria], consulta
+        );
 
         fila.style.display = coincide ? '' : 'none';
+        if (!coincide) return;
+        visibles++;
+
+        fila.querySelector('.celda-codigo').innerHTML =
+            resaltarCoincidencias(insumo.codigo, consulta);
+        fila.querySelector('.celda-nombre').innerHTML =
+            resaltarCoincidencias(insumo.nombre, consulta);
+        fila.querySelector('.celda-categoria').innerHTML =
+            resaltarCoincidencias(insumo.categoria, consulta);
     });
+
+    const conteo = document.getElementById('conteo-insumos');
+    conteo.textContent = consulta
+        ? (visibles === 1 ? '1 coincidencia' : `${visibles} coincidencias`)
+        : '';
 }
 
 // INIT (IMPORTANTE: solo una vez)

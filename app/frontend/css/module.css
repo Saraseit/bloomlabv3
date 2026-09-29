@@ -645,3 +645,90 @@
     color: #374151;
     cursor: pointer;
 }
+
+/* ── Búsqueda: resaltado y conteo (compartido) ── */
+mark {
+    background: #fde68a;
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 1px;
+}
+
+.search-count {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #4a7a5a;
+    white-space: nowrap;
+}
+
+/* ── Buscador con sugerencias (js/buscador.js) ── */
+.combo {
+    position: relative;
+}
+
+.combo-lista {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    max-height: 320px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background: #ffffff;
+    border: 1.5px solid #d1e8d7;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(26, 46, 30, 0.14);
+}
+
+.combo-lista [role=option] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.combo-lista [role=option][aria-selected=true],
+.combo-lista [role=option]:hover {
+    background: #eef7f0;
+}
+
+.combo-principal {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+}
+
+.combo-codigo {
+    font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+    font-size: 0.74rem;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.combo-nombre {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a2e1e;
+}
+
+.combo-meta {
+    font-size: 0.76rem;
+    color: #6b7280;
+}
+
+.combo-vacio,
+.combo-mas {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+.combo-mas {
+    border-top: 1px solid #edf3ee;
+    margin-top: 0.2rem;
+}
