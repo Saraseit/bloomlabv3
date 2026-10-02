@@ -1,4 +1,8 @@
-const API_URL = "https://bloomlabv3.onrender.com";
+// Vacío = mismo servidor que entrega estas pantallas. El backend sirve el
+// frontend desde /frontend, así que la API siempre está en el mismo origen,
+// sea Railway, Render o local (uvicorn). Con una dirección fija, cambiar de
+// hosting obligaba a editar este archivo.
+const API_URL = "";
 
 // ──────────────────────────────────────────────
 // Formateo de valores
