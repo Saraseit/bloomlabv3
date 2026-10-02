@@ -108,3 +108,46 @@ def root():
     return {
         "mensaje": "BloomLab API funcionando 🚀"
     }
+
+# -------------------------
+# SALUD (diagnóstico)
+# -------------------------
+# async a propósito: corre en el bucle principal sin pedir un hilo. Si
+# los hilos se agotan, esta ruta sigue respondiendo y muestra cuántos
+# están ocupados, así se distingue un servidor atorado de uno caído.
+# No toca la base ni expone datos de negocio.
+import threading
+import time
+from datetime import datetime, timezone
+
+import anyio.to_thread
+
+from app.database.connection import pool
+
+_INICIO_PROCESO = time.time()
+
+
+@app.get("/salud")
+async def salud():
+    limitador = anyio.to_thread.current_default_thread_limiter()
+    stats = pool.get_stats()
+    return {
+        "ok": True,
+        "proceso_desde": datetime.fromtimestamp(
+            _INICIO_PROCESO, timezone.utc
+        ).isoformat(timespec="seconds"),
+        "minutos_activo": round((time.time() - _INICIO_PROCESO) / 60, 1),
+        "hilos_sistema": threading.active_count(),
+        "hilos_peticiones": {
+            "ocupados": limitador.borrowed_tokens,
+            "maximo": limitador.total_tokens,
+        },
+        "pool_bd": {
+            "conexiones": stats.get("pool_size"),
+            "libres": stats.get("pool_available"),
+            "peticiones_esperando": stats.get("requests_waiting", 0),
+            "errores_al_pedir": stats.get("requests_errors", 0),
+            "conexiones_perdidas": stats.get("connections_lost", 0),
+            "errores_al_conectar": stats.get("connections_errors", 0),
+        },
+    }

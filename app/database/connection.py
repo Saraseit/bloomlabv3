@@ -34,6 +34,20 @@ pool = ConnectionPool(
         # consultas preparadas ya no existen: cada request fallaba con 500
         # hasta reiniciar la app. Sin preparar, no hay estado que perder.
         "prepare_threshold": None,
+        # Sin estos límites, una conexión que la red corta en silencio
+        # deja el hilo esperando para siempre. Con el tiempo se agotan los
+        # hilos del servidor y todo se cuelga, hasta los archivos estáticos.
+        # - connect_timeout: no esperar más de 10 s al abrir conexión.
+        # - keepalives: un paquete cada 30 s mantiene viva la ruta de red y
+        #   detecta en ~1 min si el otro lado ya no existe.
+        # - tcp_user_timeout: si algo enviado no se confirma en 15 s, la
+        #   conexión se da por muerta (Linux, que es donde corre Render).
+        "connect_timeout": 10,
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 3,
+        "tcp_user_timeout": 15000,
     },
     min_size=1,
     max_size=5,
@@ -45,6 +59,8 @@ pool = ConnectionPool(
     # Neon suspende la base tras ~5 min sin uso. Las conexiones inactivas
     # se renuevan antes de eso para no quedarse con sesiones muertas.
     max_idle=240,
+    # Ninguna conexión vive más de 30 min, aunque se use seguido
+    max_lifetime=1800,
     open=False,
 )
 
