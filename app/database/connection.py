@@ -51,7 +51,10 @@ pool = ConnectionPool(
     },
     min_size=1,
     max_size=5,
-    max_waiting=10,
+    # Cada página pide varias cosas a la vez. Con solo 10 en espera, una
+    # ráfaga de 20 rechazaba al resto con 500 al instante. Las consultas
+    # tardan milisegundos: es mejor que esperen turno (hasta `timeout`).
+    max_waiting=100,
     timeout=10.0,
     # Antes de prestar una conexión se comprueba que siga viva; si no,
     # el pool la descarta y abre otra en lugar de entregarla rota.
