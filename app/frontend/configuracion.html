@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261005">
-    <link rel="stylesheet" href="css/module.css?v=20261005">
+    <link rel="stylesheet" href="css/estilos.css?v=20261008">
+    <link rel="stylesheet" href="css/module.css?v=20261008">
     <style>
         /* ═══════════════════════════════════════════
            Configuración — estilos específicos
@@ -101,8 +101,8 @@
         .mensaje-ok    { color: #047857; }
         .mensaje-error { color: #be123c; }
     </style>
-    <link rel="stylesheet" href="css/dark.css?v=20261005">
-    <script src="js/theme.js?v=20261005"></script>
+    <link rel="stylesheet" href="css/dark.css?v=20261008">
+    <script src="js/theme.js?v=20261008"></script>
 </head>
 
 <body class="module-page">
@@ -156,36 +156,37 @@
             <div class="card-head">
                 <div>
                     <h2 class="card-title">Cómo se calculan los precios</h2>
-                    <p class="card-subtitle">Ganancia y comisión son porcentajes del precio de venta (margen), no del costo (markup)</p>
+                    <p class="card-subtitle">Comisión y ganancia se aplican como margen, no como markup, y solo a los arreglos</p>
                 </div>
             </div>
 
             <div class="explicacion">
                 <p>
-                    <strong>Margen de ganancia:</strong> qué parte del precio total del evento es ganancia.
-                    <strong>Comisión del cliente:</strong> qué parte del precio de los arreglos se lleva el cliente.
-                    Se captura en cada evento. Flete y montaje se cobran a costo y no generan comisión.
+                    <strong>Orden del cálculo, en cada arreglo:</strong> al costo del arreglo se le
+                    suma primero la comisión del cliente y después la ganancia del negocio. Las dos se
+                    aplican como margen, dividiendo entre (1 − porcentaje). La comisión se captura en
+                    cada evento. Flete y montaje se cobran a costo: no llevan comisión ni ganancia.
                 </p>
-                <span class="formula">ganancia = precio de arreglos − comisión − costo de arreglos − sobrante
-margen efectivo = ganancia ÷ precio total</span>
+                <span class="formula">costo con comisión = costo ÷ (1 − comisión)
+precio final del arreglo = costo con comisión ÷ (1 − margen)
+margen efectivo = ganancia ÷ precio de los arreglos</span>
                 <p>
-                    Ejemplo: arreglos que cuestan $1,000, comisión del 10% y margen del 30%.
-                    El precio de los arreglos sale en $1,666.67, porque $1,000 ÷ (1 − 0.10 − 0.30).
-                    De ese precio, $166.67 son la comisión del cliente, que es el 10%.
-                    Otros $500 son la ganancia, que es el 30%.
+                    Ejemplo: un arreglo que cuesta $1,000, con comisión del 10% y margen del 30%.
+                    Con la comisión queda en $1,111.11: la comisión es $111.11, el 10% de ese monto.
+                    El precio final es $1,587.30: la ganancia es $476.19, el 30% del precio final.
                 </p>
                 <p>
-                    Con markup, el 30% se calcularía sobre el costo y el precio sería menor:
-                    la ganancia real terminaría por debajo de lo que dice el porcentaje.
+                    Con markup los porcentajes se calcularían sobre el costo y el precio sería menor:
+                    la ganancia real quedaría por debajo de lo que dice el porcentaje.
                 </p>
             </div>
         </section>
 
     </div>
 
-    <script src="auth.js?v=20261005"></script>
-    <script src="config.js?v=20261005"></script>
-    <script src="js/configuracion.js?v=20261005"></script>
+    <script src="auth.js?v=20261008"></script>
+    <script src="config.js?v=20261008"></script>
+    <script src="js/configuracion.js?v=20261008"></script>
 
 </body>
 

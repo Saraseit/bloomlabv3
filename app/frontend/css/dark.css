@@ -404,7 +404,6 @@ html[data-theme="dark"] #tabla-insumos tbody td:nth-child(5),
 html[data-theme="dark"] #tabla-eventos tbody td:nth-child(3),
 html[data-theme="dark"] #tabla-eventos tbody td:nth-child(7),
 html[data-theme="dark"] #tabla-detalle tbody td:nth-child(5),
-html[data-theme="dark"] #tabla-evento-arreglos tbody td:nth-child(5),
 html[data-theme="dark"] #tabla-pagos tbody td:nth-child(4),
 html[data-theme="dark"] #tabla-gastos-reales tbody td:nth-child(4),
 html[data-theme="dark"] .valor-positivo,
@@ -1078,8 +1077,17 @@ html[data-theme="dark"] .explicacion .formula {
     color: var(--bl-text);
 }
 
-html[data-theme="dark"] #tabla-evento-arreglos .col-precio {
-    color: var(--bl-accent);
+html[data-theme="dark"] #tabla-evento-arreglos .col-ganancia {
+    color: #6ee7b7;
+}
+
+html[data-theme="dark"] #tabla-evento-arreglos .col-final {
+    color: var(--bl-accent-2);
+    background: rgba(111, 191, 133, 0.08);
+}
+
+html[data-theme="dark"] #tabla-evento-arreglos .sub-celda {
+    color: var(--bl-muted);
 }
 
 html[data-theme="dark"] #tabla-evento-arreglos .col-comision {

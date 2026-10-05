@@ -20,6 +20,8 @@ def resumen_general():
                 e.id,
                 e.precio_venta,
                 e.costo_final,
+                e.costo_flete,
+                e.costo_montaje,
                 e.fecha_evento,
                 e.cliente_id,
                 COALESCE(SUM(gr.monto), 0) AS gastos_reales
@@ -30,6 +32,7 @@ def resumen_general():
               AND e.estatus = 'Confirmado'
               AND e.precio_venta IS NOT NULL
             GROUP BY e.id, e.precio_venta, e.costo_final,
+                     e.costo_flete, e.costo_montaje,
                      e.fecha_evento, e.cliente_id
         ),
         pagos AS (
@@ -45,9 +48,12 @@ def resumen_general():
             COALESCE(SUM(c.costo_final), 0)            AS costos_totales,
             COALESCE(SUM(c.precio_venta - c.costo_final
                          - c.gastos_reales), 0)        AS utilidad_real,
+            -- Margen sobre el precio de los arreglos: la ganancia solo
+            -- se aplica a arreglos; flete y montaje van a costo.
             COALESCE(AVG(
-                CASE WHEN c.precio_venta > 0
-                THEN (c.precio_venta - c.costo_final) / c.precio_venta * 100
+                CASE WHEN c.precio_venta - c.costo_flete - c.costo_montaje > 0
+                THEN (c.precio_venta - c.costo_final)
+                     / (c.precio_venta - c.costo_flete - c.costo_montaje) * 100
                 END), 0)                               AS margen_promedio,
             COALESCE(SUM(p.total_pagado), 0)           AS total_cobrado,
             COALESCE(SUM(c.precio_venta)
@@ -252,9 +258,10 @@ def rentabilidad_por_evento():
             COALESCE(SUM(gr.monto), 0)     AS gastos_reales,
             e.precio_venta - e.costo_final
                 - COALESCE(SUM(gr.monto), 0) AS utilidad,
-            CASE WHEN e.precio_venta > 0
+            -- Margen sobre el precio de los arreglos (sin flete ni montaje)
+            CASE WHEN e.precio_venta - e.costo_flete - e.costo_montaje > 0
                 THEN ROUND((e.precio_venta - e.costo_final)
-                    / e.precio_venta * 100, 2)
+                    / (e.precio_venta - e.costo_flete - e.costo_montaje) * 100, 2)
                 ELSE 0 END                 AS margen_pct
         FROM eventos e
         JOIN clientes c
@@ -265,7 +272,8 @@ def rentabilidad_por_evento():
           AND e.estatus = 'Confirmado'
           AND e.precio_venta IS NOT NULL
         GROUP BY e.id, e.nombre, e.tipo_evento, e.fecha_evento,
-                 c.nombre, e.precio_venta, e.costo_final
+                 c.nombre, e.precio_venta, e.costo_final,
+                 e.costo_flete, e.costo_montaje
         ORDER BY e.fecha_evento DESC
     """)
 

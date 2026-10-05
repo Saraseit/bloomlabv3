@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261005">
-    <link rel="stylesheet" href="css/module.css?v=20261005">
+    <link rel="stylesheet" href="css/estilos.css?v=20261008">
+    <link rel="stylesheet" href="css/module.css?v=20261008">
     <style>
         /* ═══════════════════════════════════════════
            Detalle Evento — estilos específicos
@@ -302,7 +302,7 @@
         /* Con 9 columnas, el nombre necesita ancho propio; si no cabe,
            la tabla se desplaza dentro de su tarjeta */
         #tabla-evento-arreglos .col-arreglo {
-            min-width: 230px;
+            min-width: 200px;
         }
 
         #tabla-evento-arreglos .obs-arreglo {
@@ -319,9 +319,23 @@
             padding-right: 0.9rem;
         }
 
-        #tabla-evento-arreglos .col-precio {
+        #tabla-evento-arreglos .col-ganancia {
+            font-weight: 600;
+            color: #047857;
+        }
+
+        /* Lo que se le comunica al cliente: el precio final */
+        #tabla-evento-arreglos .col-final {
             font-weight: 700;
-            color: #2b5c3c;
+            color: #1a3d28;
+            background: #f3faf0;
+        }
+
+        #tabla-evento-arreglos .sub-celda {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 400;
+            color: #6b7280;
         }
 
         #tabla-evento-arreglos .col-comision {
@@ -849,8 +863,8 @@
             color: #9ca3af;
         }
     </style>
-    <link rel="stylesheet" href="css/dark.css?v=20261005">
-    <script src="js/theme.js?v=20261005"></script>
+    <link rel="stylesheet" href="css/dark.css?v=20261008">
+    <script src="js/theme.js?v=20261008"></script>
 </head>
 
 <body class="module-page">
@@ -980,7 +994,7 @@
                 <span class="kpi-value">
                     <span class="kpi-currency">$</span><span id="precio-minimo">0</span>
                 </span>
-                <span class="kpi-sub"><span class="pct-minimo">20</span>% de margen</span>
+                <span class="kpi-sub"><span class="pct-minimo">20</span>% de margen sobre arreglos</span>
             </div>
 
             <div class="kpi-card kpi-sugerido">
@@ -989,7 +1003,7 @@
                 <span class="kpi-value">
                     <span class="kpi-currency">$</span><span id="precio-sugerido">0</span>
                 </span>
-                <span class="kpi-sub"><span class="pct-objetivo">30</span>% de margen</span>
+                <span class="kpi-sub"><span class="pct-objetivo">30</span>% de margen sobre arreglos</span>
             </div>
 
         </div>
@@ -1002,8 +1016,9 @@
                 <div>
                     <h2 class="card-title">Comisión del cliente</h2>
                     <p class="card-subtitle">
-                        Se negocia en cada evento. Es un porcentaje del precio de venta
-                        de cada arreglo (margen, no markup). Flete y montaje no generan comisión.
+                        Se negocia en cada evento y se suma primero al costo de cada arreglo,
+                        como margen: costo ÷ (1 − comisión). La ganancia se calcula después,
+                        sobre ese monto. Flete y montaje no llevan comisión ni ganancia.
                     </p>
                 </div>
             </div>
@@ -1626,11 +1641,11 @@
                             <th>Código</th>
                             <th>Arreglo</th>
                             <th class="col-num">Cant.</th>
-                            <th class="col-num">Costo unit.</th>
                             <th class="col-num">Costo</th>
-                            <th class="col-num">Precio venta</th>
-                            <th class="col-num">Comisión %</th>
-                            <th class="col-num">Comisión $</th>
+                            <th class="col-num">Comisión</th>
+                            <th class="col-num">Ganancia</th>
+                            <th class="col-num">Precio final c/u</th>
+                            <th class="col-num">Precio final</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -1731,9 +1746,9 @@
     </div>
 
 
-    <script src="auth.js?v=20261005"></script>
-    <script src="config.js?v=20261005"></script>
-    <script src="js/detalle_evento.js?v=20261005"></script>
+    <script src="auth.js?v=20261008"></script>
+    <script src="config.js?v=20261008"></script>
+    <script src="js/detalle_evento.js?v=20261008"></script>
 
 </body>
 

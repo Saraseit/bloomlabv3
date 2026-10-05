@@ -1,67 +1,75 @@
-"""Precios del evento con MARGEN (sobre el precio), no markup (sobre el costo).
+"""Precios del evento: comisión y ganancia como MARGEN, en ese orden, solo sobre arreglos.
 
-Los dos porcentajes se miden sobre el precio de venta:
-- Comisión del cliente: c = comisión / precio de los arreglos.
-- Margen de ganancia:   m = ganancia / precio total del evento.
+Cómo se arma el precio final de cada arreglo:
+  1. Costo: cantidad × costo unitario, más su parte del sobrante de paquetes.
+  2. Comisión del cliente, margen c, se suma primero:
+        costo con comisión = costo ÷ (1 − c)
+     La comisión es c sobre ese monto: comisión = c × (costo + comisión).
+  3. Ganancia del negocio, margen m, una vez sumada la comisión:
+        precio final = costo con comisión ÷ (1 − m)
+     La ganancia es m del precio final.
 
-Flete y montaje se cobran a costo: no generan comisión y así los ve el
-cliente en su PDF. El sobrante de paquetes es costo de material: va
-dentro del precio de los arreglos.
+Flete y montaje se cobran a costo: no llevan comisión ni ganancia.
 
-Variables:
-  C  costo de los arreglos (suma de subtotales)
-  S  sobrante de paquetes
-  T  flete + montaje (a costo)
-  P  precio total del evento
-  A  precio de los arreglos           = P - T
-  K  comisión del cliente             = c · A
-  G  ganancia                         = A - K - C - S = A(1 - c) - C - S
-  m  margen efectivo                  = G / P
+Totales del evento:
+  C  costo de los arreglos         S  sobrante de paquetes
+  T  flete + montaje (a costo)     P  precio total del evento
+  B  costo con comisión  = (C + S) / (1 − c)
+  K  comisión            = B − C − S
+  A  precio de arreglos  = P − T
+  G  ganancia            = A − B
+  m  margen efectivo     = G / A      (sobre el precio de los arreglos)
 
-Precio para lograr un margen m (despejando G = m·P):
-  (P - T)(1 - c) - C - S = m·P
-  P = (C + S + T(1 - c)) / (1 - c - m)
+Precio para lograr un margen m:  P = T + B / (1 − m)
 
-Con c = 0 queda P = (C + S + T) / (1 - m), la fórmula que ya se usaba.
-
-Cada arreglo del evento recibe una parte de A proporcional a su costo, y
-su comisión es c sobre esa parte: la suma de las comisiones por arreglo
-es exactamente K.
+La comisión no depende del precio negociado: si se baja el precio, lo
+que se reduce es la ganancia. El precio final de cada arreglo es su
+parte de A, proporcional a su costo: así la ganancia del evento queda
+diluida entre sus arreglos con el mismo margen en todos.
 """
 
 
-def precio_para_margen(costo_arreglos, sobrante, traslados, comision, margen):
-    """Precio total del evento con el que se obtiene `margen`.
-
-    comision y margen van como fracción (0.30 = 30%). Devuelve None si
-    comisión + margen >= 100%: no queda nada del precio para el costo.
-    """
-    divisor = 1 - comision - margen
-    if divisor <= 0:
+def costo_con_comision(costo_arreglos, sobrante, comision):
+    """Costo de arreglos más la comisión del cliente (paso 2). None si c >= 100%."""
+    if comision >= 1:
         return None
-    return (costo_arreglos + sobrante + traslados * (1 - comision)) / divisor
+    return (costo_arreglos + sobrante) / (1 - comision)
+
+
+def precio_para_margen(costo_arreglos, sobrante, traslados, comision, margen):
+    """Precio total del evento con el que los arreglos dejan `margen`.
+
+    comision y margen van como fracción (0.30 = 30%). None si alguno es >= 100%.
+    """
+    base = costo_con_comision(costo_arreglos, sobrante, comision)
+    if base is None or margen >= 1:
+        return None
+    return traslados + base / (1 - margen)
 
 
 def resultado_para_precio(costo_arreglos, sobrante, traslados, comision, precio):
     """Comisión, ganancia y margen efectivo para un precio total dado."""
+    base = costo_con_comision(costo_arreglos, sobrante, comision) or 0.0
     precio_arreglos = max(precio - traslados, 0.0)
-    importe_comision = comision * precio_arreglos
-    ganancia = precio_arreglos - importe_comision - costo_arreglos - sobrante
-    margen = ganancia / precio if precio > 0 else 0.0
+    ganancia = precio_arreglos - base
     return {
         "precio": precio,
         "precio_arreglos": precio_arreglos,
-        "comision": importe_comision,
+        "costo_con_comision": base,
+        "comision": base - costo_arreglos - sobrante,
         "ganancia": ganancia,
-        "margen": margen,
+        # Margen sobre lo que sí lleva ganancia: el precio de los arreglos
+        "margen": ganancia / precio_arreglos if precio_arreglos > 0 else None,
+        "margen_total": ganancia / precio if precio > 0 else None,
     }
 
 
 def precio_para_ganancia(costo_arreglos, sobrante, traslados, comision, ganancia):
     """Precio total con el que se obtiene una ganancia en pesos."""
-    if comision >= 1:
+    base = costo_con_comision(costo_arreglos, sobrante, comision)
+    if base is None:
         return None
-    return traslados + (ganancia + costo_arreglos + sobrante) / (1 - comision)
+    return traslados + base + ganancia
 
 
 def _centavos_que_suman(valores, total):
@@ -81,19 +89,37 @@ def _centavos_que_suman(valores, total):
     return [b / 100 for b in base]
 
 
-def repartir_por_arreglo(subtotales, precio_arreglos, comision):
-    """Precio y comisión de cada partida, proporcionales a su costo.
+def repartir_por_arreglo(subtotales, sobrante, comision, precio_arreglos):
+    """Desglose de cada partida del evento, en centavos exactos.
 
     subtotales: costo de cada partida (cantidad × costo unitario).
-    Devuelve una lista de (precio_partida, comision_partida) en centavos
-    exactos: las partidas suman el precio de arreglos y la comisión total.
+    Cada partida recibe su parte del sobrante y del precio de arreglos en
+    proporción a su costo. Su comisión es c × (costo + comisión) de la
+    partida y su ganancia es lo que queda. Las columnas suman exacto los
+    totales del evento.
+
+    Devuelve una lista de diccionarios con sobrante, comision, ganancia y
+    precio_final por partida.
     """
     total = sum(subtotales)
     if total <= 0:
-        return [(0.0, 0.0) for _ in subtotales]
-    precios = [precio_arreglos * (subtotal / total) for subtotal in subtotales]
-    comisiones = [p * comision for p in precios]
-    return list(zip(
-        _centavos_que_suman(precios, precio_arreglos),
-        _centavos_que_suman(comisiones, precio_arreglos * comision),
-    ))
+        return [{"sobrante": 0.0, "comision": 0.0, "ganancia": 0.0, "precio_final": 0.0}
+                for _ in subtotales]
+
+    factor_comision = comision / (1 - comision) if comision < 1 else 0.0
+    sobrantes_exactos = [sobrante * s / total for s in subtotales]
+    comisiones_exactas = [(s + so) * factor_comision for s, so in zip(subtotales, sobrantes_exactos)]
+
+    sobrantes = _centavos_que_suman(sobrantes_exactos, sobrante)
+    comisiones = _centavos_que_suman(comisiones_exactas, (total + sobrante) * factor_comision)
+    precios = _centavos_que_suman([precio_arreglos * s / total for s in subtotales], precio_arreglos)
+
+    partidas = []
+    for subtotal, so, k, p in zip(subtotales, sobrantes, comisiones, precios):
+        partidas.append({
+            "sobrante": so,
+            "comision": k,
+            "ganancia": round(p - subtotal - so - k, 2),
+            "precio_final": p,
+        })
+    return partidas

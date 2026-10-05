@@ -7,7 +7,8 @@ from app.core.dependencies import (
 from pydantic import BaseModel, Field
 from app.services.eventos_service import (
     actualizar_totales_evento,
-    fijar_precio_venta
+    fijar_precio_venta,
+    guardar_foto
 )
 from app.database.connection import get_connection
 
@@ -118,9 +119,14 @@ def decidir_autorizacion(
             detail="Evento no encontrado"
         )
 
-    # Al rechazar se borra el precio: la comisión vuelve a medirse al
-    # precio sugerido.
+    # Al rechazar se borra el precio: ganancia y desglose vuelven a
+    # medirse al precio sugerido.
     actualizar_totales_evento(evento_id)
+    guardar_foto(
+        evento_id,
+        "autorizacion_aprobada" if data.decision == "aprobar" else "autorizacion_rechazada",
+        usuario
+    )
 
     return {
         "mensaje": "Evento aprobado" if data.decision == "aprobar"

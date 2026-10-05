@@ -136,6 +136,77 @@ MIGRACIONES = [
         ON CONFLICT (clave) DO NOTHING;
         """,
     ),
+    (
+        "2026_10_08_precio_final_por_arreglo_y_fotografias",
+        """
+        -- ── Desglose vigente de cada partida (se recalcula con el evento) ──
+        ALTER TABLE evento_arreglos
+            ADD COLUMN IF NOT EXISTS sobrante_asignado NUMERIC(12,2) NOT NULL DEFAULT 0;
+        ALTER TABLE evento_arreglos
+            ADD COLUMN IF NOT EXISTS comision_importe NUMERIC(12,2) NOT NULL DEFAULT 0;
+        ALTER TABLE evento_arreglos
+            ADD COLUMN IF NOT EXISTS ganancia_importe NUMERIC(12,2) NOT NULL DEFAULT 0;
+        ALTER TABLE evento_arreglos
+            ADD COLUMN IF NOT EXISTS precio_final NUMERIC(12,2) NOT NULL DEFAULT 0;
+        ALTER TABLE evento_arreglos
+            ADD COLUMN IF NOT EXISTS precio_final_unitario NUMERIC(12,2) NOT NULL DEFAULT 0;
+
+        ALTER TABLE eventos
+            ADD COLUMN IF NOT EXISTS ganancia_importe NUMERIC(12,2) NOT NULL DEFAULT 0;
+        -- Fracción (0.30 = 30%) sobre el precio de los arreglos
+        ALTER TABLE eventos
+            ADD COLUMN IF NOT EXISTS margen_arreglos NUMERIC(10,4);
+
+        -- ── Fotografías de la cotización ──
+        -- Estado completo del evento en momentos clave (precio acordado,
+        -- cambio de comisión, confirmación, autorización), para reportes
+        -- posteriores. No cambian aunque después cambie el evento.
+        CREATE TABLE IF NOT EXISTS evento_fotos (
+            id                  SERIAL PRIMARY KEY,
+            evento_id           INTEGER NOT NULL REFERENCES eventos(id),
+            motivo              VARCHAR(40) NOT NULL,
+            creado_en           TIMESTAMP NOT NULL DEFAULT now(),
+            creado_por          VARCHAR(150),
+            estatus             VARCHAR(30),
+            tipo_precio         VARCHAR(10),
+            precio_total        NUMERIC(12,2),
+            costo_arreglos      NUMERIC(12,2),
+            costo_sobrante      NUMERIC(12,2),
+            costo_flete         NUMERIC(12,2),
+            costo_montaje       NUMERIC(12,2),
+            comision_porcentaje NUMERIC(5,2),
+            comision_importe    NUMERIC(12,2),
+            ganancia_importe    NUMERIC(12,2),
+            margen_arreglos     NUMERIC(10,4),
+            margen_minimo       NUMERIC(5,2),
+            margen_objetivo     NUMERIC(5,2)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_evento_fotos_evento
+            ON evento_fotos (evento_id, creado_en);
+
+        CREATE TABLE IF NOT EXISTS evento_foto_partidas (
+            id                    SERIAL PRIMARY KEY,
+            foto_id               INTEGER NOT NULL
+                REFERENCES evento_fotos(id) ON DELETE CASCADE,
+            -- Sin llave foránea: si después se borra la partida, la foto se conserva
+            evento_arreglo_id     INTEGER,
+            arreglo_id            INTEGER,
+            codigo                VARCHAR(20),
+            nombre                VARCHAR(150),
+            cantidad              NUMERIC(10,2),
+            costo                 NUMERIC(12,2),
+            sobrante              NUMERIC(12,2),
+            comision              NUMERIC(12,2),
+            ganancia              NUMERIC(12,2),
+            precio_final          NUMERIC(12,2),
+            precio_final_unitario NUMERIC(12,2)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_evento_foto_partidas_foto
+            ON evento_foto_partidas (foto_id);
+        """,
+    ),
 ]
 
 

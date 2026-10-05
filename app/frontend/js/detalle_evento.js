@@ -136,7 +136,8 @@ function pintarResumen(evento) {
     document.getElementById('resultado-margen').textContent =
         evento.margen_efectivo != null ? evento.margen_efectivo.toFixed(1) : '—';
     document.getElementById('resultado-margen-nota').textContent =
-        `Mínimo ${fmtNum(p.margen_minimo)}% · objetivo ${fmtNum(p.margen_objetivo)}%`;
+        `Sobre el precio de los arreglos · mínimo ${fmtNum(p.margen_minimo)}% · ` +
+        `objetivo ${fmtNum(p.margen_objetivo)}%`;
 
     ['tarjeta-ganancia', 'tarjeta-margen'].forEach(id => {
         const tarjeta = document.getElementById(id);
@@ -161,8 +162,7 @@ function pintarResumen(evento) {
     document.getElementById('costo-operativos').textContent = fmt(operativos);
     document.getElementById('importe-comision').textContent = fmt(evento.importe_comision);
     document.getElementById('comision-detalle').textContent =
-        `${fmtNum(evento.comision_porcentaje)}% del precio de arreglos` +
-        (evento.tipo_precio === 'sugerido' ? ', al precio sugerido' : '');
+        `${fmtNum(evento.comision_porcentaje)}% de (costo + comisión) de los arreglos`;
     document.getElementById('costo-final').textContent      = fmt(evento.costo_final);
     document.getElementById('precio-minimo').textContent =
         evento.precio_minimo != null ? fmt(evento.precio_minimo) : '—';
@@ -179,9 +179,11 @@ function pintarArreglosEvento(evento) {
     const tfoot = document.querySelector("#tabla-evento-arreglos tfoot");
 
     document.getElementById('subtitulo-arreglos').textContent =
-        evento.tipo_precio === 'acordado'
-            ? 'Precio y comisión de cada arreglo al precio acordado'
-            : 'Precio y comisión de cada arreglo al precio sugerido (aún no hay precio acordado)';
+        'Precio final = costo + comisión del cliente + ganancia, ' +
+        (evento.tipo_precio === 'acordado'
+            ? 'al precio acordado. '
+            : 'al precio sugerido (aún no hay precio acordado). ') +
+        'Flete y montaje se cobran aparte, a costo.';
 
     tbody.innerHTML = "";
     tfoot.innerHTML = "";
@@ -194,14 +196,18 @@ function pintarArreglosEvento(evento) {
         return;
     }
 
-    let totalCosto = 0, totalPrecio = 0, totalComision = 0;
+    let totalCosto = 0, totalSobrante = 0, totalComision = 0,
+        totalGanancia = 0, totalFinal = 0;
 
     arreglos.forEach(arreglo => {
 
         totalCosto    += Number(arreglo.subtotal) || 0;
-        totalPrecio   += Number(arreglo.precio_venta) || 0;
+        totalSobrante += Number(arreglo.sobrante_asignado) || 0;
         totalComision += Number(arreglo.comision_importe) || 0;
+        totalGanancia += Number(arreglo.ganancia_importe) || 0;
+        totalFinal    += Number(arreglo.precio_final) || 0;
 
+        const sobrante = Number(arreglo.sobrante_asignado) || 0;
         const fila = document.createElement("tr");
 
         fila.innerHTML = `
@@ -213,11 +219,18 @@ function pintarArreglosEvento(evento) {
                     : ''}
             </td>
             <td class="col-num">${fmtCant(arreglo.cantidad)}</td>
-            <td class="col-num">$${fmt(arreglo.costo_unitario)}</td>
-            <td class="col-num">$${fmt(arreglo.subtotal)}</td>
-            <td class="col-num col-precio">$${fmt(arreglo.precio_venta)}</td>
-            <td class="col-num col-comision">${fmtNum(arreglo.comision_porcentaje)}%</td>
-            <td class="col-num col-comision">$${fmt(arreglo.comision_importe)}</td>
+            <td class="col-num">
+                $${fmt(arreglo.subtotal)}
+                <span class="sub-celda">$${fmt(arreglo.costo_unitario)} c/u</span>
+                ${sobrante > 0 ? `<span class="sub-celda">+ $${fmt(sobrante)} sobrante</span>` : ''}
+            </td>
+            <td class="col-num col-comision">
+                $${fmt(arreglo.comision_importe)}
+                <span class="sub-celda">${fmtNum(arreglo.comision_porcentaje)}%</span>
+            </td>
+            <td class="col-num col-ganancia">$${fmt(arreglo.ganancia_importe)}</td>
+            <td class="col-num col-final">$${fmt(arreglo.precio_final_unitario)}</td>
+            <td class="col-num col-final">$${fmt(arreglo.precio_final)}</td>
             <td>
                 <div class="action-cell">
                     <button class="btn btn-secondary btn-sm"
@@ -237,11 +250,18 @@ function pintarArreglosEvento(evento) {
 
     tfoot.innerHTML = `
         <tr>
-            <td colspan="4">Total arreglos</td>
-            <td class="col-num">$${fmt(totalCosto)}</td>
-            <td class="col-num col-precio">$${fmt(totalPrecio)}</td>
-            <td class="col-num col-comision">${fmtNum(evento.comision_porcentaje)}%</td>
-            <td class="col-num col-comision">$${fmt(totalComision)}</td>
+            <td colspan="3">Total arreglos</td>
+            <td class="col-num">
+                $${fmt(totalCosto)}
+                ${totalSobrante > 0 ? `<span class="sub-celda">+ $${fmt(totalSobrante)} sobrante</span>` : ''}
+            </td>
+            <td class="col-num col-comision">
+                $${fmt(totalComision)}
+                <span class="sub-celda">${fmtNum(evento.comision_porcentaje)}%</span>
+            </td>
+            <td class="col-num col-ganancia">$${fmt(totalGanancia)}</td>
+            <td class="col-num"></td>
+            <td class="col-num col-final">$${fmt(totalFinal)}</td>
             <td></td>
         </tr>
     `;
@@ -268,30 +288,29 @@ function actualizarHintComision() {
         return;
     }
 
-    const k = componentesPrecio(pct / 100);
-    const objetivo = _evento.parametros.margen_objetivo / 100;
-
-    if (pct < 0 || pct >= 100 || 1 - k.c - objetivo <= 0) {
-        hint.textContent =
-            `Comisión + margen objetivo (${fmtNum(_evento.parametros.margen_objetivo)}%) ` +
-            'deben sumar menos de 100%.';
+    if (pct < 0 || pct >= 100) {
+        hint.textContent = 'La comisión debe estar entre 0 y 99.99%.';
         hint.classList.add('hint-error');
         return;
     }
 
-    // Con precio acordado, la comisión cambia el margen; si no, cambia el sugerido
+    const k = componentesPrecio(pct / 100);
+    const r0 = resultadoParaPrecio(0, k);
+
+    // Con precio acordado, la comisión le quita a la ganancia; si no, mueve el sugerido
     if (_evento.tipo_precio === 'acordado') {
         const r = resultadoParaPrecio(_evento.precio_venta, k);
+        const m = margenPct(r);
         hint.textContent =
-            `Al precio acordado: comisión $${fmt(r.comision)} · ` +
-            `ganancia $${fmt(r.ganancia)} · margen ${(r.margen * 100).toFixed(1)}%`;
-        hint.classList.add(estadoMargen(r.margen * 100) === 'estado-bajo' ? 'hint-error'
-            : estadoMargen(r.margen * 100) === 'estado-medio' ? 'hint-warn' : 'hint-ok');
+            `Comisión $${fmt(r.comision)} · al precio acordado: ganancia $${fmt(r.ganancia)}` +
+            (m != null ? ` · margen ${m.toFixed(1)}%` : '');
+        const estado = m == null ? 'estado-bajo' : estadoMargen(m);
+        hint.classList.add(estado === 'estado-bajo' ? 'hint-error'
+            : estado === 'estado-medio' ? 'hint-warn' : 'hint-ok');
     } else {
-        const precio = precioParaMargen(objetivo, k);
-        const r = resultadoParaPrecio(precio, k);
+        const precio = precioParaMargen(_evento.parametros.margen_objetivo / 100, k);
         hint.textContent =
-            `Precio sugerido $${fmt(precio)} · comisión $${fmt(r.comision)}`;
+            `Comisión $${fmt(r0.comision)} · precio sugerido $${fmt(precio)}`;
     }
 }
 
@@ -484,12 +503,11 @@ document.getElementById('modal-gastos')
 
 // ── Negociación de precio ──────────────────────────
 //
-// Misma fórmula que el servidor (app/services/precios.py). Comisión y
-// ganancia son porcentajes del PRECIO (margen), no del costo:
-//   T = flete + montaje (a costo)     A = precio − T (precio de arreglos)
-//   comisión = c · A                  ganancia = A − comisión − costo arreglos − sobrante
-//   margen   = ganancia / precio
-//   precio para un margen m = (C + S + T(1 − c)) / (1 − c − m)
+// Misma fórmula que el servidor (app/services/precios.py):
+//   1. Comisión del cliente como margen:  B = (costo + sobrante) ÷ (1 − c)
+//   2. Ganancia como margen sobre eso:    precio de arreglos = B ÷ (1 − m)
+//   Flete y montaje (T) a costo:          precio total = T + precio de arreglos
+//   Con un precio dado:  ganancia = (precio − T) − B,  margen = ganancia ÷ (precio − T)
 
 function componentesPrecio(comision = null) {
     const e = _evento;
@@ -501,26 +519,38 @@ function componentesPrecio(comision = null) {
     };
 }
 
+function costoConComision(k) {
+    if (k.c >= 1) return null;
+    return (k.C + k.S) / (1 - k.c);
+}
+
 function precioParaMargen(m, k = componentesPrecio()) {
-    const divisor = 1 - k.c - m;
-    if (divisor <= 0) return null;
-    return (k.C + k.S + k.T * (1 - k.c)) / divisor;
+    const base = costoConComision(k);
+    if (base == null || m >= 1) return null;
+    return k.T + base / (1 - m);
 }
 
 function resultadoParaPrecio(precio, k = componentesPrecio()) {
+    const base = costoConComision(k) ?? 0;
     const precioArreglos = Math.max(precio - k.T, 0);
-    const comision = k.c * precioArreglos;
-    const ganancia = precioArreglos - comision - k.C - k.S;
+    const ganancia = precioArreglos - base;
     return {
-        comision,
+        comision: base - k.C - k.S,
         ganancia,
-        margen: precio > 0 ? ganancia / precio : 0,
+        // Sin precio para los arreglos no hay margen que medir
+        margen: precioArreglos > 0 ? ganancia / precioArreglos : null,
     };
 }
 
 function precioParaGanancia(ganancia, k = componentesPrecio()) {
-    if (k.c >= 1) return null;
-    return k.T + (ganancia + k.C + k.S) / (1 - k.c);
+    const base = costoConComision(k);
+    if (base == null) return null;
+    return k.T + base + ganancia;
+}
+
+// Margen en porcentaje, o null si el precio no alcanza a cubrir flete y montaje
+function margenPct(r) {
+    return r.margen != null ? r.margen * 100 : null;
 }
 
 function iniciarNegociacion(evento) {
@@ -529,7 +559,8 @@ function iniciarNegociacion(evento) {
 
     document.getElementById('subtitulo-negociacion').textContent =
         `Negocia el margen con el cliente: mínimo ${fmtNum(p.margen_minimo)}%, ` +
-        `objetivo ${fmtNum(p.margen_objetivo)}%. El margen se mide sobre el precio.`;
+        `objetivo ${fmtNum(p.margen_objetivo)}%. La ganancia se calcula sobre los ` +
+        'arreglos, después de la comisión; flete y montaje van a costo.';
 
     document.getElementById('ref-precio-minimo').textContent =
         evento.precio_minimo != null ? fmt(evento.precio_minimo) : '—';
@@ -539,24 +570,29 @@ function iniciarNegociacion(evento) {
     // Si ya hay precio acordado, precarga los campos.
     // Son <input type="number">: no aceptan comas, van con toFixed().
     if (evento.precio_venta && evento.precio_venta > 0) {
-        const r = resultadoParaPrecio(evento.precio_venta);
-        document.getElementById('input-precio-venta').value = evento.precio_venta.toFixed(2);
-        document.getElementById('input-margen').value       = (r.margen * 100).toFixed(1);
-        document.getElementById('input-ganancia').value     = r.ganancia.toFixed(2);
-        actualizarVistaPrevia(evento.precio_venta);
+        llenarDesdePrecio(evento.precio_venta, true);
     } else {
         // Sin precio acordado: si ya se estaba negociando un precio, se
         // recalcula con los costos nuevos en vez de borrarlo.
         const enCaptura = parseFloat(document.getElementById('input-precio-venta').value);
         if (!isNaN(enCaptura) && enCaptura > 0) {
-            const r = resultadoParaPrecio(enCaptura);
-            document.getElementById('input-margen').value   = (r.margen * 100).toFixed(1);
-            document.getElementById('input-ganancia').value = r.ganancia.toFixed(2);
-            actualizarVistaPrevia(enCaptura);
+            llenarDesdePrecio(enCaptura, false);
         } else {
             limpiarVistaPrevia();
         }
     }
+}
+
+// Llena margen y ganancia a partir de un precio (y el precio si se pide)
+function llenarDesdePrecio(precio, tambienPrecio) {
+    const r = resultadoParaPrecio(precio);
+    const m = margenPct(r);
+    if (tambienPrecio) {
+        document.getElementById('input-precio-venta').value = precio.toFixed(2);
+    }
+    document.getElementById('input-margen').value   = m != null ? m.toFixed(1) : '';
+    document.getElementById('input-ganancia').value = r.ganancia.toFixed(2);
+    actualizarVistaPrevia(precio);
 }
 
 function limpiarVistaPrevia() {
@@ -573,17 +609,17 @@ function limpiarVistaPrevia() {
 
 function actualizarVistaPrevia(precio) {
     const r = resultadoParaPrecio(precio);
-    const margenPct = r.margen * 100;
+    const m = margenPct(r);
 
     document.getElementById('preview-comision').textContent = fmt(r.comision);
     document.getElementById('preview-ganancia').textContent = fmt(r.ganancia);
-    document.getElementById('preview-margen').textContent   = margenPct.toFixed(1);
+    document.getElementById('preview-margen').textContent   = m != null ? m.toFixed(1) : '—';
 
     const item = document.getElementById('preview-margen-item');
     item.classList.remove('estado-ok', 'estado-medio', 'estado-bajo');
-    item.classList.add(estadoMargen(margenPct));
+    item.classList.add(m != null ? estadoMargen(m) : 'estado-bajo');
 
-    actualizarHints(margenPct);
+    actualizarHints(m);
 }
 
 // Cuando el usuario escribe el margen
@@ -596,7 +632,7 @@ document.getElementById('input-margen').addEventListener('input', function () {
     if (precio == null) {
         limpiarVistaPrevia();
         const h = document.getElementById('hint-margen');
-        h.textContent = '⚠️ Margen + comisión deben sumar menos de 100%';
+        h.textContent = '⚠️ El margen debe ser menor a 100%';
         h.classList.add('hint-error');
         return;
     }
@@ -616,9 +652,9 @@ document.getElementById('input-ganancia').addEventListener('input', function () 
     const precio = precioParaGanancia(ganancia);
     if (precio == null || precio <= 0) return;
 
-    const r = resultadoParaPrecio(precio);
+    const m = margenPct(resultadoParaPrecio(precio));
     document.getElementById('input-precio-venta').value = precio.toFixed(2);
-    document.getElementById('input-margen').value       = (r.margen * 100).toFixed(1);
+    document.getElementById('input-margen').value       = m != null ? m.toFixed(1) : '';
     actualizarVistaPrevia(precio);
 });
 
@@ -627,16 +663,11 @@ document.getElementById('input-precio-venta').addEventListener('input', function
     if (!_evento) return;
     const precio = parseFloat(this.value);
     if (isNaN(precio) || precio <= 0) return;
-
-    const r = resultadoParaPrecio(precio);
-    document.getElementById('input-margen').value   = (r.margen * 100).toFixed(1);
-    document.getElementById('input-ganancia').value = r.ganancia.toFixed(2);
-    actualizarVistaPrevia(precio);
+    llenarDesdePrecio(precio, false);
 });
 
 function actualizarHints(margenCrudo) {
     const p = _evento.parametros;
-    const margen = Math.round(margenCrudo * 100) / 100;
     const hintM = document.getElementById('hint-margen');
     const hintG = document.getElementById('hint-ganancia');
     const hintP = document.getElementById('hint-precio');
@@ -646,6 +677,14 @@ function actualizarHints(margenCrudo) {
         h.className = 'input-hint';
         h.textContent = '';
     });
+
+    if (margenCrudo == null) {
+        hintP.textContent = '⚠️ El precio no alcanza a cubrir flete y montaje';
+        hintP.classList.add('hint-error');
+        return;
+    }
+
+    const margen = Math.round(margenCrudo * 100) / 100;
 
     if (margen < p.margen_minimo) {
         hintM.textContent = `⚠️ Bajo el mínimo (${fmtNum(p.margen_minimo)}%)`;
@@ -709,8 +748,9 @@ async function guardarPrecioVenta() {
         );
     } else {
         mostrarBanner(
-            `Precio $${fmt(precio)} guardado. Ganancia $${fmt(resultado.ganancia)} ` +
-            `(margen ${resultado.margen}%), comisión del cliente $${fmt(resultado.comision)}.`,
+            `Precio $${fmt(precio)} guardado. Ganancia $${fmt(resultado.ganancia)}` +
+            (resultado.margen != null ? ` (margen ${resultado.margen}% sobre arreglos)` : '') +
+            `, comisión del cliente $${fmt(resultado.comision)}.`,
             'ok'
         );
     }

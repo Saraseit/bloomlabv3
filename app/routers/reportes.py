@@ -52,36 +52,30 @@ def imagen_a_base64(url: str) -> str:
 
 
 def calcular_distribucion_cliente(evento):
-    """Prorratea precio_venta entre arreglos. Flete/montaje se muestran a costo."""
+    """Partidas para el cliente con el precio final de cada arreglo.
 
-    # Sin precio acordado todavía, la cotización usa el precio sugerido
-    precio_venta  = float(evento.get("precio_venta") or evento.get("precio_sugerido") or 0)
-    costo_flete   = float(evento.get("costo_flete")  or 0)
-    costo_montaje = float(evento.get("costo_montaje") or 0)
-    arreglos      = evento.get("arreglos", [])
-
-    costo_arreglos = sum(float(a["subtotal"]) for a in arreglos)
-    residuo = precio_venta - costo_flete - costo_montaje
+    El precio final ya incluye la comisión del cliente y la ganancia, y es
+    el mismo que se ve en la pantalla del evento (eventos_service). Flete y
+    montaje se muestran a costo. Sin precio acordado se usa el sugerido.
+    """
+    arreglos = evento.get("arreglos", [])
 
     items = []
     for a in arreglos:
-        peso = float(a["subtotal"]) / costo_arreglos if costo_arreglos else 0
-        precio_total    = residuo * peso
-        precio_unitario = precio_total / float(a["cantidad"]) if a["cantidad"] else 0
         items.append({
             "nombre":          a["nombre"],
             "descripcion":     a.get("observaciones") or "",
             "imagen_b64":      imagen_a_base64(a.get("imagen_url")),
             "cantidad":        a["cantidad"],
-            "precio_unitario": round(precio_unitario, 2),
-            "total":           round(precio_total, 2),
+            "precio_unitario": float(a.get("precio_final_unitario") or 0),
+            "total":           float(a.get("precio_final") or 0),
         })
 
     return {
         "items":   items,
-        "flete":   costo_flete,
-        "montaje": costo_montaje,
-        "total":   precio_venta,
+        "flete":   float(evento.get("costo_flete") or 0),
+        "montaje": float(evento.get("costo_montaje") or 0),
+        "total":   float(evento.get("precio_referencia") or 0),
     }
 
 
@@ -259,9 +253,10 @@ def construir_html_interno(evento):
             <td>{a["nombre"]}</td>
             <td class="num">{float(a["cantidad"]):g}</td>
             <td class="num">{_dinero(a["subtotal"])}</td>
-            <td class="num">{_dinero(a.get("precio_venta"))}</td>
-            <td class="num">{_pct(a.get("comision_porcentaje"))}</td>
             <td class="num">{_dinero(a.get("comision_importe"))}</td>
+            <td class="num">{_dinero(a.get("ganancia_importe"))}</td>
+            <td class="num">{_dinero(a.get("precio_final_unitario"))}</td>
+            <td class="num">{_dinero(a.get("precio_final"))}</td>
         </tr>"""
 
     return f"""<!DOCTYPE html>
@@ -329,8 +324,9 @@ def construir_html_interno(evento):
   <thead>
     <tr>
       <td>Codigo</td><td>Nombre</td><td class="num">Cant.</td>
-      <td class="num">Costo</td><td class="num">Precio venta</td>
-      <td class="num">Comision %</td><td class="num">Comision $</td>
+      <td class="num">Costo</td><td class="num">Comision</td>
+      <td class="num">Ganancia</td><td class="num">Precio final c/u</td>
+      <td class="num">Precio final</td>
     </tr>
   </thead>
   <tbody>{filas_html}</tbody>
@@ -356,7 +352,7 @@ def construir_html_interno(evento):
         <div class="kpi-value">{_dinero(evento.get("costo_sobrante", 0))}</div>
       </div></td>
       <td><div class="kpi-box">
-        <div class="kpi-label">Comision cliente ({_pct(evento["comision_porcentaje"])} del precio de arreglos)</div>
+        <div class="kpi-label">Comision cliente ({_pct(evento["comision_porcentaje"])} de costo + comision)</div>
         <div class="kpi-value">{_dinero(evento["importe_comision"])}</div>
       </div></td>
     </tr>
@@ -380,7 +376,7 @@ def construir_html_interno(evento):
       <td><div class="kpi-box kpi-final">
         <div class="kpi-label">Ganancia / margen efectivo</div>
         <div class="kpi-value">{_dinero(evento.get("ganancia"))}</div>
-        <div class="kpi-label">{_pct(evento.get("margen_efectivo"))} sobre el precio</div>
+        <div class="kpi-label">{_pct(evento.get("margen_efectivo"))} sobre el precio de arreglos</div>
       </div></td>
     </tr>
   </table>
