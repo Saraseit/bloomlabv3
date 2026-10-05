@@ -18,6 +18,8 @@ let _costoFlete     = 0;
 let _costoMontaje   = 0;
 let _precioVenta    = 0;
 let _estatusEvento  = null;
+// Último evento leído del API: la negociación calcula sobre sus costos
+let _evento         = null;
 
 async function cargarEvento() {
 
@@ -26,66 +28,32 @@ async function cargarEvento() {
     );
 
     const evento = await respuesta.json();
+    _evento = evento;
 
     document.getElementById("nombre-evento").textContent = evento.nombre;
     document.getElementById("cliente").textContent = evento.cliente;
     document.getElementById("fecha-evento").textContent = evento.fecha_evento;
     document.getElementById("lugar").textContent = evento.lugar ?? "";
     document.getElementById("descripcion").textContent = evento.descripcion ?? "";
-    // Se guardan los valores crudos antes de formatear la pantalla
-    _costoFlete   = evento.costo_flete   ?? 0;
-    _costoMontaje = evento.costo_montaje ?? 0;
-    _precioVenta  = evento.precio_venta  ?? 0;
 
-    document.getElementById("costo-base").textContent = fmt(evento.costo_base);
+    // Se guardan los valores crudos antes de formatear la pantalla
+    _costoFlete     = evento.costo_flete   ?? 0;
+    _costoMontaje   = evento.costo_montaje ?? 0;
+    _precioVenta    = evento.precio_venta  ?? 0;
+    _costoFinal     = evento.costo_final   ?? 0;
+    _precioMinimo   = evento.precio_minimo;
+    _precioSugerido = evento.precio_sugerido;
+    _estatusEvento  = evento.estatus;
+
     document.getElementById('valor-flete').textContent   = fmt(_costoFlete);
     document.getElementById('valor-montaje').textContent = fmt(_costoMontaje);
     document.getElementById('valor-sobrante').textContent =
         fmt(evento.costo_sobrante ?? 0);
-    _estatusEvento = evento.estatus;
-    document.getElementById("comision-porcentaje").textContent =
-        fmtPct(evento.comision_porcentaje);
-    document.getElementById("importe-comision").textContent = fmt(evento.importe_comision);
-    document.getElementById("costo-final").textContent = fmt(evento.costo_final);
-    document.getElementById("precio-minimo").textContent = fmt(evento.precio_minimo);
-    document.getElementById("precio-sugerido").textContent = fmt(evento.precio_sugerido);
 
-    const tbody = document.querySelector("#tabla-evento-arreglos tbody");
-
-    tbody.innerHTML = "";
-
-    (evento.arreglos || []).forEach(arreglo => {
-
-        const fila = document.createElement("tr");
-
-        fila.innerHTML = `
-            <td>${arreglo.codigo}</td>
-            <td>${arreglo.nombre}</td>
-            <td>${arreglo.cantidad}</td>
-            <td>${fmt(arreglo.costo_unitario)}</td>
-            <td>${fmt(arreglo.subtotal)}</td>
-            <td>${arreglo.observaciones ?? ""}</td>
-
-            <td>
-                <button onclick='editarArreglo(${JSON.stringify(arreglo)})'>
-                    Editar
-                </button>
-
-                <button onclick='eliminarArreglo(${arreglo.id})'>
-                    Eliminar
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(fila);
-    });
-
-    iniciarNegociacion(
-    evento.costo_final,
-    evento.precio_minimo,
-    evento.precio_sugerido,
-    evento.precio_venta
-    );
+    pintarResumen(evento);
+    pintarArreglosEvento(evento);
+    iniciarComision(evento);
+    iniciarNegociacion(evento);
 
     // Panel de autorización: solo para director y admin, y solo
     // mientras el evento esté esperando la decisión.
@@ -95,15 +63,14 @@ async function cargarEvento() {
     if (evento.estatus === 'Pendiente Autorización' &&
         u && (u.rol === 'director' || u.rol === 'admin')) {
 
-        const precio = evento.precio_venta ?? 0;
-        const margen = precio > 0
-            ? (1 - evento.costo_final / precio) * 100
-            : 0;
-
         document.getElementById('aut-costo-final').textContent =
             fmt(evento.costo_final);
-        document.getElementById('aut-precio-venta').textContent = fmt(precio);
-        document.getElementById('aut-margen').textContent = margen.toFixed(2);
+        document.getElementById('aut-precio-venta').textContent =
+            fmt(evento.precio_venta ?? 0);
+        document.getElementById('aut-margen').textContent =
+            (evento.margen_efectivo ?? 0).toFixed(2);
+        document.getElementById('aut-umbral').textContent =
+            fmtNum(evento.parametros.margen_autorizacion);
 
         panelDir.style.display = 'block';
     } else {
@@ -121,6 +88,246 @@ async function cargarEvento() {
     } else {
         ocultarSeccionesContrato();
     }
+}
+
+// ── Resumen financiero ─────────────────────────
+
+// Número sin ceros de relleno: 20, 12.5
+function fmtNum(n) {
+    const v = Number(n) || 0;
+    return Number.isInteger(v) ? String(v) : String(Math.round(v * 100) / 100);
+}
+
+// bajo: debajo del mínimo · medio: entre mínimo y objetivo · ok: objetivo o más
+function estadoMargen(margenPct) {
+    const p = _evento.parametros;
+    // A centésimas: 29.9999999 por punto flotante cuenta como 30
+    const m = Math.round(margenPct * 100) / 100;
+    if (m < p.margen_minimo) return 'estado-bajo';
+    if (m < p.margen_objetivo) return 'estado-medio';
+    return 'estado-ok';
+}
+
+function pintarResumen(evento) {
+
+    const p = evento.parametros;
+
+    document.querySelectorAll('.pct-minimo').forEach(el => el.textContent = fmtNum(p.margen_minimo));
+    document.querySelectorAll('.pct-objetivo').forEach(el => el.textContent = fmtNum(p.margen_objetivo));
+
+    // Precio de referencia: el acordado, o el sugerido si aún no hay acuerdo
+    const etiqueta = document.getElementById('resultado-precio-label');
+    const nota = document.getElementById('resultado-precio-nota');
+    if (evento.tipo_precio === 'acordado') {
+        etiqueta.textContent = 'Precio acordado';
+        nota.textContent = 'Lo que paga el cliente';
+    } else if (evento.tipo_precio === 'sugerido') {
+        etiqueta.textContent = 'Precio sugerido';
+        nota.textContent = 'Aún no hay precio acordado';
+    } else {
+        etiqueta.textContent = 'Precio';
+        nota.textContent = 'Sin precio posible con esta comisión';
+    }
+
+    document.getElementById('resultado-precio').textContent =
+        evento.precio_referencia != null ? fmt(evento.precio_referencia) : '—';
+    document.getElementById('resultado-ganancia').textContent =
+        evento.ganancia != null ? fmt(evento.ganancia) : '—';
+    document.getElementById('resultado-margen').textContent =
+        evento.margen_efectivo != null ? evento.margen_efectivo.toFixed(1) : '—';
+    document.getElementById('resultado-margen-nota').textContent =
+        `Mínimo ${fmtNum(p.margen_minimo)}% · objetivo ${fmtNum(p.margen_objetivo)}%`;
+
+    ['tarjeta-ganancia', 'tarjeta-margen'].forEach(id => {
+        const tarjeta = document.getElementById(id);
+        tarjeta.classList.remove('estado-ok', 'estado-medio', 'estado-bajo');
+        if (evento.margen_efectivo != null) {
+            tarjeta.classList.add(estadoMargen(evento.margen_efectivo));
+        }
+    });
+
+    const aviso = document.getElementById('advertencia-evento');
+    if (evento.advertencia) {
+        document.getElementById('advertencia-evento-texto').textContent = evento.advertencia;
+        aviso.style.display = 'flex';
+    } else {
+        aviso.style.display = 'none';
+    }
+
+    const operativos = (evento.costo_flete ?? 0) + (evento.costo_montaje ?? 0) +
+                       (evento.costo_sobrante ?? 0);
+
+    document.getElementById('costo-arreglos').textContent   = fmt(evento.costo_arreglos);
+    document.getElementById('costo-operativos').textContent = fmt(operativos);
+    document.getElementById('importe-comision').textContent = fmt(evento.importe_comision);
+    document.getElementById('comision-detalle').textContent =
+        `${fmtNum(evento.comision_porcentaje)}% del precio de arreglos` +
+        (evento.tipo_precio === 'sugerido' ? ', al precio sugerido' : '');
+    document.getElementById('costo-final').textContent      = fmt(evento.costo_final);
+    document.getElementById('precio-minimo').textContent =
+        evento.precio_minimo != null ? fmt(evento.precio_minimo) : '—';
+    document.getElementById('precio-sugerido').textContent =
+        evento.precio_sugerido != null ? fmt(evento.precio_sugerido) : '—';
+}
+
+// ── Arreglos del evento: precio y comisión por partida ──
+
+function pintarArreglosEvento(evento) {
+
+    const arreglos = evento.arreglos || [];
+    const tbody = document.querySelector("#tabla-evento-arreglos tbody");
+    const tfoot = document.querySelector("#tabla-evento-arreglos tfoot");
+
+    document.getElementById('subtitulo-arreglos').textContent =
+        evento.tipo_precio === 'acordado'
+            ? 'Precio y comisión de cada arreglo al precio acordado'
+            : 'Precio y comisión de cada arreglo al precio sugerido (aún no hay precio acordado)';
+
+    tbody.innerHTML = "";
+    tfoot.innerHTML = "";
+
+    if (arreglos.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="9" class="tabla-vacia">
+                Todavía no hay arreglos en este evento.
+            </td></tr>`;
+        return;
+    }
+
+    let totalCosto = 0, totalPrecio = 0, totalComision = 0;
+
+    arreglos.forEach(arreglo => {
+
+        totalCosto    += Number(arreglo.subtotal) || 0;
+        totalPrecio   += Number(arreglo.precio_venta) || 0;
+        totalComision += Number(arreglo.comision_importe) || 0;
+
+        const fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td>${escapar(arreglo.codigo)}</td>
+            <td class="col-arreglo">
+                ${escapar(arreglo.nombre)}
+                ${arreglo.observaciones
+                    ? `<span class="obs-arreglo">${escapar(arreglo.observaciones)}</span>`
+                    : ''}
+            </td>
+            <td class="col-num">${fmtCant(arreglo.cantidad)}</td>
+            <td class="col-num">$${fmt(arreglo.costo_unitario)}</td>
+            <td class="col-num">$${fmt(arreglo.subtotal)}</td>
+            <td class="col-num col-precio">$${fmt(arreglo.precio_venta)}</td>
+            <td class="col-num col-comision">${fmtNum(arreglo.comision_porcentaje)}%</td>
+            <td class="col-num col-comision">$${fmt(arreglo.comision_importe)}</td>
+            <td>
+                <div class="action-cell">
+                    <button class="btn btn-secondary btn-sm"
+                            onclick="editarArreglo(${arreglo.id})">
+                        Editar
+                    </button>
+                    <button class="btn btn-danger btn-sm"
+                            onclick="eliminarArreglo(${arreglo.id})">
+                        Eliminar
+                    </button>
+                </div>
+            </td>
+        `;
+
+        tbody.appendChild(fila);
+    });
+
+    tfoot.innerHTML = `
+        <tr>
+            <td colspan="4">Total arreglos</td>
+            <td class="col-num">$${fmt(totalCosto)}</td>
+            <td class="col-num col-precio">$${fmt(totalPrecio)}</td>
+            <td class="col-num col-comision">${fmtNum(evento.comision_porcentaje)}%</td>
+            <td class="col-num col-comision">$${fmt(totalComision)}</td>
+            <td></td>
+        </tr>
+    `;
+}
+
+// ── Comisión del cliente ───────────────────────
+
+function iniciarComision(evento) {
+    const input = document.getElementById('input-comision');
+    // No pisar lo que el usuario está escribiendo si la pantalla se recarga
+    if (document.activeElement !== input) {
+        input.value = fmtNum(evento.comision_porcentaje);
+    }
+    actualizarHintComision();
+}
+
+function actualizarHintComision() {
+    const hint = document.getElementById('hint-comision');
+    const pct = parseFloat(document.getElementById('input-comision').value);
+    hint.className = 'input-hint comision-hint';
+
+    if (isNaN(pct)) {
+        hint.textContent = '';
+        return;
+    }
+
+    const k = componentesPrecio(pct / 100);
+    const objetivo = _evento.parametros.margen_objetivo / 100;
+
+    if (pct < 0 || pct >= 100 || 1 - k.c - objetivo <= 0) {
+        hint.textContent =
+            `Comisión + margen objetivo (${fmtNum(_evento.parametros.margen_objetivo)}%) ` +
+            'deben sumar menos de 100%.';
+        hint.classList.add('hint-error');
+        return;
+    }
+
+    // Con precio acordado, la comisión cambia el margen; si no, cambia el sugerido
+    if (_evento.tipo_precio === 'acordado') {
+        const r = resultadoParaPrecio(_evento.precio_venta, k);
+        hint.textContent =
+            `Al precio acordado: comisión $${fmt(r.comision)} · ` +
+            `ganancia $${fmt(r.ganancia)} · margen ${(r.margen * 100).toFixed(1)}%`;
+        hint.classList.add(estadoMargen(r.margen * 100) === 'estado-bajo' ? 'hint-error'
+            : estadoMargen(r.margen * 100) === 'estado-medio' ? 'hint-warn' : 'hint-ok');
+    } else {
+        const precio = precioParaMargen(objetivo, k);
+        const r = resultadoParaPrecio(precio, k);
+        hint.textContent =
+            `Precio sugerido $${fmt(precio)} · comisión $${fmt(r.comision)}`;
+    }
+}
+
+document.getElementById('input-comision')
+    .addEventListener('input', actualizarHintComision);
+
+async function guardarComision() {
+
+    const pct = parseFloat(document.getElementById('input-comision').value);
+
+    if (isNaN(pct) || pct < 0 || pct >= 100) {
+        alert('Captura una comisión entre 0 y 99.99%');
+        return;
+    }
+
+    const respuesta = await fetchAuth(`${API_URL}/eventos/${eventoId}/comision`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comision_porcentaje: pct })
+    });
+
+    const resultado = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+        alert(resultado.detail || 'Error al guardar la comisión');
+        return;
+    }
+
+    if (resultado.requiere_autorizacion) {
+        alert(
+            `Comisión guardada. Al precio acordado el margen queda en ${resultado.margen}%, ` +
+            'por debajo del permitido: el evento queda Pendiente de Autorización.'
+        );
+    }
+
+    cargarEvento();
 }
 
 async function cargarArreglos() {
@@ -186,7 +393,10 @@ async function agregarArreglo() {
     cargarEvento();
 }
 
-async function editarArreglo(arreglo) {
+async function editarArreglo(arregloId) {
+
+    const arreglo = (_evento?.arreglos || []).find(a => a.id === arregloId);
+    if (!arreglo) return;
 
     const cantidad = parseFloat(prompt("Cantidad", arreglo.cantidad));
     if (!cantidad) return;
@@ -273,74 +483,160 @@ document.getElementById('modal-gastos')
     });
 
 // ── Negociación de precio ──────────────────────────
+//
+// Misma fórmula que el servidor (app/services/precios.py). Comisión y
+// ganancia son porcentajes del PRECIO (margen), no del costo:
+//   T = flete + montaje (a costo)     A = precio − T (precio de arreglos)
+//   comisión = c · A                  ganancia = A − comisión − costo arreglos − sobrante
+//   margen   = ganancia / precio
+//   precio para un margen m = (C + S + T(1 − c)) / (1 − c − m)
 
-function iniciarNegociacion(costoFinal, precioMinimo, precioSugerido, precioVenta) {
-    _costoFinal     = costoFinal;
-    _precioMinimo   = precioMinimo;
-    _precioSugerido = precioSugerido;
+function componentesPrecio(comision = null) {
+    const e = _evento;
+    return {
+        C: Number(e.costo_arreglos) || 0,
+        S: Number(e.costo_sobrante) || 0,
+        T: (Number(e.costo_flete) || 0) + (Number(e.costo_montaje) || 0),
+        c: comision != null ? comision : (Number(e.comision_porcentaje) || 0) / 100,
+    };
+}
 
-    // Referencias visuales
-    document.getElementById('ref-precio-minimo').textContent   = fmt(precioMinimo);
-    document.getElementById('ref-precio-sugerido').textContent = fmt(precioSugerido);
+function precioParaMargen(m, k = componentesPrecio()) {
+    const divisor = 1 - k.c - m;
+    if (divisor <= 0) return null;
+    return (k.C + k.S + k.T * (1 - k.c)) / divisor;
+}
+
+function resultadoParaPrecio(precio, k = componentesPrecio()) {
+    const precioArreglos = Math.max(precio - k.T, 0);
+    const comision = k.c * precioArreglos;
+    const ganancia = precioArreglos - comision - k.C - k.S;
+    return {
+        comision,
+        ganancia,
+        margen: precio > 0 ? ganancia / precio : 0,
+    };
+}
+
+function precioParaGanancia(ganancia, k = componentesPrecio()) {
+    if (k.c >= 1) return null;
+    return k.T + (ganancia + k.C + k.S) / (1 - k.c);
+}
+
+function iniciarNegociacion(evento) {
+
+    const p = evento.parametros;
+
+    document.getElementById('subtitulo-negociacion').textContent =
+        `Negocia el margen con el cliente: mínimo ${fmtNum(p.margen_minimo)}%, ` +
+        `objetivo ${fmtNum(p.margen_objetivo)}%. El margen se mide sobre el precio.`;
+
+    document.getElementById('ref-precio-minimo').textContent =
+        evento.precio_minimo != null ? fmt(evento.precio_minimo) : '—';
+    document.getElementById('ref-precio-sugerido').textContent =
+        evento.precio_sugerido != null ? fmt(evento.precio_sugerido) : '—';
 
     // Si ya hay precio acordado, precarga los campos.
     // Son <input type="number">: no aceptan comas, van con toFixed().
-    if (precioVenta && precioVenta > 0) {
-        const margen = (1 - costoFinal / precioVenta) * 100;
-        const ganancia = precioVenta - costoFinal;
-        document.getElementById('input-precio-venta').value = precioVenta.toFixed(2);
-        document.getElementById('input-margen').value       = margen.toFixed(1);
-        document.getElementById('input-ganancia').value     = ganancia.toFixed(2);
-        actualizarHints(margen, precioMinimo, precioSugerido);
+    if (evento.precio_venta && evento.precio_venta > 0) {
+        const r = resultadoParaPrecio(evento.precio_venta);
+        document.getElementById('input-precio-venta').value = evento.precio_venta.toFixed(2);
+        document.getElementById('input-margen').value       = (r.margen * 100).toFixed(1);
+        document.getElementById('input-ganancia').value     = r.ganancia.toFixed(2);
+        actualizarVistaPrevia(evento.precio_venta);
+    } else {
+        // Sin precio acordado: si ya se estaba negociando un precio, se
+        // recalcula con los costos nuevos en vez de borrarlo.
+        const enCaptura = parseFloat(document.getElementById('input-precio-venta').value);
+        if (!isNaN(enCaptura) && enCaptura > 0) {
+            const r = resultadoParaPrecio(enCaptura);
+            document.getElementById('input-margen').value   = (r.margen * 100).toFixed(1);
+            document.getElementById('input-ganancia').value = r.ganancia.toFixed(2);
+            actualizarVistaPrevia(enCaptura);
+        } else {
+            limpiarVistaPrevia();
+        }
     }
+}
+
+function limpiarVistaPrevia() {
+    ['preview-comision', 'preview-ganancia', 'preview-margen']
+        .forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('preview-margen-item')
+        .classList.remove('estado-ok', 'estado-medio', 'estado-bajo');
+    ['hint-margen', 'hint-ganancia', 'hint-precio'].forEach(id => {
+        const h = document.getElementById(id);
+        h.className = 'input-hint';
+        h.textContent = '';
+    });
+}
+
+function actualizarVistaPrevia(precio) {
+    const r = resultadoParaPrecio(precio);
+    const margenPct = r.margen * 100;
+
+    document.getElementById('preview-comision').textContent = fmt(r.comision);
+    document.getElementById('preview-ganancia').textContent = fmt(r.ganancia);
+    document.getElementById('preview-margen').textContent   = margenPct.toFixed(1);
+
+    const item = document.getElementById('preview-margen-item');
+    item.classList.remove('estado-ok', 'estado-medio', 'estado-bajo');
+    item.classList.add(estadoMargen(margenPct));
+
+    actualizarHints(margenPct);
 }
 
 // Cuando el usuario escribe el margen
 document.getElementById('input-margen').addEventListener('input', function () {
-    if (!_costoFinal) return;
+    if (!_evento) return;
     const margen = parseFloat(this.value);
-    if (isNaN(margen) || margen >= 100) return;
+    if (isNaN(margen)) return;
 
-    const precio   = _costoFinal / (1 - margen / 100);
-    const ganancia = precio - _costoFinal;
+    const precio = precioParaMargen(margen / 100);
+    if (precio == null) {
+        limpiarVistaPrevia();
+        const h = document.getElementById('hint-margen');
+        h.textContent = '⚠️ Margen + comisión deben sumar menos de 100%';
+        h.classList.add('hint-error');
+        return;
+    }
 
+    const r = resultadoParaPrecio(precio);
     document.getElementById('input-precio-venta').value = precio.toFixed(2);
-    document.getElementById('input-ganancia').value     = ganancia.toFixed(2);
-
-    actualizarHints(margen, _precioMinimo, _precioSugerido);
+    document.getElementById('input-ganancia').value     = r.ganancia.toFixed(2);
+    actualizarVistaPrevia(precio);
 });
 
 // Cuando el usuario escribe la ganancia
 document.getElementById('input-ganancia').addEventListener('input', function () {
-    if (!_costoFinal) return;
+    if (!_evento) return;
     const ganancia = parseFloat(this.value);
     if (isNaN(ganancia)) return;
 
-    const precio = _costoFinal + ganancia;
-    const margen = (1 - _costoFinal / precio) * 100;
+    const precio = precioParaGanancia(ganancia);
+    if (precio == null || precio <= 0) return;
 
+    const r = resultadoParaPrecio(precio);
     document.getElementById('input-precio-venta').value = precio.toFixed(2);
-    document.getElementById('input-margen').value       = margen.toFixed(1);
-
-    actualizarHints(margen, _precioMinimo, _precioSugerido);
+    document.getElementById('input-margen').value       = (r.margen * 100).toFixed(1);
+    actualizarVistaPrevia(precio);
 });
 
 // Cuando el usuario escribe el precio directamente
 document.getElementById('input-precio-venta').addEventListener('input', function () {
-    if (!_costoFinal) return;
+    if (!_evento) return;
     const precio = parseFloat(this.value);
     if (isNaN(precio) || precio <= 0) return;
 
-    const margen   = (1 - _costoFinal / precio) * 100;
-    const ganancia = precio - _costoFinal;
-
-    document.getElementById('input-margen').value   = margen.toFixed(1);
-    document.getElementById('input-ganancia').value = ganancia.toFixed(2);
-
-    actualizarHints(margen, _precioMinimo, _precioSugerido);
+    const r = resultadoParaPrecio(precio);
+    document.getElementById('input-margen').value   = (r.margen * 100).toFixed(1);
+    document.getElementById('input-ganancia').value = r.ganancia.toFixed(2);
+    actualizarVistaPrevia(precio);
 });
 
-function actualizarHints(margen, minimo, sugerido) {
+function actualizarHints(margenCrudo) {
+    const p = _evento.parametros;
+    const margen = Math.round(margenCrudo * 100) / 100;
     const hintM = document.getElementById('hint-margen');
     const hintG = document.getElementById('hint-ganancia');
     const hintP = document.getElementById('hint-precio');
@@ -351,19 +647,24 @@ function actualizarHints(margen, minimo, sugerido) {
         h.textContent = '';
     });
 
-    if (margen < 30) {
-        hintM.textContent = '⚠️ Bajo el mínimo permitido (30%)';
+    if (margen < p.margen_minimo) {
+        hintM.textContent = `⚠️ Bajo el mínimo (${fmtNum(p.margen_minimo)}%)`;
         hintM.classList.add('hint-error');
         hintP.textContent = '⚠️ Precio por debajo del mínimo';
         hintP.classList.add('hint-error');
-    } else if (margen < 40) {
-        const diff = (40 - margen).toFixed(1);
+        if (margen < p.margen_autorizacion) {
+            hintG.textContent =
+                `Un vendedor necesitará autorización (menos de ${fmtNum(p.margen_autorizacion)}%)`;
+            hintG.classList.add('hint-error');
+        }
+    } else if (margen < p.margen_objetivo) {
+        const diff = (p.margen_objetivo - margen).toFixed(1);
         hintM.textContent = `A ${diff}% del objetivo`;
         hintM.classList.add('hint-warn');
         hintP.textContent = 'Entre mínimo y objetivo';
         hintP.classList.add('hint-warn');
     } else {
-        hintM.textContent = '✓ Por encima del objetivo';
+        hintM.textContent = '✓ En el objetivo o por encima';
         hintM.classList.add('hint-ok');
         hintP.textContent = '✓ Precio sobre objetivo';
         hintP.classList.add('hint-ok');
@@ -380,7 +681,7 @@ async function guardarPrecioVenta() {
         return;
     }
 
-    if (precio < _precioMinimo) {
+    if (_precioMinimo != null && precio < _precioMinimo) {
         const confirmar = confirm(
             `El precio $${fmt(precio)} está por debajo del mínimo ($${fmt(_precioMinimo)}). ¿Confirmar de todas formas?`
         );
@@ -402,14 +703,14 @@ async function guardarPrecioVenta() {
 
     if (resultado.requiere_autorizacion) {
         mostrarBanner(
-            `Precio guardado. Margen ${resultado.margen}% — por debajo ` +
-            `del mínimo. El evento queda Pendiente de Autorización.`,
+            `Precio guardado. Margen ${resultado.margen}%, por debajo ` +
+            `del permitido. El evento queda Pendiente de Autorización.`,
             'warn'
         );
     } else {
         mostrarBanner(
-            `Precio $${fmt(precio)} guardado. ` +
-            `Margen ${resultado.margen}%.`,
+            `Precio $${fmt(precio)} guardado. Ganancia $${fmt(resultado.ganancia)} ` +
+            `(margen ${resultado.margen}%), comisión del cliente $${fmt(resultado.comision)}.`,
             'ok'
         );
     }

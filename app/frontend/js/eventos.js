@@ -79,6 +79,13 @@ async function crearEvento() {
     const lugar = document.getElementById("lugar").value;
     const descripcion = document.getElementById("descripcion").value;
 
+    const comisionTexto = document.getElementById("comision_porcentaje").value.trim();
+    const comision_porcentaje = comisionTexto === "" ? 0 : parseFloat(comisionTexto);
+    if (isNaN(comision_porcentaje) || comision_porcentaje < 0 || comision_porcentaje >= 100) {
+        alert("La comisión debe estar entre 0 y 99.99%");
+        return;
+    }
+
     const respuesta = await fetchAuth(`${API_URL}/eventos`, {
         method: "POST",
         headers: {
@@ -88,10 +95,12 @@ async function crearEvento() {
             cliente_id,
             nombre,
             tipo_evento,
-            fecha_evento,
+            // Sin fecha va null: una cadena vacía no es una fecha válida
+            fecha_evento: fecha_evento || null,
             lugar,
             descripcion,
-            estatus: "Cotizacion"
+            estatus: "Cotizacion",
+            comision_porcentaje
         })
     });
 
@@ -101,6 +110,7 @@ async function crearEvento() {
     }
 
     document.getElementById("tipo_evento").value = "";
+    document.getElementById("comision_porcentaje").value = "";
 
     cargarEventos();
 }

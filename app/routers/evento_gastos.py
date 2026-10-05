@@ -4,15 +4,17 @@ from app.core.dependencies import (
     get_usuario_actual,
     require_director_o_admin
 )
-from pydantic import BaseModel
-from app.services.eventos_service import actualizar_totales_evento
+from pydantic import BaseModel, Field
+from app.services.eventos_service import (
+    actualizar_totales_evento,
+    fijar_precio_venta
+)
 from app.database.connection import get_connection
 
 router = APIRouter()
 
-# Por debajo de este margen, un vendedor no puede cerrar el precio solo:
-# el evento queda pendiente de que lo autorice un director o un admin.
-MARGEN_AUTORIZACION = 0.25
+# El margen bajo el cual un vendedor necesita autorización ya no es fijo:
+# vive en Configuración (margen_autorizacion). Ver eventos_service.
 
 class GastosEvento(BaseModel):
     costo_flete:   float = 0
@@ -41,67 +43,22 @@ def actualizar_gastos(evento_id: int, data: GastosEvento, usuario=Depends(get_us
     return {"mensaje": "Gastos actualizados"}
 
 class PrecioVenta(BaseModel):
-    precio_venta: float
+    precio_venta: float = Field(gt=0)
 
 @router.put("/eventos/{evento_id}/precio-venta")
 def actualizar_precio_venta(evento_id: int, data: PrecioVenta, usuario=Depends(get_usuario_actual)):
-    conn = get_connection()
-    cur  = conn.cursor()
+    # El margen se mide con la fórmula de margen (services/precios.py): la
+    # comisión del cliente depende del precio, así que se recalcula con el
+    # precio nuevo antes de decidir si hace falta autorización.
+    resultado = fijar_precio_venta(evento_id, data.precio_venta, usuario)
 
-    cur.execute("""
-        SELECT costo_final
-        FROM eventos
-        WHERE id = %s
-    """, (evento_id,))
-
-    fila = cur.fetchone()
-
-    if not fila:
-        cur.close()
-        conn.close()
+    if "error" in resultado:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Evento no encontrado"
+            detail=resultado["error"]
         )
 
-    costo_final = float(fila[0] or 0)
-
-    # Con precio en cero no hay margen que calcular; se trata como 0%
-    # para que caiga del lado que requiere autorización.
-    if data.precio_venta > 0:
-        margen = 1 - (costo_final / data.precio_venta)
-    else:
-        margen = 0.0
-
-    requiere_autorizacion = (
-        margen < MARGEN_AUTORIZACION
-        and usuario["rol"] == "vendedor"
-    )
-
-    if requiere_autorizacion:
-        cur.execute("""
-            UPDATE eventos
-            SET
-                precio_venta = %s,
-                estatus = 'Pendiente Autorización'
-            WHERE id = %s
-        """, (data.precio_venta, evento_id))
-    else:
-        cur.execute("""
-            UPDATE eventos
-            SET precio_venta = %s
-            WHERE id = %s
-        """, (data.precio_venta, evento_id))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return {
-        "mensaje": "Precio guardado",
-        "requiere_autorizacion": requiere_autorizacion,
-        "margen": round(margen * 100, 2)
-    }
+    return resultado
 
 
 # ── Autorización de precios por debajo del margen mínimo ──
@@ -160,6 +117,10 @@ def decidir_autorizacion(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Evento no encontrado"
         )
+
+    # Al rechazar se borra el precio: la comisión vuelve a medirse al
+    # precio sugerido.
+    actualizar_totales_evento(evento_id)
 
     return {
         "mensaje": "Evento aprobado" if data.decision == "aprobar"

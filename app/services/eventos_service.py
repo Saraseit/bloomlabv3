@@ -3,6 +3,12 @@ from app.services.compras_service import (
     calcular_costo_sobrante,
     copiar_insumos_congelados
 )
+from app.services.configuracion_service import obtener_parametros
+from app.services.precios import (
+    precio_para_margen,
+    resultado_para_precio,
+    repartir_por_arreglo
+)
 
 def obtener_eventos():
 
@@ -29,6 +35,8 @@ def obtener_eventos():
             e.descripcion,
 
             e.estatus,
+
+            e.comision_porcentaje,
 
             e.costo_base,
 
@@ -85,11 +93,13 @@ def crear_evento(data):
             lugar,
             descripcion,
             estatus,
+            comision_porcentaje,
             activo
 
         )
         VALUES (
 
+            %s,
             %s,
             %s,
             %s,
@@ -109,7 +119,8 @@ def crear_evento(data):
         data.fecha_evento,
         data.lugar,
         data.descripcion,
-        data.estatus
+        data.estatus,
+        data.comision_porcentaje
 
     ))
 
@@ -183,15 +194,26 @@ def eliminar_evento(evento_id):
         "mensaje": "Evento eliminado"
     }
 
-def actualizar_totales_evento(evento_id):
+def _calcular_totales(cur, evento_id):
+    """Calcula los totales del evento con margen (ver services/precios.py).
 
-    conn = get_connection()
-    cur = conn.cursor()
+    No escribe nada. El precio de referencia es el acordado si existe; si
+    no, el sugerido. Comisión, ganancia y margen se miden a ese precio.
+    """
+    cur.execute("""
+        SELECT costo_flete, costo_montaje, comision_porcentaje, precio_venta
+        FROM eventos
+        WHERE id = %s
+    """, (evento_id,))
+    fila = cur.fetchone()
+    if not fila:
+        return None
 
-    MARGEN_MINIMO   = 0.30
-    MARGEN_OBJETIVO = 0.40
+    costo_flete   = float(fila[0] or 0)
+    costo_montaje = float(fila[1] or 0)
+    comision_pct  = float(fila[2] or 0)
+    precio_venta  = float(fila[3]) if fila[3] is not None else None
 
-    # Costo de arreglos
     cur.execute("""
         SELECT COALESCE(SUM(subtotal), 0)
         FROM evento_arreglos
@@ -199,55 +221,112 @@ def actualizar_totales_evento(evento_id):
     """, (evento_id,))
     costo_arreglos = float(cur.fetchone()[0])
 
-    # Gastos operativos del evento
-    cur.execute("""
-        SELECT costo_flete, costo_montaje
-        FROM eventos
-        WHERE id = %s
-    """, (evento_id,))
-    fila_gastos = cur.fetchone()
-    costo_flete   = float(fila_gastos[0] or 0)
-    costo_montaje = float(fila_gastos[1] or 0)
-
-    # Comisión del cliente — SOLO sobre arreglos
-    cur.execute("""
-        SELECT c.comision_porcentaje
-        FROM eventos e
-        INNER JOIN clientes c ON e.cliente_id = c.id
-        WHERE e.id = %s
-    """, (evento_id,))
-    fila = cur.fetchone()
-    comision_porcentaje = float(fila[0]) if fila and fila[0] is not None else 0
-
-    comision = costo_arreglos * (comision_porcentaje / 100)   # ← solo arreglos
-
-    # costo_base ahora representa: arreglos + comisión (sin gastos)
-    costo_base = costo_arreglos + comision
-
-    # Paquetes incompletos: va aparte, como el flete (sin comisión)
+    # Paquetes incompletos: costo de material, va en el precio de arreglos
     costo_sobrante = calcular_costo_sobrante(cur, evento_id)
 
-    # costo_final agrega los gastos operativos DESPUÉS de comisión
-    costo_final = costo_base + costo_flete + costo_montaje + costo_sobrante
+    parametros = obtener_parametros(cur)
+    comision   = comision_pct / 100
+    traslados  = costo_flete + costo_montaje
 
-    precio_minimo   = costo_final / (1 - MARGEN_MINIMO)
-    precio_sugerido = costo_final / (1 - MARGEN_OBJETIVO)
+    precio_minimo = precio_para_margen(
+        costo_arreglos, costo_sobrante, traslados, comision,
+        parametros["margen_minimo"] / 100
+    )
+    precio_sugerido = precio_para_margen(
+        costo_arreglos, costo_sobrante, traslados, comision,
+        parametros["margen_objetivo"] / 100
+    )
+
+    if precio_venta is not None and precio_venta > 0:
+        precio_referencia, tipo_precio = precio_venta, "acordado"
+    elif precio_sugerido is not None:
+        precio_referencia, tipo_precio = precio_sugerido, "sugerido"
+    else:
+        precio_referencia, tipo_precio = None, None
+
+    resultado = (
+        resultado_para_precio(
+            costo_arreglos, costo_sobrante, traslados, comision, precio_referencia
+        )
+        if precio_referencia is not None else None
+    )
+
+    costo_directo    = costo_arreglos + costo_sobrante + traslados
+    comision_importe = resultado["comision"] if resultado else 0.0
+
+    advertencia = None
+    if precio_sugerido is None:
+        advertencia = (
+            f"Con {comision_pct:g}% de comisión y {parametros['margen_objetivo']:g}% "
+            "de margen objetivo no hay precio posible: entre los dos superan el 100% "
+            "del precio de los arreglos."
+        )
+
+    return {
+        "costo_arreglos":    costo_arreglos,
+        "costo_flete":       costo_flete,
+        "costo_montaje":     costo_montaje,
+        "costo_sobrante":    costo_sobrante,
+        "costo_directo":     costo_directo,
+        "comision_pct":      comision_pct,
+        "comision_importe":  comision_importe,
+        # Todo lo que no es ganancia: costos + comisión al precio de referencia.
+        # Reportes y utilidad real usan precio - costo_final.
+        "costo_final":       costo_directo + comision_importe,
+        "precio_minimo":     precio_minimo,
+        "precio_sugerido":   precio_sugerido,
+        "precio_venta":      precio_venta,
+        "precio_referencia": precio_referencia,
+        "tipo_precio":       tipo_precio,
+        "precio_arreglos":   resultado["precio_arreglos"] if resultado else None,
+        "ganancia":          resultado["ganancia"] if resultado else None,
+        "margen":            resultado["margen"] if resultado else None,
+        "parametros":        parametros,
+        "advertencia":       advertencia,
+    }
+
+
+def actualizar_totales_evento(evento_id):
+    """Recalcula y guarda los totales del evento."""
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    t = _calcular_totales(cur, evento_id)
+    if t is None:
+        cur.close()
+        conn.close()
+        return None
 
     cur.execute("""
         UPDATE eventos
         SET
-            costo_base      = %s,
-            costo_sobrante  = %s,
-            costo_final     = %s,
-            precio_minimo   = %s,
-            precio_sugerido = %s
+            costo_base       = %s,
+            costo_sobrante   = %s,
+            comision_importe = %s,
+            costo_final      = %s,
+            precio_minimo    = %s,
+            precio_sugerido  = %s
         WHERE id = %s
-    """, (costo_base, costo_sobrante, costo_final, precio_minimo,
-          precio_sugerido, evento_id))
+    """, (
+        t["costo_arreglos"],
+        t["costo_sobrante"],
+        t["comision_importe"],
+        t["costo_final"],
+        t["precio_minimo"],
+        t["precio_sugerido"],
+        evento_id,
+    ))
 
     conn.commit()
     cur.close()
     conn.close()
+    return t
+
+
+def _redondear(valor, decimales=2):
+    return round(valor, decimales) if valor is not None else None
+
 
 def obtener_evento(evento_id):
 
@@ -260,21 +339,12 @@ def obtener_evento(evento_id):
             e.id,
             e.cliente_id,
             c.nombre AS cliente,
-            c.comision_porcentaje,
             e.nombre,
             e.tipo_evento,
             e.fecha_evento,
             e.lugar,
             e.descripcion,
             e.estatus,
-            e.costo_base,
-            e.costo_flete,
-            e.costo_montaje,
-            e.costo_sobrante,
-            e.costo_final,
-            e.precio_minimo,
-            e.precio_sugerido,
-            e.precio_venta,
             e.nota_autorizacion,
             e.activo,
             e.fecha_creacion
@@ -298,34 +368,32 @@ def obtener_evento(evento_id):
     columnas = [desc[0] for desc in cur.description]
     resultado = dict(zip(columnas, evento))
 
-    # Redondeos base — forzar float para evitar mezclar Decimal con float
-    costo_base    = round(float(resultado["costo_base"]    or 0), 2)
-    costo_flete   = round(float(resultado["costo_flete"]   or 0), 2)
-    costo_montaje = round(float(resultado["costo_montaje"] or 0), 2)
-    costo_sobrante = round(float(resultado["costo_sobrante"] or 0), 2)
-    costo_final   = round(float(resultado["costo_final"]   or 0), 2)
-    comision_pct  = float(resultado["comision_porcentaje"] or 0)
+    # Totales al momento, con la fórmula de margen
+    t = _calcular_totales(cur, evento_id)
 
-    resultado["costo_base"]    = costo_base
-    resultado["costo_flete"]   = costo_flete
-    resultado["costo_montaje"] = costo_montaje
-    resultado["costo_sobrante"] = costo_sobrante
-    resultado["costo_final"]   = costo_final
+    resultado.update({
+        "costo_arreglos":      _redondear(t["costo_arreglos"]),
+        # costo_base se conserva por compatibilidad: ahora es el costo de arreglos
+        "costo_base":          _redondear(t["costo_arreglos"]),
+        "costo_flete":         _redondear(t["costo_flete"]),
+        "costo_montaje":       _redondear(t["costo_montaje"]),
+        "costo_sobrante":      _redondear(t["costo_sobrante"]),
+        "costo_directo":       _redondear(t["costo_directo"]),
+        "comision_porcentaje": _redondear(t["comision_pct"]),
+        "importe_comision":    _redondear(t["comision_importe"]),
+        "costo_final":         _redondear(t["costo_final"]),
+        "precio_minimo":       _redondear(t["precio_minimo"]),
+        "precio_sugerido":     _redondear(t["precio_sugerido"]),
+        "precio_venta":        _redondear(t["precio_venta"]),
+        "precio_referencia":   _redondear(t["precio_referencia"]),
+        "tipo_precio":         t["tipo_precio"],
+        "ganancia":            _redondear(t["ganancia"]),
+        "margen_efectivo":     _redondear(t["margen"] * 100) if t["margen"] is not None else None,
+        "parametros":          t["parametros"],
+        "advertencia":         t["advertencia"],
+    })
 
-    resultado["precio_minimo"]   = round(float(resultado["precio_minimo"]   or 0), 2)
-    resultado["precio_sugerido"] = round(float(resultado["precio_sugerido"] or 0), 2)
-    resultado["precio_venta"]    = round(float(resultado["precio_venta"]    or 0), 2)
-
-    # costo_base = costo_arreglos + comision (flete/montaje van aparte)
-    if comision_pct > 0:
-        costo_arreglos = costo_base / (1 + comision_pct / 100)
-    else:
-        costo_arreglos = costo_base
-
-    resultado["costo_arreglos"]   = round(costo_arreglos, 2)
-    resultado["importe_comision"] = round(costo_base - costo_arreglos, 2)
-
-    # Arreglos del evento
+    # Arreglos del evento, cada uno con su precio y su comisión
     cur.execute("""
         SELECT
 
@@ -354,12 +422,128 @@ def obtener_evento(evento_id):
     columnas = [desc[0] for desc in cur.description]
     arreglos = [dict(zip(columnas, fila)) for fila in filas]
 
+    partidas = repartir_por_arreglo(
+        [float(a["subtotal"] or 0) for a in arreglos],
+        t["precio_arreglos"] or 0.0,
+        t["comision_pct"] / 100,
+    )
+    for arreglo, (precio, comision) in zip(arreglos, partidas):
+        cantidad = float(arreglo["cantidad"] or 0)
+        arreglo["precio_venta"] = round(precio, 2)
+        arreglo["precio_unitario_venta"] = round(precio / cantidad, 2) if cantidad else 0.0
+        arreglo["comision_porcentaje"] = _redondear(t["comision_pct"])
+        arreglo["comision_importe"] = round(comision, 2)
+
     resultado["arreglos"] = arreglos
 
     cur.close()
     conn.close()
 
     return resultado
+
+
+def _revisar_autorizacion(evento_id, usuario):
+    """Si un vendedor deja el margen bajo el umbral, el evento espera autorización.
+
+    Aplica cuando hay precio acordado; con precio sugerido no hay nada que
+    autorizar todavía. Devuelve (requiere_autorizacion, totales).
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+
+    t = _calcular_totales(cur, evento_id)
+    umbral = t["parametros"]["margen_autorizacion"] / 100
+
+    requiere = (
+        t["tipo_precio"] == "acordado"
+        and usuario["rol"] == "vendedor"
+        and (t["margen"] if t["margen"] is not None else 0) < umbral
+    )
+
+    if requiere:
+        cur.execute("""
+            UPDATE eventos
+            SET estatus = 'Pendiente Autorización'
+            WHERE id = %s
+        """, (evento_id,))
+        conn.commit()
+
+    cur.close()
+    conn.close()
+    return requiere, t
+
+
+def fijar_precio_venta(evento_id, precio_venta, usuario):
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE eventos
+        SET precio_venta = %s
+        WHERE id = %s
+        RETURNING id
+    """, (precio_venta, evento_id))
+    existe = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not existe:
+        return {"error": "Evento no encontrado"}
+
+    # La comisión depende del precio: hay que recalcular antes de medir
+    actualizar_totales_evento(evento_id)
+    requiere, t = _revisar_autorizacion(evento_id, usuario)
+
+    return {
+        "mensaje": "Precio guardado",
+        "requiere_autorizacion": requiere,
+        "margen": round((t["margen"] or 0) * 100, 2),
+        "ganancia": round(t["ganancia"] or 0, 2),
+        "comision": round(t["comision_importe"], 2),
+    }
+
+
+def actualizar_comision(evento_id, porcentaje, usuario):
+
+    parametros = obtener_parametros()
+
+    if porcentaje < 0 or porcentaje >= 100:
+        return {"error": "La comisión debe estar entre 0 y 99.99%."}
+
+    if porcentaje + parametros["margen_objetivo"] >= 100:
+        return {"error": (
+            f"Con {porcentaje:g}% de comisión y {parametros['margen_objetivo']:g}% "
+            "de margen objetivo no queda precio posible: entre los dos deben "
+            "sumar menos de 100%."
+        )}
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE eventos
+        SET comision_porcentaje = %s
+        WHERE id = %s
+        RETURNING id
+    """, (porcentaje, evento_id))
+    existe = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not existe:
+        return {"error": "Evento no encontrado"}
+
+    actualizar_totales_evento(evento_id)
+
+    # Más comisión = menos margen al precio ya acordado
+    requiere, t = _revisar_autorizacion(evento_id, usuario)
+
+    return {
+        "mensaje": "Comisión actualizada",
+        "requiere_autorizacion": requiere,
+        "margen": round(t["margen"] * 100, 2) if t["margen"] is not None else None,
+    }
 
 
 def duplicar_evento(evento_id: int):
@@ -386,7 +570,8 @@ def duplicar_evento(evento_id: int):
             lugar,
             descripcion,
             costo_flete,
-            costo_montaje
+            costo_montaje,
+            comision_porcentaje
         FROM eventos
         WHERE id = %s
           AND activo = TRUE
@@ -404,7 +589,7 @@ def duplicar_evento(evento_id: int):
         }
 
     (cliente_id, nombre, tipo_evento, lugar,
-     descripcion, costo_flete, costo_montaje) = original
+     descripcion, costo_flete, costo_montaje, comision_porcentaje) = original
 
     # Los totales entran en cero y los recalcula
     # actualizar_totales_evento() al final.
@@ -418,6 +603,7 @@ def duplicar_evento(evento_id: int):
             estatus,
             costo_flete,
             costo_montaje,
+            comision_porcentaje,
             costo_base,
             costo_final,
             precio_minimo,
@@ -425,7 +611,7 @@ def duplicar_evento(evento_id: int):
             activo
         )
         VALUES (
-            %s, %s, %s, %s, %s, 'Cotizacion', %s, %s, 0, 0, 0, 0, TRUE
+            %s, %s, %s, %s, %s, 'Cotizacion', %s, %s, %s, 0, 0, 0, 0, TRUE
         )
         RETURNING id
     """, (
@@ -435,7 +621,8 @@ def duplicar_evento(evento_id: int):
         lugar,
         descripcion,
         costo_flete,
-        costo_montaje
+        costo_montaje,
+        comision_porcentaje
     ))
 
     nuevo_id = cur.fetchone()[0]

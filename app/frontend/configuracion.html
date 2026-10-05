@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración — BloomLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css?v=20261005">
+    <link rel="stylesheet" href="css/module.css?v=20261005">
+    <style>
+        /* ═══════════════════════════════════════════
+           Configuración — estilos específicos
+           ═══════════════════════════════════════════ */
+
+        .parametros-lista {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .parametro {
+            display: grid;
+            grid-template-columns: 1fr 180px;
+            gap: 1.25rem;
+            align-items: center;
+            padding: 1.15rem 1.5rem;
+            border-bottom: 1px solid #f0f5f0;
+        }
+
+        .parametro:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .parametro { grid-template-columns: 1fr; gap: 0.6rem; }
+        }
+
+        .parametro-nombre {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1a2e1e;
+            margin: 0 0 0.2rem;
+        }
+
+        .parametro-descripcion {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .parametro-cambio {
+            font-size: 0.72rem;
+            color: #9ca3af;
+            margin: 0.35rem 0 0;
+        }
+
+        .explicacion {
+            padding: 1.25rem 1.5rem 1.5rem;
+            font-size: 0.86rem;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .explicacion p {
+            margin: 0 0 0.75rem;
+        }
+
+        .explicacion .formula {
+            display: block;
+            margin: 0.25rem 0 0.9rem;
+            padding: 0.7rem 0.9rem;
+            background: #f7fbf7;
+            border: 1px solid #e2ede5;
+            border-radius: 10px;
+            font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #1a2e1e;
+            white-space: pre-wrap;
+        }
+
+        .aviso-solo-lectura {
+            display: none;
+            margin: 0 1.5rem 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            font-size: 0.84rem;
+        }
+
+        .mensaje-guardado {
+            font-size: 0.84rem;
+            font-weight: 500;
+            align-self: center;
+        }
+
+        .mensaje-ok    { color: #047857; }
+        .mensaje-error { color: #be123c; }
+    </style>
+    <link rel="stylesheet" href="css/dark.css?v=20261005">
+    <script src="js/theme.js?v=20261005"></script>
+</head>
+
+<body class="module-page">
+
+    <div class="module-wrapper">
+
+        <header class="module-header">
+            <a href="index.html" class="back-link">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+                Menú Principal
+            </a>
+
+            <div class="page-title-block">
+                <div class="page-icon">&#9881;&#65039;</div>
+                <div>
+                    <h1 class="page-title">Configuración</h1>
+                    <p class="page-subtitle">Parámetros del negocio que se usan en todas las cotizaciones</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Márgenes de ganancia</h2>
+                    <p class="card-subtitle">
+                        Al guardar se recalculan el precio mínimo y el sugerido de todos los eventos.
+                        Los precios ya acordados no cambian.
+                    </p>
+                </div>
+            </div>
+
+            <div class="aviso-solo-lectura" id="aviso-solo-lectura">
+                Solo un director o un administrador puede cambiar estos valores.
+            </div>
+
+            <div class="parametros-lista" id="parametros-lista"></div>
+
+            <div class="form-actions">
+                <span class="mensaje-guardado" id="mensaje-guardado"></span>
+                <button class="btn btn-primary" id="btn-guardar" onclick="guardarConfiguracion()">
+                    Guardar configuración
+                </button>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Cómo se calculan los precios</h2>
+                    <p class="card-subtitle">Ganancia y comisión son porcentajes del precio de venta (margen), no del costo (markup)</p>
+                </div>
+            </div>
+
+            <div class="explicacion">
+                <p>
+                    <strong>Margen de ganancia:</strong> qué parte del precio total del evento es ganancia.
+                    <strong>Comisión del cliente:</strong> qué parte del precio de los arreglos se lleva el cliente.
+                    Se captura en cada evento. Flete y montaje se cobran a costo y no generan comisión.
+                </p>
+                <span class="formula">ganancia = precio de arreglos − comisión − costo de arreglos − sobrante
+margen efectivo = ganancia ÷ precio total</span>
+                <p>
+                    Ejemplo: arreglos que cuestan $1,000, comisión del 10% y margen del 30%.
+                    El precio de los arreglos sale en $1,666.67, porque $1,000 ÷ (1 − 0.10 − 0.30).
+                    De ese precio, $166.67 son la comisión del cliente, que es el 10%.
+                    Otros $500 son la ganancia, que es el 30%.
+                </p>
+                <p>
+                    Con markup, el 30% se calcularía sobre el costo y el precio sería menor:
+                    la ganancia real terminaría por debajo de lo que dice el porcentaje.
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="auth.js?v=20261005"></script>
+    <script src="config.js?v=20261005"></script>
+    <script src="js/configuracion.js?v=20261005"></script>
+
+</body>
+
+</html>

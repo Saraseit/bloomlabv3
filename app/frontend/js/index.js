@@ -14,6 +14,12 @@ if (usuario.rol === "admin") {
     if (enlace) enlace.style.display = "flex";
 }
 
+// Configuración: los márgenes los ajusta un director o un admin
+if (usuario.rol === "admin" || usuario.rol === "director") {
+    const enlace = document.getElementById("enlace-configuracion");
+    if (enlace) enlace.style.display = "flex";
+}
+
 const MESES = [
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"

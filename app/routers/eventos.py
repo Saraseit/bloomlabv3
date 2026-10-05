@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from app.core.dependencies import get_usuario_actual
 
@@ -13,7 +14,8 @@ from app.services.eventos_service import (
     actualizar_evento,
     eliminar_evento,
     obtener_evento,
-    duplicar_evento
+    duplicar_evento,
+    actualizar_comision
 )
 
 router = APIRouter(
@@ -63,6 +65,28 @@ def clonar_evento(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=resultado["error"]
         )
+
+    return resultado
+
+
+class ComisionEvento(BaseModel):
+    comision_porcentaje: float
+
+
+@router.put("/{evento_id}/comision")
+def editar_comision(
+    evento_id: int,
+    data: ComisionEvento,
+    usuario=Depends(get_usuario_actual)
+):
+    """Comisión del cliente para este evento (% sobre el precio de arreglos)."""
+
+    resultado = actualizar_comision(evento_id, data.comision_porcentaje, usuario)
+
+    if "error" in resultado:
+        codigo = (status.HTTP_404_NOT_FOUND if resultado["error"] == "Evento no encontrado"
+                  else status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status_code=codigo, detail=resultado["error"])
 
     return resultado
 

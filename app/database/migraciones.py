@@ -95,6 +95,47 @@ MIGRACIONES = [
             ADD COLUMN IF NOT EXISTS paquetes_comprados NUMERIC;
         """,
     ),
+    (
+        "2026_10_05_comision_por_evento_y_configuracion",
+        """
+        -- ── La comisión del cliente pasa del cliente al evento ──
+        -- Se negocia por evento. Se arranca con la que tenía el cliente.
+        -- clientes.comision_porcentaje se conserva como histórico, sin uso.
+        ALTER TABLE eventos
+            ADD COLUMN IF NOT EXISTS comision_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0;
+        ALTER TABLE eventos
+            ADD COLUMN IF NOT EXISTS comision_importe NUMERIC(12,2) NOT NULL DEFAULT 0;
+
+        UPDATE eventos e
+        SET comision_porcentaje = COALESCE(c.comision_porcentaje, 0)
+        FROM clientes c
+        WHERE c.id = e.cliente_id;
+
+        ALTER TABLE eventos
+            DROP CONSTRAINT IF EXISTS eventos_comision_rango;
+        ALTER TABLE eventos
+            ADD CONSTRAINT eventos_comision_rango
+            CHECK (comision_porcentaje >= 0 AND comision_porcentaje < 100);
+
+        -- ── Parámetros que se ajustan desde la pantalla de Configuración ──
+        CREATE TABLE IF NOT EXISTS configuracion (
+            clave           VARCHAR(60) PRIMARY KEY,
+            valor           NUMERIC NOT NULL,
+            descripcion     TEXT,
+            actualizado_en  TIMESTAMP NOT NULL DEFAULT now(),
+            actualizado_por VARCHAR(150)
+        );
+
+        INSERT INTO configuracion (clave, valor, descripcion) VALUES
+            ('margen_minimo', 20,
+             'Margen de ganancia mínimo, sobre el precio de venta (%)'),
+            ('margen_objetivo', 30,
+             'Margen de ganancia objetivo, sobre el precio de venta (%)'),
+            ('margen_autorizacion', 20,
+             'Debajo de este margen, un vendedor necesita autorización de director o admin (%)')
+        ON CONFLICT (clave) DO NOTHING;
+        """,
+    ),
 ]
 
 

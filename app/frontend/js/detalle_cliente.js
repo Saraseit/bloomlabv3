@@ -64,8 +64,6 @@ async function cargarCliente() {
         email.textContent = '—';
     }
 
-    document.getElementById('comision').innerHTML =
-        `<span class="comision-chip">${fmtPct(cliente.comision_porcentaje)}</span>`;
 
     // ── KPIs ──
     document.getElementById('total-eventos').textContent =

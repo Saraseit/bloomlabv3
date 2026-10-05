@@ -28,7 +28,6 @@ async function cargarClientes() {
             <td>${cliente.empresa ?? ""}</td>
             <td>${cliente.telefono ?? ""}</td>
             <td>${cliente.email ?? ""}</td>
-            <td>${cliente.comision_porcentaje ?? 0}</td>
             <td>${celdaDeuda}</td>
 
             <td>
@@ -63,10 +62,6 @@ async function crearCliente() {
     const telefono = document.getElementById("telefono").value;
     const email = document.getElementById("email").value;
 
-    const comision_porcentaje = parseFloat(
-        document.getElementById("comision").value || 0
-    );
-
     const respuesta = await fetchAuth(`${API_URL}/clientes`, {
         method: "POST",
         headers: {
@@ -76,8 +71,7 @@ async function crearCliente() {
             nombre,
             empresa,
             telefono,
-            email,
-            comision_porcentaje
+            email
         })
     });
 
@@ -98,10 +92,6 @@ async function editarCliente(cliente) {
     const telefono = prompt("Teléfono", cliente.telefono ?? "");
     const email = prompt("Email", cliente.email ?? "");
 
-    const comision_porcentaje = parseFloat(
-        prompt("Comisión %", cliente.comision_porcentaje ?? 0)
-    );
-
     const respuesta = await fetchAuth(`${API_URL}/clientes/${cliente.id}`, {
         method: "PUT",
         headers: {
@@ -112,8 +102,7 @@ async function editarCliente(cliente) {
             empresa,
             telefono,
             email,
-            notas: cliente.notas ?? "",
-            comision_porcentaje
+            notas: cliente.notas ?? ""
         })
     });
 

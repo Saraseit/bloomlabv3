@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261002">
-    <link rel="stylesheet" href="css/module.css?v=20261002">
+    <link rel="stylesheet" href="css/estilos.css?v=20261005">
+    <link rel="stylesheet" href="css/module.css?v=20261005">
     <style>
         /* Estilos específicos de Eventos */
         #tabla-eventos tbody td:nth-child(1) {
@@ -33,8 +33,8 @@
             align-items: center;
         }
     </style>
-    <link rel="stylesheet" href="css/dark.css?v=20261002">
-    <script src="js/theme.js?v=20261002"></script>
+    <link rel="stylesheet" href="css/dark.css?v=20261005">
+    <script src="js/theme.js?v=20261005"></script>
 </head>
 
 <body class="module-page">
@@ -78,7 +78,7 @@
                             <th>Fecha</th>
                             <th>Lugar</th>
                             <th>Estatus</th>
-                            <th>Costo Final</th>
+                            <th>Costo total</th>
                             <th>Precio Sugerido</th>
                             <th>Acciones</th>
                         </tr>
@@ -142,6 +142,20 @@
                         class="form-input"
                         placeholder="Salón, dirección, sede..."
                     >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="comision_porcentaje">Comisión del cliente (%)</label>
+                    <input
+                        type="number"
+                        id="comision_porcentaje"
+                        class="form-input"
+                        placeholder="0"
+                        step="0.01"
+                        min="0"
+                        max="99.99"
+                    >
+                    <span class="input-hint">Porcentaje del precio de los arreglos. Se puede cambiar después en el evento.</span>
                 </div>
 
                 <div class="form-group form-group-full">
@@ -225,9 +239,9 @@
         });
     </script>
 
-    <script src="auth.js?v=20261002"></script>
-    <script src="config.js?v=20261002"></script>
-    <script src="js/eventos.js?v=20261002"></script>
+    <script src="auth.js?v=20261005"></script>
+    <script src="config.js?v=20261005"></script>
+    <script src="js/eventos.js?v=20261005"></script>
 
 </body>
 

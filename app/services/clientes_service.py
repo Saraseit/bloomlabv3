@@ -245,17 +245,15 @@ def crear_cliente(data):
             email,
             empresa,
             notas,
-            comision_porcentaje,
             activo
         )
-                
+
         VALUES (
             %s,
             %s,
             %s,
             %s,
             %s,
-            %s,    
             TRUE
         )
         RETURNING id
@@ -265,8 +263,7 @@ def crear_cliente(data):
         data.telefono,
         data.email,
         data.empresa,
-        data.notas,
-        data.comision_porcentaje
+        data.notas
 
     ))
 
@@ -294,8 +291,7 @@ def actualizar_cliente(cliente_id, data):
             telefono = %s,
             email = %s,
             empresa = %s,
-            notas = %s,
-            comision_porcentaje = %s
+            notas = %s
         WHERE id = %s
     """, (
 
@@ -304,7 +300,6 @@ def actualizar_cliente(cliente_id, data):
         data.email,
         data.empresa,
         data.notas,
-        data.comision_porcentaje,
         cliente_id
 
     ))

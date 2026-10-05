@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261002">
-    <link rel="stylesheet" href="css/module.css?v=20261002">
+    <link rel="stylesheet" href="css/estilos.css?v=20261005">
+    <link rel="stylesheet" href="css/module.css?v=20261005">
     <style>
         /* Estilos específicos de Clientes (CRM) */
         .client-name-wrap {
@@ -75,7 +75,7 @@
         }
 
         /* Deuda: se destaca solo cuando hay saldo por cobrar */
-        #tabla-clientes tbody td:nth-child(6) {
+        #tabla-clientes tbody td:nth-child(5) {
             white-space: nowrap;
             font-weight: 600;
         }
@@ -89,8 +89,8 @@
             font-weight: 500;
         }
     </style>
-    <link rel="stylesheet" href="css/dark.css?v=20261002">
-    <script src="js/theme.js?v=20261002"></script>
+    <link rel="stylesheet" href="css/dark.css?v=20261005">
+    <script src="js/theme.js?v=20261005"></script>
 </head>
 
 <body class="module-page">
@@ -111,7 +111,7 @@
                 <div class="page-icon">&#128101;</div>
                 <div>
                     <h1 class="page-title">Clientes</h1>
-                    <p class="page-subtitle">Directorio de contactos y comisiones comerciales</p>
+                    <p class="page-subtitle">Directorio de contactos comerciales</p>
                 </div>
             </div>
         </header>
@@ -133,7 +133,6 @@
                             <th>Empresa</th>
                             <th>Teléfono</th>
                             <th>Email</th>
-                            <th>Comisión</th>
                             <th>Deuda</th>
                             <th>Acciones</th>
                         </tr>
@@ -190,17 +189,6 @@
                         id="email"
                         class="form-input"
                         placeholder="contacto@empresa.com"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="comision">Comisión (%)</label>
-                    <input
-                        type="number"
-                        id="comision"
-                        class="form-input"
-                        placeholder="0.00"
-                        step="0.01"
                     >
                 </div>
             </div>
@@ -272,20 +260,8 @@
                     emailCell.dataset.linked = '1';
                 }
 
-                // Comisión como chip verde (índice 4)
-                var comCell = row.cells[4];
-                if (comCell && !comCell.dataset.chipped) {
-                    var com = comCell.textContent.trim();
-                    var chip = document.createElement('span');
-                    chip.textContent = com + '%';
-                    chip.className = 'comision-chip';
-                    comCell.textContent = '';
-                    comCell.appendChild(chip);
-                    comCell.dataset.chipped = '1';
-                }
-
-                // Botones de acción (índice 6; el 5 es Deuda)
-                var actionCell = row.cells[6];
+                // Botones de acción (índice 5; el 4 es Deuda)
+                var actionCell = row.cells[5];
                 if (actionCell && !actionCell.dataset.styled) {
                     var btns = actionCell.querySelectorAll('button');
                     actionCell.classList.add('action-cell');
@@ -310,9 +286,9 @@
         });
     </script>
 
-    <script src="auth.js?v=20261002"></script>
-    <script src="config.js?v=20261002"></script>
-    <script src="js/clientes.js?v=20261002"></script>
+    <script src="auth.js?v=20261005"></script>
+    <script src="config.js?v=20261005"></script>
+    <script src="js/clientes.js?v=20261005"></script>
 
 </body>
 

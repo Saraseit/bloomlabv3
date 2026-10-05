@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261002">
-    <link rel="stylesheet" href="css/home.css?v=20261002">
+    <link rel="stylesheet" href="css/estilos.css?v=20261005">
+    <link rel="stylesheet" href="css/home.css?v=20261005">
     <style>
         /* Chip de sesión — mismos verdes del sistema */
         .user-chip {
@@ -59,12 +59,13 @@
         }
 
         /* La tarjeta de usuarios solo se muestra a un admin (index.js) */
-        #enlace-usuarios {
+        #enlace-usuarios,
+        #enlace-configuracion {
             display: none;
         }
     </style>
-    <link rel="stylesheet" href="css/dark.css?v=20261002">
-    <script src="js/theme.js?v=20261002"></script>
+    <link rel="stylesheet" href="css/dark.css?v=20261005">
+    <script src="js/theme.js?v=20261005"></script>
 </head>
 
 <body class="home-page">
@@ -144,6 +145,15 @@
                     <span class="card-arrow">&#8594;</span>
                 </a>
 
+                <a href="configuracion.html" class="menu-card" id="enlace-configuracion">
+                    <div class="card-icon">&#9881;&#65039;</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Configuración</h3>
+                        <p class="card-desc">Márgenes de ganancia y autorización</p>
+                    </div>
+                    <span class="card-arrow">&#8594;</span>
+                </a>
+
             </nav>
 
             <!-- ── Calendario de eventos ── -->
@@ -183,9 +193,9 @@
 
     </div>
 
-    <script src="auth.js?v=20261002"></script>
-    <script src="config.js?v=20261002"></script>
-    <script src="js/index.js?v=20261002"></script>
+    <script src="auth.js?v=20261005"></script>
+    <script src="config.js?v=20261005"></script>
+    <script src="js/index.js?v=20261005"></script>
 
 </body>
 

@@ -13,7 +13,10 @@ class ClienteCreate(BaseModel):
 
     notas: str | None = None
 
-    comision_porcentaje: float = 0
+
+# La comisión ya no es del cliente: se negocia por evento
+# (eventos.comision_porcentaje). Si un navegador con la versión anterior
+# la manda, Pydantic la ignora.
 
 
 class ClienteUpdate(BaseModel):
@@ -27,6 +30,4 @@ class ClienteUpdate(BaseModel):
     empresa: str | None = None
 
     notas: str | None = None
-
-    comision_porcentaje: float = 0
     
