@@ -187,16 +187,16 @@ async function agregarInsumo() {
     const observaciones = document.getElementById("observaciones").value;
 
     if (!insumo_id) {
-        alert("Escribe y elige un insumo de la lista");
+        ui.aviso("Escribe y elige un insumo de la lista");
         _buscadorInsumo.enfocar();
         return;
     }
     if (isNaN(cantidad) || cantidad <= 0) {
-        alert("La cantidad debe ser mayor a 0");
+        ui.aviso("La cantidad debe ser mayor a 0");
         return;
     }
     if (isNaN(costo_real) || costo_real < 0) {
-        alert("Captura un costo válido");
+        ui.aviso("Captura un costo válido");
         return;
     }
 
@@ -213,7 +213,7 @@ async function agregarInsumo() {
     });
 
     if (!respuesta.ok) {
-        alert("Error al agregar insumo");
+        ui.aviso("Error al agregar insumo");
         return;
     }
 
@@ -225,7 +225,7 @@ async function agregarInsumo() {
 
 async function eliminarDetalle(id) {
 
-    const confirmar = confirm("¿Eliminar insumo?");
+    const confirmar = await ui.confirmar("¿Eliminar insumo?");
     if (!confirmar) return;
 
     await fetchAuth(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
@@ -271,7 +271,7 @@ async function guardarDetalleEditado() {
         document.getElementById("edit-cantidad").value
     );
     if (isNaN(cantidad) || cantidad <= 0) {
-        alert("La cantidad debe ser mayor a 0");
+        ui.aviso("La cantidad debe ser mayor a 0");
         return;
     }
 
@@ -279,7 +279,7 @@ async function guardarDetalleEditado() {
         document.getElementById("edit-costo-real").value
     );
     if (isNaN(costo_real) || costo_real < 0) {
-        alert("Captura un costo real válido");
+        ui.aviso("Captura un costo real válido");
         return;
     }
 
@@ -297,7 +297,7 @@ async function guardarDetalleEditado() {
 
     if (!respuesta.ok) {
         console.log(await respuesta.text());
-        alert("Error al actualizar");
+        ui.aviso("Error al actualizar");
         return;
     }
 
@@ -365,6 +365,6 @@ async function guardarImagenArreglo(url) {
     });
 
     if (!update.ok) {
-        alert('Error al guardar imagen');
+        ui.aviso('Error al guardar imagen');
     }
 }

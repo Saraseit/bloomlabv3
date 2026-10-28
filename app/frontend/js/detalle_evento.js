@@ -322,7 +322,7 @@ async function guardarComision() {
     const pct = parseFloat(document.getElementById('input-comision').value);
 
     if (isNaN(pct) || pct < 0 || pct >= 100) {
-        alert('Captura una comisión entre 0 y 99.99%');
+        ui.aviso('Captura una comisión entre 0 y 99.99%');
         return;
     }
 
@@ -335,12 +335,12 @@ async function guardarComision() {
     const resultado = await respuesta.json().catch(() => ({}));
 
     if (!respuesta.ok) {
-        alert(resultado.detail || 'Error al guardar la comisión');
+        ui.aviso(resultado.detail || 'Error al guardar la comisión');
         return;
     }
 
     if (resultado.requiere_autorizacion) {
-        alert(
+        ui.aviso(
             `Comisión guardada. Al precio acordado el margen queda en ${resultado.margen}%, ` +
             'por debajo del permitido: el evento queda Pendiente de Autorización.'
         );
@@ -384,7 +384,7 @@ async function agregarArreglo() {
         document.getElementById("observaciones").value;
 
     if (!arreglo_id || !cantidad) {
-        alert("Completa los datos");
+        ui.aviso("Completa los datos");
         return;
     }
 
@@ -402,7 +402,7 @@ async function agregarArreglo() {
     });
 
     if (!respuesta.ok) {
-        alert("Error al agregar arreglo");
+        ui.aviso("Error al agregar arreglo");
         return;
     }
 
@@ -417,11 +417,17 @@ async function editarArreglo(arregloId) {
     const arreglo = (_evento?.arreglos || []).find(a => a.id === arregloId);
     if (!arreglo) return;
 
-    const cantidad = parseFloat(prompt("Cantidad", arreglo.cantidad));
-    if (!cantidad) return;
-
-    const observaciones =
-        prompt("Observaciones", arreglo.observaciones ?? "");
+    const datos = await ui.formulario({
+        titulo: "Editar partida",
+        descripcion: `${arreglo.codigo} · ${arreglo.nombre}`,
+        textoAceptar: "Guardar cambios",
+        campos: [
+            { nombre: "cantidad", etiqueta: "Cantidad", tipo: "numero", valor: Number(arreglo.cantidad),
+              requerido: true, min: 0.01 },
+            { nombre: "observaciones", etiqueta: "Observaciones", tipo: "area", valor: arreglo.observaciones ?? "" },
+        ],
+    });
+    if (!datos) return;
 
     const respuesta = await fetchAuth(
         `${API_URL}/evento-arreglos/${arreglo.id}`,
@@ -430,24 +436,26 @@ async function editarArreglo(arregloId) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                cantidad,
-                observaciones
-            })
+            body: JSON.stringify(datos)
         }
     );
 
     if (!respuesta.ok) {
-        alert("Error al actualizar");
+        ui.aviso("Error al actualizar");
         return;
     }
 
+    ui.aviso("Partida actualizada", "ok");
     cargarEvento();
 }
 
 async function eliminarArreglo(id) {
 
-    const confirmar = confirm("¿Eliminar arreglo?");
+    const partida = (_evento?.arreglos || []).find(a => a.id === id);
+    const confirmar = await ui.confirmar(
+        `Se quitará "${partida ? partida.nombre : "este arreglo"}" del evento.`,
+        { titulo: "¿Quitar arreglo del evento?", textoAceptar: "Quitar", peligro: true }
+    );
     if (!confirmar) return;
 
     await fetchAuth(
@@ -487,7 +495,7 @@ async function guardarGastos() {
     });
 
     if (!respuesta.ok) {
-        alert('Error al guardar gastos');
+        ui.aviso('Error al guardar gastos');
         return;
     }
 
@@ -716,12 +724,12 @@ async function guardarPrecioVenta() {
     );
 
     if (isNaN(precio) || precio <= 0) {
-        alert('Captura un precio válido');
+        ui.aviso('Captura un precio válido');
         return;
     }
 
     if (_precioMinimo != null && precio < _precioMinimo) {
-        const confirmar = confirm(
+        const confirmar = await ui.confirmar(
             `El precio $${fmt(precio)} está por debajo del mínimo ($${fmt(_precioMinimo)}). ¿Confirmar de todas formas?`
         );
         if (!confirmar) return;
@@ -734,7 +742,7 @@ async function guardarPrecioVenta() {
     });
 
     if (!respuesta.ok) {
-        alert('Error al guardar precio');
+        ui.aviso('Error al guardar precio');
         return;
     }
 
@@ -783,7 +791,7 @@ async function decidirAutorizacion(decision) {
     const nota = document.getElementById('aut-nota').value.trim();
 
     if (decision === 'rechazar' && !nota) {
-        alert('Captura la nota con el motivo del rechazo');
+        ui.aviso('Captura la nota con el motivo del rechazo');
         return;
     }
 
@@ -792,7 +800,7 @@ async function decidirAutorizacion(decision) {
         : '¿Rechazar el precio? Se borrará el precio acordado y el evento ' +
           'volverá a Cotización.';
 
-    if (!confirm(texto)) return;
+    if (!await ui.confirmar(texto)) return;
 
     const respuesta = await fetchAuth(
         `${API_URL}/eventos/${eventoId}/autorizacion`,
@@ -803,7 +811,7 @@ async function decidirAutorizacion(decision) {
     );
 
     if (!respuesta.ok) {
-        alert('Error al registrar la decisión');
+        ui.aviso('Error al registrar la decisión');
         return;
     }
 
@@ -833,7 +841,7 @@ async function generarPDF(tipo) {
 
     if (!respuesta.ok) {
         if (ventana) ventana.close();
-        alert('Error al generar el PDF');
+        ui.aviso('Error al generar el PDF');
         return;
     }
 
@@ -1025,19 +1033,19 @@ async function guardarPago() {
 
     const fecha = document.getElementById('pago-fecha').value;
     if (!fecha) {
-        alert('Captura la fecha del pago');
+        ui.aviso('Captura la fecha del pago');
         return;
     }
 
     const concepto = document.getElementById('pago-concepto').value.trim();
     if (concepto.length < 2) {
-        alert('El concepto debe tener al menos 2 caracteres');
+        ui.aviso('El concepto debe tener al menos 2 caracteres');
         return;
     }
 
     const monto = parseFloat(document.getElementById('pago-monto').value);
     if (isNaN(monto) || monto <= 0) {
-        alert('El monto debe ser mayor a 0');
+        ui.aviso('El monto debe ser mayor a 0');
         return;
     }
 
@@ -1057,7 +1065,7 @@ async function guardarPago() {
     });
 
     if (!respuesta.ok) {
-        alert('Error al guardar el pago');
+        ui.aviso('Error al guardar el pago');
         return;
     }
 
@@ -1070,7 +1078,7 @@ async function guardarPago() {
 
 async function eliminarPago(pagoId) {
 
-    const confirmar = confirm('¿Eliminar este pago?');
+    const confirmar = await ui.confirmar('¿Eliminar este pago?');
     if (!confirmar) return;
 
     const respuesta = await fetchAuth(
@@ -1079,7 +1087,7 @@ async function eliminarPago(pagoId) {
     );
 
     if (!respuesta.ok) {
-        alert('Error al eliminar el pago');
+        ui.aviso('Error al eliminar el pago');
         return;
     }
 
@@ -1230,25 +1238,25 @@ async function guardarGastoReal() {
 
     const fecha = document.getElementById('gasto-fecha').value;
     if (!fecha) {
-        alert('Captura la fecha del gasto');
+        ui.aviso('Captura la fecha del gasto');
         return;
     }
 
     const categoria = document.getElementById('gasto-categoria').value.trim();
     if (categoria.length < 2) {
-        alert('La categoría debe tener al menos 2 caracteres');
+        ui.aviso('La categoría debe tener al menos 2 caracteres');
         return;
     }
 
     const concepto = document.getElementById('gasto-concepto').value.trim();
     if (concepto.length < 2) {
-        alert('El concepto debe tener al menos 2 caracteres');
+        ui.aviso('El concepto debe tener al menos 2 caracteres');
         return;
     }
 
     const monto = parseFloat(document.getElementById('gasto-monto').value);
     if (isNaN(monto) || monto <= 0) {
-        alert('El monto debe ser mayor a 0');
+        ui.aviso('El monto debe ser mayor a 0');
         return;
     }
 
@@ -1265,7 +1273,7 @@ async function guardarGastoReal() {
         if (paqTexto !== '') {
             paquetes_comprados = parseFloat(paqTexto);
             if (isNaN(paquetes_comprados) || paquetes_comprados < 0) {
-                alert('La cantidad comprada no es válida');
+                ui.aviso('La cantidad comprada no es válida');
                 return;
             }
         }
@@ -1293,7 +1301,7 @@ async function guardarGastoReal() {
     });
 
     if (!respuesta.ok) {
-        alert('Error al guardar el gasto');
+        ui.aviso('Error al guardar el gasto');
         return;
     }
 
@@ -1303,7 +1311,7 @@ async function guardarGastoReal() {
 
 async function eliminarGastoReal(gastoId) {
 
-    const confirmar = confirm('¿Eliminar este gasto?');
+    const confirmar = await ui.confirmar('¿Eliminar este gasto?');
     if (!confirmar) return;
 
     const respuesta = await fetchAuth(
@@ -1312,7 +1320,7 @@ async function eliminarGastoReal(gastoId) {
     );
 
     if (!respuesta.ok) {
-        alert('Error al eliminar el gasto');
+        ui.aviso('Error al eliminar el gasto');
         return;
     }
 

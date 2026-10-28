@@ -26,7 +26,7 @@ async function cargarConfiguracion() {
     const respuesta = await fetchAuth(`${API_URL}/configuracion`);
 
     if (!respuesta.ok) {
-        alert("No se pudo cargar la configuración");
+        ui.aviso("No se pudo cargar la configuración");
         return;
     }
 

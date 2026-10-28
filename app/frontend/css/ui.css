@@ -1,0 +1,278 @@
+/* ============================================================
+   BloomLab · Avisos, ventanas y tablas interactivas (js/ui.js, js/tabla.js)
+   ============================================================ */
+
+/* ── Avisos ── */
+.ui-avisos {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: min(380px, calc(100vw - 2rem));
+}
+
+.ui-aviso {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 12px;
+    border: 1.5px solid #c5dfc9;
+    background: #ffffff;
+    color: #1a2e1e;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    box-shadow: 0 10px 30px rgba(26, 46, 30, 0.16);
+    animation: ui-entrar 0.18s ease-out;
+}
+
+.ui-aviso-error { border-color: #fecdd3; background: #fff1f2; color: #9f1239; }
+.ui-aviso-ok    { border-color: #6ee7b7; background: #ecfdf5; color: #065f46; }
+.ui-aviso-info  { border-color: #bfdbfe; background: #eff6ff; color: #1e3a8a; }
+
+.ui-aviso-texto { flex: 1; }
+.ui-aviso-icono { line-height: 1.35; }
+
+.ui-aviso-cerrar {
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    padding: 0 0.2rem;
+}
+.ui-aviso-cerrar:hover { opacity: 1; }
+
+.ui-saliendo { opacity: 0; transform: translateY(-6px); transition: all 0.2s ease; }
+
+@keyframes ui-entrar {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── Ventana modal ── */
+.ui-modal-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 26, 18, 0.45);
+    animation: ui-aparecer 0.15s ease-out;
+}
+
+@keyframes ui-aparecer { from { opacity: 0; } to { opacity: 1; } }
+
+.ui-modal {
+    width: min(440px, 100%);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.ui-modal-ancho { width: min(600px, 100%); }
+
+.ui-modal-titulo {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+    color: #1a2e1e;
+}
+
+.ui-modal-mensaje {
+    margin: 0 0 1.2rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #374151;
+    white-space: pre-line;
+}
+
+.ui-form-grid { padding: 0.25rem 0 0; }
+
+.ui-area { resize: vertical; min-height: 4.5rem; }
+
+.ui-form-error {
+    min-height: 1.2rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: #be123c;
+}
+
+.ui-invalido { border-color: #fb7185 !important; box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.15) !important; }
+
+.ui-modal-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+}
+
+/* ── Barra de búsqueda de tablas ── */
+.tabla-herramientas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0 1.5rem 1rem;
+}
+
+.tabla-herramientas .search-bar {
+    flex: 1 1 280px;
+    margin: 0;
+}
+
+.tabla-conteo {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4a7a5a;
+    white-space: nowrap;
+}
+
+/* ── Encabezados con orden y filtro ── */
+.th-interactivo { padding: 0 !important; }
+
+.th-boton {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.th-boton:hover { background: rgba(74, 140, 92, 0.08); }
+
+.th-indicador { font-size: 0.65rem; }
+
+.th-embudo {
+    margin-left: auto;
+    font-size: 0.7rem;
+    opacity: 0.45;
+}
+
+.th-boton:hover .th-embudo { opacity: 0.9; }
+.th-filtrado .th-embudo { opacity: 1; color: #2b5c3c; font-weight: 700; }
+
+/* ── Panel de una columna ── */
+.tabla-panel {
+    position: absolute;
+    z-index: 2000;
+    width: 260px;
+    padding: 0.5rem;
+    background: #ffffff;
+    border: 1.5px solid #d1e8d7;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(26, 46, 30, 0.18);
+    font-size: 0.85rem;
+    color: #1a2e1e;
+}
+
+.tabla-panel-orden {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.tabla-panel-orden:hover { background: #eef7f0; }
+
+.tabla-panel-sep {
+    height: 1px;
+    margin: 0.4rem 0;
+    background: #e2ede5;
+}
+
+.tabla-panel-titulo {
+    padding: 0.2rem 0.6rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #4a7a5a;
+}
+
+.tabla-panel-buscar { margin-bottom: 0.4rem; padding: 0.45rem 0.7rem; }
+
+.tabla-panel-todos,
+.tabla-panel-valor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.tabla-panel-valor:hover,
+.tabla-panel-todos:hover { background: #f3faf4; }
+
+.tabla-panel-valor[hidden] { display: none; }
+
+.tabla-panel-lista {
+    max-height: 210px;
+    overflow-y: auto;
+    border: 1px solid #e2ede5;
+    border-radius: 8px;
+    margin-top: 0.2rem;
+}
+
+.tabla-panel-valor span:first-of-type {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tabla-panel-num { font-size: 0.72rem; color: #9ca3af; }
+
+.tabla-panel-rango {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0 0.3rem;
+}
+
+.tabla-panel-rango label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #4a7a5a;
+}
+
+.tabla-panel-rango .form-input { padding: 0.45rem 0.6rem; }
+
+.tabla-panel-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+/* Los botones con display propio no deben ignorar el atributo hidden */
+.tabla-herramientas [hidden] { display: none !important; }

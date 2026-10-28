@@ -7,6 +7,7 @@ async function cargarClientes() {
     const respuesta = await fetchAuth(`${API_URL}/clientes`);
 
     const clientes = await respuesta.json();
+    _clientes = clientes;
 
     const tbody = document.querySelector("#tabla-clientes tbody");
 
@@ -35,7 +36,7 @@ async function cargarClientes() {
                     Ver detalle
                 </button>
 
-                <button onclick='editarCliente(${JSON.stringify(cliente)})'>
+                <button onclick='editarCliente(${cliente.id})'>
                     Editar
                 </button>
 
@@ -76,47 +77,58 @@ async function crearCliente() {
     });
 
     if (!respuesta.ok) {
-        alert("Error al crear");
+        ui.aviso("Error al crear");
         return;
     }
 
     cargarClientes();
 }
 
-async function editarCliente(cliente) {
+// Última lista del API; Editar busca aquí por id
+let _clientes = [];
 
-    const nombre = prompt("Nombre", cliente.nombre);
-    if (!nombre) return;
+async function editarCliente(id) {
 
-    const empresa = prompt("Empresa", cliente.empresa ?? "");
-    const telefono = prompt("Teléfono", cliente.telefono ?? "");
-    const email = prompt("Email", cliente.email ?? "");
+    const cliente = _clientes.find(c => c.id === id);
+    if (!cliente) return;
+
+    const datos = await ui.formulario({
+        titulo: "Editar cliente",
+        textoAceptar: "Guardar cambios",
+        campos: [
+            { nombre: "nombre", etiqueta: "Nombre", valor: cliente.nombre, requerido: true, minimo: 2, completo: true },
+            { nombre: "empresa", etiqueta: "Empresa", valor: cliente.empresa ?? "" },
+            { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel", valor: cliente.telefono ?? "" },
+            { nombre: "email", etiqueta: "Email", tipo: "email", valor: cliente.email ?? "", completo: true },
+            { nombre: "notas", etiqueta: "Notas", tipo: "area", valor: cliente.notas ?? "" },
+        ],
+    });
+    if (!datos) return;
 
     const respuesta = await fetchAuth(`${API_URL}/clientes/${cliente.id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            nombre,
-            empresa,
-            telefono,
-            email,
-            notas: cliente.notas ?? ""
-        })
+        body: JSON.stringify(datos)
     });
 
     if (!respuesta.ok) {
-        alert("Error al actualizar");
+        ui.aviso("Error al actualizar");
         return;
     }
 
+    ui.aviso("Cliente actualizado", "ok");
     cargarClientes();
 }
 
 async function eliminarCliente(id) {
 
-    const confirmar = confirm("¿Eliminar cliente?");
+    const cliente = _clientes.find(c => c.id === id);
+    const confirmar = await ui.confirmar(
+        `Se eliminará a "${cliente ? cliente.nombre : "este cliente"}".`,
+        { titulo: "¿Eliminar cliente?", textoAceptar: "Eliminar", peligro: true }
+    );
     if (!confirmar) return;
 
     await fetchAuth(`${API_URL}/clientes/${id}`, {

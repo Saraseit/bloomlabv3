@@ -4,7 +4,7 @@ if (!usuario) throw new Error("Sin sesión");
 
 async function eliminarInsumo(id) {
 
-    const confirmar = confirm("¿Eliminar este insumo?");
+    const confirmar = await ui.confirmar("¿Eliminar este insumo?");
     if (!confirmar) return;
 
     await fetchAuth(`${API_URL}/insumos/${id}`, {
@@ -61,7 +61,7 @@ async function guardarInsumoEditado() {
 
     const nombre = document.getElementById("edit-nombre").value.trim();
     if (!nombre) {
-        alert("El nombre es obligatorio");
+        ui.aviso("El nombre es obligatorio");
         return;
     }
 
@@ -69,13 +69,13 @@ async function guardarInsumoEditado() {
         document.getElementById("edit-categoria").value
     );
     if (!categoria_id) {
-        alert("Selecciona una categoría");
+        ui.aviso("Selecciona una categoría");
         return;
     }
 
     const unidad = document.getElementById("edit-unidad").value.trim();
     if (!unidad) {
-        alert("La unidad es obligatoria");
+        ui.aviso("La unidad es obligatoria");
         return;
     }
 
@@ -83,7 +83,7 @@ async function guardarInsumoEditado() {
         document.getElementById("edit-costo").value
     ) || 0;
     if (costo_referencia <= 0) {
-        alert("El costo de referencia debe ser mayor a 0");
+        ui.aviso("El costo de referencia debe ser mayor a 0");
         return;
     }
 
@@ -93,7 +93,7 @@ async function guardarInsumoEditado() {
         document.getElementById("edit-merma").value
     ) || 0;
     if (porcentaje_merma < 0 || porcentaje_merma > 100) {
-        alert("La merma debe estar entre 0 y 100");
+        ui.aviso("La merma debe estar entre 0 y 100");
         return;
     }
 
@@ -122,13 +122,13 @@ async function guardarInsumoEditado() {
     });
 
     if (!respuesta.ok) {
-        alert("Error al actualizar");
+        ui.aviso("Error al actualizar");
         return;
     }
 
     const resultado = await respuesta.json();
     if (resultado.detalles_convertidos > 0) {
-        alert(
+        ui.aviso(
             `Se convirtieron ${resultado.detalles_convertidos} renglones de ` +
             `arreglos a la nueva unidad de uso. Sus subtotales no cambian.`
         );
@@ -157,7 +157,7 @@ async function nuevoInsumo() {
 
     const nombre = document.getElementById("nombre-insumo").value.trim();
     if (!nombre) {
-        alert("El nombre es obligatorio");
+        ui.aviso("El nombre es obligatorio");
         return;
     }
 
@@ -165,7 +165,7 @@ async function nuevoInsumo() {
         document.getElementById("categoria-select").value
     );
     if (!categoria_id) {
-        alert("Selecciona una categoría");
+        ui.aviso("Selecciona una categoría");
         return;
     }
 
@@ -200,7 +200,7 @@ async function nuevoInsumo() {
     });
 
     if (!respuesta.ok) {
-        alert("Error al crear insumo");
+        ui.aviso("Error al crear insumo");
         return;
     }
 
@@ -292,7 +292,7 @@ function leerPiezas(idCampo) {
     if (texto === "") return 1;
     const piezas = parseFloat(texto);
     if (isNaN(piezas) || piezas <= 0) {
-        alert("El contenido por unidad de compra debe ser mayor a 0");
+        ui.aviso("El contenido por unidad de compra debe ser mayor a 0");
         return null;
     }
     return piezas;

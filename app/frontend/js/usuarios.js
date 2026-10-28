@@ -5,7 +5,7 @@ if (!usuario) throw new Error("Sin sesión");
 // La API ya exige rol admin en /usuarios; esto solo evita que alguien
 // sin permiso se quede viendo una pantalla que no va a cargar nada.
 if (usuario.rol !== "admin") {
-    alert("Esta sección es solo para administradores");
+    ui.avisoAlLlegar("Esta sección es solo para administradores", "error");
     window.location.href = "/frontend/index.html";
     throw new Error("Sin permiso");
 }
@@ -37,7 +37,7 @@ async function cargarUsuarios() {
     const respuesta = await fetchAuth(`${API_URL}/usuarios`);
 
     if (!respuesta.ok) {
-        alert("Error al cargar los usuarios");
+        ui.aviso("Error al cargar los usuarios");
         return;
     }
 
@@ -185,13 +185,13 @@ async function guardarUsuario() {
 
     const nombre = document.getElementById("usuario-nombre").value.trim();
     if (nombre.length < 2) {
-        alert("El nombre debe tener al menos 2 caracteres");
+        ui.aviso("El nombre debe tener al menos 2 caracteres");
         return;
     }
 
     const email = document.getElementById("usuario-email").value.trim();
     if (!email.includes("@")) {
-        alert("Captura un correo electrónico válido");
+        ui.aviso("Captura un correo electrónico válido");
         return;
     }
 
@@ -211,7 +211,7 @@ async function guardarUsuario() {
 
         if (!respuesta.ok) {
             const data = await respuesta.json();
-            alert(mensajeError(data, "Error al actualizar el usuario"));
+            ui.aviso(mensajeError(data, "Error al actualizar el usuario"));
             return;
         }
 
@@ -226,7 +226,7 @@ async function guardarUsuario() {
 
         const password = document.getElementById("usuario-password").value;
         if (password.length < 8) {
-            alert("La contraseña debe tener al menos 8 caracteres");
+            ui.aviso("La contraseña debe tener al menos 8 caracteres");
             return;
         }
 
@@ -237,7 +237,7 @@ async function guardarUsuario() {
 
         if (!respuesta.ok) {
             const data = await respuesta.json();
-            alert(mensajeError(data, "Error al crear el usuario"));
+            ui.aviso(mensajeError(data, "Error al crear el usuario"));
             return;
         }
     }
@@ -251,7 +251,7 @@ async function desactivarUsuario(usuarioId) {
     const u = _usuarios.find(x => x.id === usuarioId);
     if (!u) return;
 
-    const confirmar = confirm(
+    const confirmar = await ui.confirmar(
         `¿Desactivar a ${u.nombre}? No podrá volver a iniciar sesión.`
     );
     if (!confirmar) return;
@@ -262,7 +262,7 @@ async function desactivarUsuario(usuarioId) {
 
     if (!respuesta.ok) {
         const data = await respuesta.json();
-        alert(mensajeError(data, "Error al desactivar el usuario"));
+        ui.aviso(mensajeError(data, "Error al desactivar el usuario"));
         return;
     }
 
@@ -285,7 +285,7 @@ async function resetearPasswordSiAplica() {
     if (!nueva) return true;
 
     if (nueva.length < 8) {
-        alert("La contraseña nueva debe tener al menos 8 caracteres");
+        ui.aviso("La contraseña nueva debe tener al menos 8 caracteres");
         return false;
     }
 
@@ -299,14 +299,14 @@ async function resetearPasswordSiAplica() {
 
     if (!respuesta.ok) {
         const data = await respuesta.json();
-        alert("Error al resetear contraseña: " +
+        ui.aviso("Error al resetear contraseña: " +
               mensajeError(data, "Error"));
         return false;
     }
 
     document.getElementById("edit-reset-password").value = "";
 
-    alert(
+    ui.aviso(
         `Contraseña de ${_usuarioEditando.nombre} reseteada. ` +
         `Compártesela por un canal seguro.`
     );
@@ -330,7 +330,7 @@ async function cambiarPasswordSiAplica() {
     if (!actual || !nuevo) return true;
 
     if (nuevo.length < 8) {
-        alert("La contraseña nueva debe tener al menos 8 caracteres");
+        ui.aviso("La contraseña nueva debe tener al menos 8 caracteres");
         return false;
     }
 
@@ -344,11 +344,11 @@ async function cambiarPasswordSiAplica() {
 
     if (!respuesta.ok) {
         const data = await respuesta.json();
-        alert(mensajeError(data, "Error al cambiar la contraseña"));
+        ui.aviso(mensajeError(data, "Error al cambiar la contraseña"));
         return false;
     }
 
-    alert("Contraseña actualizada");
+    ui.aviso("Contraseña actualizada");
     return true;
 }
 

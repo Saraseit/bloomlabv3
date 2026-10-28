@@ -1115,3 +1115,47 @@ html[data-theme="dark"] .mensaje-error { color: #fca5a5; }
 html[data-theme="dark"] #tabla-evento-arreglos .obs-arreglo {
     color: var(--bl-muted);
 }
+
+/* ============================================================
+   Avisos, ventanas y tablas interactivas (css/ui.css)
+   ============================================================ */
+
+html[data-theme="dark"] .ui-aviso {
+    background: var(--bl-surface-2);
+    border-color: var(--bl-border-2);
+    color: var(--bl-text);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+html[data-theme="dark"] .ui-aviso-error { background: #3a1d22; border-color: rgba(248, 113, 113, 0.5); color: #fecaca; }
+html[data-theme="dark"] .ui-aviso-ok    { background: #163225; border-color: rgba(52, 211, 153, 0.5); color: #a7f3d0; }
+html[data-theme="dark"] .ui-aviso-info  { background: #172540; border-color: rgba(96, 165, 250, 0.5); color: #bfdbfe; }
+
+html[data-theme="dark"] .ui-modal-fondo { background: rgba(0, 0, 0, 0.65); }
+
+html[data-theme="dark"] .ui-modal,
+html[data-theme="dark"] .tabla-panel {
+    background: var(--bl-surface);
+    border-color: var(--bl-border-2);
+    color: var(--bl-text);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .ui-modal-titulo { color: var(--bl-text); }
+html[data-theme="dark"] .ui-modal-mensaje { color: var(--bl-text-2); }
+html[data-theme="dark"] .ui-form-error { color: #fda4af; }
+
+html[data-theme="dark"] .tabla-conteo,
+html[data-theme="dark"] .tabla-panel-titulo,
+html[data-theme="dark"] .tabla-panel-rango label { color: var(--bl-muted); }
+
+html[data-theme="dark"] .th-boton:hover,
+html[data-theme="dark"] .tabla-panel-orden:hover,
+html[data-theme="dark"] .tabla-panel-valor:hover,
+html[data-theme="dark"] .tabla-panel-todos:hover { background: var(--bl-surface-3); }
+
+html[data-theme="dark"] .th-filtrado .th-embudo { color: var(--bl-accent); }
+
+html[data-theme="dark"] .tabla-panel-sep,
+html[data-theme="dark"] .tabla-panel-lista { background: transparent; border-color: var(--bl-border); }
+html[data-theme="dark"] .tabla-panel-sep { background: var(--bl-border); }
+html[data-theme="dark"] .tabla-panel-num { color: var(--bl-faint); }

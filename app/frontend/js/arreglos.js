@@ -35,6 +35,7 @@ async function cargarArreglos() {
     );
 
     const arreglos = await respuesta.json();
+    _arreglos = arreglos;
 
     const tbody = document.querySelector("#tabla-arreglos tbody");
 
@@ -55,14 +56,7 @@ async function cargarArreglos() {
                     Ver
                 </button>
 
-                <button onclick="
-                    editarArreglo(
-                        ${arreglo.id},
-                        '${(arreglo.nombre ?? '').replace(/'/g, "\\'")}',
-                        '${(arreglo.categoria ?? '').replace(/'/g, "\\'")}',
-                        '${(arreglo.descripcion ?? '').replace(/'/g, "\\'")}'
-                    )
-                ">
+                <button onclick="editarArreglo(${arreglo.id})">
                     Editar
                 </button>
 
@@ -101,7 +95,7 @@ async function crearArreglo() {
     });
 
     if (!respuesta.ok) {
-        alert("Error al crear arreglo");
+        ui.aviso("Error al crear arreglo");
         return;
     }
 
@@ -112,37 +106,52 @@ async function crearArreglo() {
     document.getElementById("imagen-url-arreglo").value = "";
     document.getElementById("preview-imagen").style.display = "none";
 }
-async function editarArreglo(id, nombreActual, categoriaActual, descripcionActual) {
+// Última lista del API; Editar busca aquí por id
+let _arreglos = [];
 
-    const nombre = prompt("Nombre", nombreActual);
-    if (!nombre) return;
+async function editarArreglo(id) {
 
-    const categoria = prompt("Categoría", categoriaActual);
-    const descripcion = prompt("Descripción", descripcionActual);
+    const arreglo = _arreglos.find(a => a.id === id);
+    if (!arreglo) return;
+
+    const datos = await ui.formulario({
+        titulo: "Editar arreglo",
+        descripcion: `${arreglo.codigo} · los insumos y la foto se editan en el detalle del arreglo.`,
+        textoAceptar: "Guardar cambios",
+        campos: [
+            { nombre: "nombre", etiqueta: "Nombre", valor: arreglo.nombre, requerido: true, completo: true },
+            { nombre: "categoria", etiqueta: "Categoría", valor: arreglo.categoria ?? "", completo: true,
+              sugerencias: [...new Set(_arreglos.map(a => a.categoria).filter(Boolean))] },
+            { nombre: "descripcion", etiqueta: "Descripción", tipo: "area", valor: arreglo.descripcion ?? "" },
+        ],
+    });
+    if (!datos) return;
 
     const respuesta = await fetchAuth(`${API_URL}/arreglos/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            nombre,
-            categoria,
-            descripcion
-        })
+        // La foto se conserva: sin imagen_url el servidor la dejaba en blanco
+        body: JSON.stringify({ ...datos, imagen_url: arreglo.imagen_url ?? null })
     });
 
     if (!respuesta.ok) {
-        alert("Error al actualizar arreglo");
+        ui.aviso("Error al actualizar arreglo");
         return;
     }
 
+    ui.aviso("Arreglo actualizado", "ok");
     cargarArreglos();
 }
 
 async function eliminarArreglo(id) {
 
-    const confirmar = confirm("¿Eliminar arreglo?");
+    const arreglo = _arreglos.find(a => a.id === id);
+    const confirmar = await ui.confirmar(
+        `Se eliminará "${arreglo ? arreglo.nombre : "este arreglo"}" del catálogo.`,
+        { titulo: "¿Eliminar arreglo?", textoAceptar: "Eliminar", peligro: true }
+    );
     if (!confirmar) return;
 
     const respuesta = await fetchAuth(`${API_URL}/arreglos/${id}`, {
@@ -150,7 +159,7 @@ async function eliminarArreglo(id) {
     });
 
     if (!respuesta.ok) {
-        alert("Error al eliminar arreglo");
+        ui.aviso("Error al eliminar arreglo");
         return;
     }
 
