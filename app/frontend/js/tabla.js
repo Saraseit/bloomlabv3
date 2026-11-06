@@ -3,11 +3,15 @@
 //
 // crearTablaInteractiva({
 //   tabla, buscador, conteo, limpiar,   elementos del DOM
-//   columnas: [{ clave, etiqueta, tipo, valor(fila), texto(fila), filtrable }],
+//   columnas: [{ clave, etiqueta, tipo, valor(fila), texto(fila), filtrable,
+//                ancho, derecha }],
 //   pintarFila(fila) -> <tr>,
 //   vacio: "mensaje sin filas", recordar: "clave-localStorage"
 // })
 // tipo: texto (lista de valores), numero (rango), fecha (rango)
+// ancho: píxeles de la columna. La tabla usa diseño fijo: las columnas no
+// cambian de tamaño al filtrar y el ancho sobrante se reparte en proporción.
+// derecha: alinea el encabezado a la derecha, para columnas de montos.
 // Devuelve { actualizar(filas) }
 // Usa coincideBusqueda() de buscador.js si está cargado.
 // ============================================================
@@ -16,6 +20,10 @@ function crearTablaInteractiva(op) {
 
     const columnas = op.columnas;
     let filas = [];
+
+    op.tabla.classList.add("tabla-interactiva");
+    const anchoTotal = columnas.reduce((suma, c) => suma + (c.ancho || 0), 0);
+    if (anchoTotal) op.tabla.style.minWidth = `${anchoTotal}px`;
     let estado = { busqueda: "", orden: null, filtros: {} };
 
     // Lo último que se usó se recuerda en este navegador
@@ -37,8 +45,9 @@ function crearTablaInteractiva(op) {
     const valorDe = (c, f) => c.valor ? c.valor(f) : f[c.clave];
     const textoDe = (c, f) => {
         if (c.texto) return c.texto(f);
-        const v = valorDe(c, f);
-        return v == null || v === "" ? "(vacío)" : String(v);
+        // Sin espacios sobrantes: "BODA " y "BODA" son el mismo valor en el filtro
+        const t = String(valorDe(c, f) ?? "").trim();
+        return t === "" ? "(vacío)" : t;
     };
 
     function coincideTexto(textos, consulta) {
@@ -110,7 +119,13 @@ function crearTablaInteractiva(op) {
     function pintarEncabezados() {
         op.tabla.querySelectorAll("thead th").forEach((th, i) => {
             const c = columnas[i];
-            if (!c || c.filtrable === false) return;
+            if (!c) return;
+            if (c.ancho) th.style.width = `${c.ancho}px`;
+            th.classList.toggle("th-derecha", !!c.derecha);
+            if (c.filtrable === false) {
+                th.innerHTML = `<span class="th-fijo">${c.etiqueta}</span>`;
+                return;
+            }
             const orden = estado.orden && estado.orden.clave === c.clave ? estado.orden.dir : null;
             const filtrado = !!estado.filtros[c.clave];
             th.classList.add("th-interactivo");
@@ -119,7 +134,7 @@ function crearTablaInteractiva(op) {
                 <button type="button" class="th-boton ${filtrado ? "th-filtrado" : ""}"
                         aria-haspopup="dialog" aria-label="Ordenar y filtrar ${c.etiqueta}">
                     <span>${c.etiqueta}</span>
-                    <span class="th-indicador">${orden === "asc" ? "▲" : orden === "desc" ? "▼" : ""}</span>
+                    ${orden ? `<span class="th-indicador">${orden === "asc" ? "▲" : "▼"}</span>` : ""}
                     <span class="th-embudo" aria-hidden="true">${filtrado ? "⏷●" : "⏷"}</span>
                 </button>`;
             th.querySelector("button").addEventListener("click", e => {
@@ -235,7 +250,8 @@ function crearTablaInteractiva(op) {
         });
         panel.querySelector("[data-accion=aplicar]").addEventListener("click", () => {
             if (todos) {
-                const marcadas = casillas().filter(x => x.checked).map(x => x.value);
+                // Como en Excel: si se buscó un valor, solo cuenta lo que quedó a la vista
+                const marcadas = visiblesLista().filter(x => x.checked).map(x => x.value);
                 if (marcadas.length === casillas().length) delete estado.filtros[c.clave];
                 else estado.filtros[c.clave] = { valores: marcadas };
             } else {

@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261027">
-    <link rel="stylesheet" href="css/module.css?v=20261027">
+    <link rel="stylesheet" href="css/estilos.css?v=20261106">
+    <link rel="stylesheet" href="css/module.css?v=20261106">
     <style>
         /* Estilos específicos de Eventos */
         #tabla-eventos tbody td:nth-child(1) {
@@ -27,17 +27,14 @@
             color: #2b5c3c;
         }
 
-        .action-cell {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem;
-            align-items: center;
-            min-width: 150px;
+        /* Más ancho que los demás módulos: la tabla tiene ocho columnas */
+        .module-wrapper {
+            max-width: 1440px;
         }
     </style>
-    <link rel="stylesheet" href="css/ui.css?v=20261027">
-    <link rel="stylesheet" href="css/dark.css?v=20261027">
-    <script src="js/theme.js?v=20261027"></script>
+    <link rel="stylesheet" href="css/ui.css?v=20261106">
+    <link rel="stylesheet" href="css/dark.css?v=20261106">
+    <script src="js/theme.js?v=20261106"></script>
 </head>
 
 <body class="module-page">
@@ -206,18 +203,12 @@
 
     </div>
 
-    <!--
-        Post-procesador de badges y botones.
-        Observa el tbody y aplica estilos visuales sin modificar eventos.js
-        ni los IDs/funciones existentes.
-    -->
-
-    <script src="auth.js?v=20261027"></script>
-    <script src="config.js?v=20261027"></script>
-    <script src="js/ui.js?v=20261027"></script>
-    <script src="js/buscador.js?v=20261027"></script>
-    <script src="js/tabla.js?v=20261027"></script>
-    <script src="js/eventos.js?v=20261027"></script>
+    <script src="auth.js?v=20261106"></script>
+    <script src="config.js?v=20261106"></script>
+    <script src="js/ui.js?v=20261106"></script>
+    <script src="js/buscador.js?v=20261106"></script>
+    <script src="js/tabla.js?v=20261106"></script>
+    <script src="js/eventos.js?v=20261106"></script>
 
 </body>
 

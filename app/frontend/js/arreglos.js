@@ -28,55 +28,80 @@ function abrirWidgetImagen() {
     widget.open();
 }
 
+// Última lista del API; los botones buscan aquí por id
+let _arreglos = [];
+
+function escaparAr(texto) {
+    return String(texto ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// Fecha de creación sin la hora: "2026-06-03"
+const fechaCreado = arreglo => (arreglo.fecha_creacion || "").slice(0, 10);
+
+// ── Tabla con buscador, orden y filtros ────────
+
+const _tabla = crearTablaInteractiva({
+    tabla: document.getElementById("tabla-arreglos"),
+    buscador: document.getElementById("buscador-arreglos"),
+    conteo: document.getElementById("conteo-arreglos"),
+    limpiar: document.getElementById("limpiar-filtros-arreglos"),
+    recordar: "bloomlab-tabla-arreglos",
+    vacio: "Todavía no hay arreglos en el catálogo.",
+    columnas: [
+        { clave: "codigo", etiqueta: "Código", tipo: "texto", ancho: 104 },
+        { clave: "nombre", etiqueta: "Nombre", tipo: "texto", ancho: 250 },
+        { clave: "categoria", etiqueta: "Categoría", tipo: "texto", ancho: 130 },
+        { clave: "costo_total", etiqueta: "Costo total", tipo: "numero", ancho: 130, derecha: true,
+          valor: a => Number(a.costo_total) || 0, texto: a => fmt(a.costo_total) },
+        { clave: "descripcion", etiqueta: "Descripción", tipo: "texto", ancho: 230 },
+        { clave: "fecha_creacion", etiqueta: "Creado", tipo: "fecha", ancho: 108, valor: fechaCreado },
+        { clave: "acciones", etiqueta: "Acciones", filtrable: false, ancho: 192 },
+    ],
+    pintarFila: arreglo => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+            <td>${escaparAr(arreglo.codigo)}</td>
+            <td>${escaparAr(arreglo.nombre)}</td>
+            <td>${arreglo.categoria ? `<span class="cat-chip">${escaparAr(arreglo.categoria)}</span>` : ""}</td>
+            <td class="col-der"><span class="cost-prefix">$</span>${fmt(arreglo.costo_total)}</td>
+            <td title="${escaparAr(arreglo.descripcion ?? "")}">${escaparAr(arreglo.descripcion ?? "")}</td>
+            <td class="col-nowrap">${escaparAr(fechaCreado(arreglo))}</td>
+            <td>
+                <div class="action-cell">
+                    <button class="btn btn-primary btn-sm" onclick="verDetalle(${arreglo.id})">Ver</button>
+                    <button class="btn btn-secondary btn-sm" onclick="editarArreglo(${arreglo.id})">Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarArreglo(${arreglo.id})">Eliminar</button>
+                </div>
+            </td>`;
+
+        // La fila abre el detalle, pero no cuando el clic es en la celda de
+        // acciones: el clic de un botón también llega a la fila, y navegar
+        // cerraría de inmediato el formulario o la confirmación que abrió.
+        fila.addEventListener("click", e => {
+            if (e.target.closest(".action-cell")) return;
+            verDetalle(arreglo.id);
+        });
+
+        return fila;
+    },
+});
+
 async function cargarArreglos() {
 
     const respuesta = await fetchAuth(
         `${API_URL}/arreglos`
     );
 
-    const arreglos = await respuesta.json();
-    _arreglos = arreglos;
+    if (!respuesta.ok) {
+        ui.aviso("No se pudieron cargar los arreglos");
+        return;
+    }
 
-    const tbody = document.querySelector("#tabla-arreglos tbody");
-
-    tbody.innerHTML = "";
-
-    arreglos.forEach(arreglo => {
-
-        const fila = document.createElement("tr");
-
-        fila.innerHTML = `
-            <td>${arreglo.codigo}</td>
-            <td>${arreglo.nombre}</td>
-            <td>${arreglo.categoria ?? ""}</td>
-            <td>${fmt(arreglo.costo_total)}</td>
-            <td>${arreglo.descripcion ?? ""}</td>
-            <td>
-                <button onclick="verDetalle(${arreglo.id})">
-                    Ver
-                </button>
-
-                <button onclick="editarArreglo(${arreglo.id})">
-                    Editar
-                </button>
-
-                <button onclick="eliminarArreglo(${arreglo.id})">
-                    Eliminar
-                </button>
-            </td>
-        `;
-
-        fila.style.cursor = "pointer";
-
-        fila.addEventListener("click", () => {
-            window.location.href = `detalle_arreglo.html?id=${arreglo.id}`;
-        });
-
-        tbody.appendChild(fila);
-    });
+    _arreglos = await respuesta.json();
+    _tabla.actualizar(_arreglos);
 }
-
-cargarArreglos();
 
 function verDetalle(id) {
     window.location.href = `detalle_arreglo.html?id=${id}`;
@@ -106,9 +131,6 @@ async function crearArreglo() {
     document.getElementById("imagen-url-arreglo").value = "";
     document.getElementById("preview-imagen").style.display = "none";
 }
-// Última lista del API; Editar busca aquí por id
-let _arreglos = [];
-
 async function editarArreglo(id) {
 
     const arreglo = _arreglos.find(a => a.id === id);
@@ -121,7 +143,7 @@ async function editarArreglo(id) {
         campos: [
             { nombre: "nombre", etiqueta: "Nombre", valor: arreglo.nombre, requerido: true, completo: true },
             { nombre: "categoria", etiqueta: "Categoría", valor: arreglo.categoria ?? "", completo: true,
-              sugerencias: [...new Set(_arreglos.map(a => a.categoria).filter(Boolean))] },
+              sugerencias: [...new Set(_arreglos.map(a => (a.categoria ?? "").trim()).filter(Boolean))] },
             { nombre: "descripcion", etiqueta: "Descripción", tipo: "area", valor: arreglo.descripcion ?? "" },
         ],
     });
@@ -163,27 +185,9 @@ async function eliminarArreglo(id) {
         return;
     }
 
+    ui.aviso("Arreglo eliminado", "ok");
     cargarArreglos();
 }
 
-function filtrarArreglos() {
-    const texto = document.getElementById('buscador-arreglos')
-        .value.toLowerCase().trim();
-    const filas = document.querySelectorAll('#tabla-arreglos tbody tr');
-
-    filas.forEach(fila => {
-        // Busca en: código (0), nombre (1), categoría (2), descripción (4)
-        const codigo      = fila.cells[0]?.textContent.toLowerCase() ?? '';
-        const nombre      = fila.cells[1]?.textContent.toLowerCase() ?? '';
-        const categoria   = fila.cells[2]?.textContent.toLowerCase() ?? '';
-        const descripcion = fila.cells[4]?.textContent.toLowerCase() ?? '';
-
-        const coincide = !texto ||
-            codigo.includes(texto) ||
-            nombre.includes(texto) ||
-            categoria.includes(texto) ||
-            descripcion.includes(texto);
-
-        fila.style.display = coincide ? '' : 'none';
-    });
-}
+// INIT
+cargarArreglos();

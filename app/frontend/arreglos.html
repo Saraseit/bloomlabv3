@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261027">
-    <link rel="stylesheet" href="css/module.css?v=20261027">
+    <link rel="stylesheet" href="css/estilos.css?v=20261106">
+    <link rel="stylesheet" href="css/module.css?v=20261106">
     <style>
         /* Estilos específicos de Arreglos */
         #tabla-arreglos tbody td:nth-child(1) {
@@ -64,21 +64,14 @@
             margin-right: 1px;
         }
 
-        .action-cell {
-            display: flex;
-            gap: 0.4rem;
-            align-items: center;
-        }
-
-        /* Evita que los clics en botones naveguen por la fila */
-        .action-cell button {
-            position: relative;
-            z-index: 1;
+        /* Más ancho que los demás módulos: la tabla tiene siete columnas */
+        .module-wrapper {
+            max-width: 1440px;
         }
     </style>
-    <link rel="stylesheet" href="css/ui.css?v=20261027">
-    <link rel="stylesheet" href="css/dark.css?v=20261027">
-    <script src="js/theme.js?v=20261027"></script>
+    <link rel="stylesheet" href="css/ui.css?v=20261106">
+    <link rel="stylesheet" href="css/dark.css?v=20261106">
+    <script src="js/theme.js?v=20261106"></script>
 </head>
 
 <body class="module-page">
@@ -114,18 +107,25 @@
             </div>
 
 
-            <div class="search-bar">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-                </svg>
-                <input
-                    type="text"
-                    id="buscador-arreglos"
-                    class="search-input"
-                    placeholder="Buscar por nombre, categoría o descripción..."
-                    oninput="filtrarArreglos()"
-                >
+            <div class="tabla-herramientas">
+                <div class="search-bar">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input
+                        type="search"
+                        id="buscador-arreglos"
+                        class="search-input"
+                        placeholder="Buscar por código, nombre, categoría o descripción..."
+                        autocomplete="off"
+                        aria-label="Buscar arreglos"
+                    >
+                </div>
+                <span class="tabla-conteo" id="conteo-arreglos"></span>
+                <button type="button" class="btn btn-secondary btn-sm" id="limpiar-filtros-arreglos" hidden>
+                    Quitar filtros y orden
+                </button>
             </div>
 
             <div class="table-scroll">
@@ -137,6 +137,7 @@
                             <th>Categoría</th>
                             <th>Costo Total</th>
                             <th>Descripción</th>
+                            <th>Creado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -214,70 +215,13 @@
 
     </div>
 
-    <!--
-        Post-procesador visual.
-        Observa el tbody y aplica estilos sin modificar arreglos.js
-        ni los IDs/funciones existentes.
-    -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var tbody = document.querySelector('#tabla-arreglos tbody');
-            if (!tbody) return;
-
-            function estilizarFila(row) {
-                // Categoría chip (índice 2)
-                var catCell = row.cells[2];
-                if (catCell && !catCell.dataset.chipped) {
-                    var texto = catCell.textContent.trim();
-                    if (texto) {
-                        var chip = document.createElement('span');
-                        chip.textContent = texto;
-                        chip.className = 'cat-chip';
-                        catCell.textContent = '';
-                        catCell.appendChild(chip);
-                    }
-                    catCell.dataset.chipped = '1';
-                }
-
-                // Prefijo $ en costo total (índice 3)
-                var costoCell = row.cells[3];
-                if (costoCell && !costoCell.dataset.prefixed) {
-                    var val = costoCell.textContent.trim();
-                    costoCell.innerHTML = '<span class="cost-prefix">$</span>' + val;
-                    costoCell.dataset.prefixed = '1';
-                }
-
-                // Botones de acción (índice 5)
-                var actionCell = row.cells[5];
-                if (actionCell && !actionCell.dataset.styled) {
-                    var btns = actionCell.querySelectorAll('button');
-                    actionCell.classList.add('action-cell');
-                    if (btns[0]) btns[0].className = 'btn btn-primary btn-sm';   // Ver
-                    if (btns[1]) btns[1].className = 'btn btn-secondary btn-sm'; // Editar
-                    if (btns[2]) btns[2].className = 'btn btn-danger btn-sm';    // Eliminar
-                    actionCell.dataset.styled = '1';
-                }
-            }
-
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    mutation.addedNodes.forEach(function (node) {
-                        if (node.nodeType === 1 && node.tagName === 'TR') {
-                            estilizarFila(node);
-                        }
-                    });
-                });
-            });
-
-            observer.observe(tbody, { childList: true });
-        });
-    </script>
-
     <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
-    <script src="auth.js?v=20261027"></script>
-    <script src="config.js?v=20261027"></script>
-    <script src="js/ui.js?v=20261027"></script>
-    <script src="js/arreglos.js?v=20261027"></script>
+    <script src="auth.js?v=20261106"></script>
+    <script src="config.js?v=20261106"></script>
+    <script src="js/ui.js?v=20261106"></script>
+    <script src="js/buscador.js?v=20261106"></script>
+    <script src="js/tabla.js?v=20261106"></script>
+    <script src="js/arreglos.js?v=20261106"></script>
 
 </body>
 

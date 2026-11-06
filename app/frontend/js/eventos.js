@@ -34,28 +34,28 @@ const _tabla = crearTablaInteractiva({
     recordar: "bloomlab-tabla-eventos",
     vacio: "Todavía no hay eventos registrados.",
     columnas: [
-        { clave: "cliente", etiqueta: "Cliente", tipo: "texto" },
-        { clave: "nombre", etiqueta: "Evento", tipo: "texto" },
-        { clave: "fecha_evento", etiqueta: "Fecha", tipo: "fecha" },
-        { clave: "lugar", etiqueta: "Lugar", tipo: "texto" },
-        { clave: "estatus", etiqueta: "Estatus", tipo: "texto" },
-        { clave: "costo_final", etiqueta: "Costo total", tipo: "numero",
+        { clave: "cliente", etiqueta: "Cliente", tipo: "texto", ancho: 140 },
+        { clave: "nombre", etiqueta: "Evento", tipo: "texto", ancho: 170 },
+        { clave: "fecha_evento", etiqueta: "Fecha", tipo: "fecha", ancho: 108 },
+        { clave: "lugar", etiqueta: "Lugar", tipo: "texto", ancho: 124 },
+        { clave: "estatus", etiqueta: "Estatus", tipo: "texto", ancho: 124 },
+        { clave: "costo_final", etiqueta: "Costo total", tipo: "numero", ancho: 130, derecha: true,
           valor: e => Number(e.costo_final) || 0, texto: e => fmt(e.costo_final) },
-        { clave: "precio_sugerido", etiqueta: "Precio sugerido", tipo: "numero",
+        { clave: "precio_sugerido", etiqueta: "Precio sugerido", tipo: "numero", ancho: 156, derecha: true,
           valor: e => e.precio_sugerido == null ? null : Number(e.precio_sugerido),
           texto: e => e.precio_sugerido == null ? "—" : fmt(e.precio_sugerido) },
-        { clave: "acciones", etiqueta: "Acciones", filtrable: false },
+        { clave: "acciones", etiqueta: "Acciones", filtrable: false, ancho: 268 },
     ],
     pintarFila: evento => {
         const fila = document.createElement("tr");
         fila.innerHTML = `
             <td>${escaparEv(evento.cliente)}</td>
             <td>${escaparEv(evento.nombre)}</td>
-            <td>${escaparEv(evento.fecha_evento ?? "")}</td>
+            <td class="col-nowrap">${escaparEv(evento.fecha_evento ?? "")}</td>
             <td>${escaparEv(evento.lugar ?? "")}</td>
             <td><span class="badge ${claseEstatus(evento.estatus)}">${escaparEv(evento.estatus ?? "")}</span></td>
-            <td>$${fmt(evento.costo_final)}</td>
-            <td>${evento.precio_sugerido == null ? "—" : "$" + fmt(evento.precio_sugerido)}</td>
+            <td class="col-der">$${fmt(evento.costo_final)}</td>
+            <td class="col-der">${evento.precio_sugerido == null ? "—" : "$" + fmt(evento.precio_sugerido)}</td>
             <td>
                 <div class="action-cell">
                     <button class="btn btn-primary btn-sm" onclick="abrirEvento(${evento.id})">Abrir</button>
