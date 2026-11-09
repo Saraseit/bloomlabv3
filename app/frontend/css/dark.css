@@ -1012,6 +1012,11 @@ html[data-theme="dark"] .combo-mas {
     border-top-color: var(--bl-border);
 }
 
+html[data-theme="dark"] .combo-ya {
+    background: var(--bl-surface-3);
+    color: var(--bl-accent-2);
+}
+
 
 /* ============================================================
    Resultado del evento, comisión y configuración

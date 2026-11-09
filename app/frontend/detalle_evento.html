@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/estilos.css?v=20261106">
-    <link rel="stylesheet" href="css/module.css?v=20261106">
+    <link rel="stylesheet" href="css/estilos.css?v=20261109">
+    <link rel="stylesheet" href="css/module.css?v=20261109">
     <style>
         /* ═══════════════════════════════════════════
            Detalle Evento — estilos específicos
@@ -863,9 +863,9 @@
             color: #9ca3af;
         }
     </style>
-    <link rel="stylesheet" href="css/ui.css?v=20261106">
-    <link rel="stylesheet" href="css/dark.css?v=20261106">
-    <script src="js/theme.js?v=20261106"></script>
+    <link rel="stylesheet" href="css/ui.css?v=20261109">
+    <link rel="stylesheet" href="css/dark.css?v=20261109">
+    <script src="js/theme.js?v=20261109"></script>
 </head>
 
 <body class="module-page">
@@ -1694,21 +1694,27 @@
         <!-- ══════════════════════════════════
              Formulario: Agregar arreglo
              ══════════════════════════════════ -->
-        <section class="card">
+        <section class="card card-con-sugerencias">
             <div class="card-head">
                 <div>
                     <h2 class="card-title">Agregar Arreglo</h2>
-                    <p class="card-subtitle">Selecciona un arreglo del catálogo y especifica la cantidad</p>
+                    <p class="card-subtitle">Escribe parte del nombre, código o categoría y elige el arreglo de la lista</p>
                 </div>
             </div>
 
             <div class="form-grid">
 
                 <div class="form-group form-group-full">
-                    <label class="form-label" for="arreglo-select">Arreglo del catálogo</label>
-                    <select id="arreglo-select" class="form-select">
-                        <option value="">Seleccionar arreglo</option>
-                    </select>
+                    <label class="form-label" for="arreglo-buscar">Arreglo del catálogo</label>
+                    <div class="combo">
+                        <input
+                            type="text"
+                            id="arreglo-buscar"
+                            class="form-input"
+                            placeholder="Ej: centro de mesa, ARR120, boda..."
+                        >
+                        <ul id="arreglo-sugerencias" class="combo-lista" hidden></ul>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1747,10 +1753,11 @@
     </div>
 
 
-    <script src="auth.js?v=20261106"></script>
-    <script src="config.js?v=20261106"></script>
-    <script src="js/ui.js?v=20261106"></script>
-    <script src="js/detalle_evento.js?v=20261106"></script>
+    <script src="auth.js?v=20261109"></script>
+    <script src="config.js?v=20261109"></script>
+    <script src="js/ui.js?v=20261109"></script>
+    <script src="js/buscador.js?v=20261109"></script>
+    <script src="js/detalle_evento.js?v=20261109"></script>
 
 </body>
 

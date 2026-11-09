@@ -349,68 +349,137 @@ async function guardarComision() {
     cargarEvento();
 }
 
+// ── Agregar arreglo: buscador del catálogo ─────
+//
+// Se escribe parte del nombre, código, categoría o descripción y se elige
+// de la lista. Con teclado: flechas y Enter eligen, el foco pasa a Cantidad
+// y Enter ahí agrega la partida y deja el buscador listo para el siguiente.
+
+let _catalogoArreglos = [];
+
+// Piezas de ese arreglo que ya tiene el evento, en todas sus partidas
+function cantidadEnEvento(arregloId) {
+    return (_evento?.arreglos || [])
+        .filter(p => p.arreglo_id === arregloId)
+        .reduce((suma, p) => suma + (Number(p.cantidad) || 0), 0);
+}
+
+const _buscadorArreglo = crearAutocompletado({
+    input: document.getElementById("arreglo-buscar"),
+    lista: document.getElementById("arreglo-sugerencias"),
+    obtenerItems: () => _catalogoArreglos,
+    textos: a => [a.codigo, a.nombre, a.categoria, a.descripcion],
+    // Primero el código exacto, luego lo que coincide en código o nombre,
+    // y al final lo que solo coincide en categoría o descripción
+    prioridad: (a, q) => {
+        if (normalizarBusqueda(a.codigo) === normalizarBusqueda(q)) return 0;
+        return coincideBusqueda([a.codigo, a.nombre], q) ? 1 : 2;
+    },
+    etiqueta: a => `${a.codigo} - ${a.nombre}`,
+    pintar: (a, q) => {
+        const enEvento = cantidadEnEvento(a.id);
+        const categoria = (a.categoria ?? "").trim();
+        const descripcion = (a.descripcion ?? "").trim();
+        return `
+            <span class="combo-principal">
+                <span class="combo-codigo">${resaltarCoincidencias(a.codigo, q)}</span>
+                <span class="combo-nombre">${resaltarCoincidencias(a.nombre, q)}</span>
+                ${enEvento ? `<span class="combo-ya">Ya en el evento: ${Number(enEvento.toFixed(2))}</span>` : ""}
+            </span>
+            <span class="combo-meta">
+                ${categoria ? `${resaltarCoincidencias(categoria, q)} · ` : ""}Costo $${fmt(a.costo_total)}
+            </span>
+            ${descripcion ? `<span class="combo-meta combo-desc" title="${escaparTextoHtml(descripcion)}">${resaltarCoincidencias(descripcion, q)}</span>` : ""}`;
+    },
+    alElegir: a => { if (a) document.getElementById("cantidad").focus(); },
+});
+
 async function cargarArreglos() {
 
     const respuesta = await fetchAuth(`${API_URL}/arreglos`);
+    if (!respuesta.ok) {
+        ui.aviso("No se pudo cargar el catálogo de arreglos", "error");
+        return;
+    }
+    _catalogoArreglos = await respuesta.json();
 
-    const arreglos = await respuesta.json();
-
-    const select = document.getElementById("arreglo-select");
-
-    select.innerHTML = `<option value="">Seleccionar arreglo</option>`;
-
-    arreglos.forEach(arreglo => {
-
-        const option = document.createElement("option");
-
-        option.value = arreglo.id;
-        option.textContent = `${arreglo.codigo} - ${arreglo.nombre}`;
-
-        select.appendChild(option);
-    });
+    // Si alguien empezó a escribir mientras cargaba, se muestran ya las coincidencias
+    const campo = document.getElementById("arreglo-buscar");
+    if (document.activeElement === campo && campo.value.trim()) {
+        campo.dispatchEvent(new Event("input"));
+    }
 }
+
+// Evita mandar la misma partida dos veces con Enter o clic repetido
+let _agregandoArreglo = false;
 
 async function agregarArreglo() {
 
-    const arreglo_id = parseInt(
-        document.getElementById("arreglo-select").value
-    );
+    if (_agregandoArreglo) return;
 
-    const cantidad = parseFloat(
-        document.getElementById("cantidad").value
-    );
+    const arreglo = _buscadorArreglo.elegido();
+    const campoCantidad = document.getElementById("cantidad");
+    const cantidad = parseFloat(campoCantidad.value);
+    const observaciones = document.getElementById("observaciones").value;
 
-    const observaciones =
-        document.getElementById("observaciones").value;
-
-    if (!arreglo_id || !cantidad) {
-        ui.aviso("Completa los datos");
+    if (!arreglo) {
+        ui.aviso(
+            document.getElementById("arreglo-buscar").value.trim()
+                ? "Elige el arreglo en la lista de sugerencias"
+                : "Escribe y elige un arreglo del catálogo",
+            "error"
+        );
+        _buscadorArreglo.enfocar();
+        return;
+    }
+    if (isNaN(cantidad) || cantidad <= 0) {
+        ui.aviso("La cantidad debe ser mayor a 0", "error");
+        campoCantidad.focus();
         return;
     }
 
-    const respuesta = await fetchAuth(`${API_URL}/evento-arreglos`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            evento_id: parseInt(eventoId),
-            arreglo_id,
-            cantidad,
-            observaciones
-        })
-    });
+    _agregandoArreglo = true;
+    let respuesta;
+    try {
+        respuesta = await fetchAuth(`${API_URL}/evento-arreglos`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                evento_id: parseInt(eventoId),
+                arreglo_id: arreglo.id,
+                cantidad,
+                observaciones
+            })
+        });
+    } finally {
+        _agregandoArreglo = false;
+    }
 
     if (!respuesta.ok) {
-        ui.aviso("Error al agregar arreglo");
+        ui.aviso("Error al agregar arreglo", "error");
         return;
     }
 
-    document.getElementById("cantidad").value = "";
+    _buscadorArreglo.limpiar();
+    campoCantidad.value = "";
     document.getElementById("observaciones").value = "";
+    ui.aviso(`Se agregó ${arreglo.codigo} · ${arreglo.nombre}`, "ok");
+    _buscadorArreglo.enfocar();
 
     cargarEvento();
 }
+
+// Enter en Cantidad u Observaciones agrega la partida
+["cantidad", "observaciones"].forEach(id => {
+    document.getElementById(id).addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            agregarArreglo();
+        }
+    });
+});
 
 async function editarArreglo(arregloId) {
 

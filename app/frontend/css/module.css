@@ -732,3 +732,27 @@ mark {
     border-top: 1px solid #edf3ee;
     margin-top: 0.2rem;
 }
+
+/* Tarjeta con buscador: la lista de sugerencias puede salir de ella */
+.card.card-con-sugerencias {
+    overflow: visible;
+}
+
+/* Descripción en un solo renglón, para que la lista no crezca de más */
+.combo-desc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.combo-ya {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #e3f1e7;
+    color: #2b5c3c;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}

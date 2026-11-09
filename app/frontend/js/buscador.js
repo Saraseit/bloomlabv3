@@ -103,6 +103,8 @@ function resaltarCoincidencias(texto, consulta) {
 //   etiqueta      item => texto que queda en el input al elegir
 //   alElegir      item | null => void (null cuando se borra la elección)
 //   maximo        sugerencias visibles (default 30)
+//   prioridad     (item, consulta) => número, opcional: los menores salen
+//                 primero; los empates conservan el orden de obtenerItems
 function crearAutocompletado(opciones) {
 
     const { input, lista, obtenerItems, textos, pintar, etiqueta, alElegir } = opciones;
@@ -157,7 +159,13 @@ function crearAutocompletado(opciones) {
             return;
         }
 
-        const todos = obtenerItems().filter(item => coincideBusqueda(textos(item), consulta));
+        let todos = obtenerItems().filter(item => coincideBusqueda(textos(item), consulta));
+        if (opciones.prioridad) {
+            todos = todos
+                .map((item, i) => ({ item, i, p: opciones.prioridad(item, consulta) }))
+                .sort((a, b) => a.p - b.p || a.i - b.i)
+                .map(x => x.item);
+        }
         resultados = todos.slice(0, maximo);
 
         if (resultados.length === 0) {
@@ -176,6 +184,8 @@ function crearAutocompletado(opciones) {
         input.setAttribute("aria-expanded", "true");
         activo = -1;
         if (resultados.length > 0) marcarActivo(0);
+        // Al fondo de la página la lista quedaría fuera de la pantalla
+        lista.scrollIntoView({ block: "nearest" });
     }
 
     input.addEventListener("input", buscar);
