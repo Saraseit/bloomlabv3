@@ -1,7 +1,9 @@
 from app.database.connection import get_connection
 
 from app.services.eventos_service import (
-    actualizar_totales_evento
+    ESTATUS_EN_NEGOCIACION,
+    actualizar_totales_evento,
+    borrar_precio_acordado
 )
 from app.services.compras_service import (
     congelar_insumos_arreglo
@@ -75,6 +77,8 @@ def agregar_arreglo_evento(data):
     # transacción: el renglón y su foto se guardan juntos o no se guardan.
     congelar_insumos_arreglo(cur, nuevo_id, data.arreglo_id)
 
+    precio_borrado = borrar_precio_acordado(cur, data.evento_id)
+
     conn.commit()
 
     cur.close()
@@ -85,7 +89,8 @@ def agregar_arreglo_evento(data):
     )
     return {
         "mensaje": "Arreglo agregado",
-        "id": nuevo_id
+        "id": nuevo_id,
+        "precio_borrado": precio_borrado
     }
 
 
@@ -151,7 +156,8 @@ def editar_arreglo_evento(detalle_id, data):
     cur.execute("""
         SELECT
             evento_id,
-            costo_unitario
+            costo_unitario,
+            cantidad
         FROM evento_arreglos
         WHERE id = %s
     """, (detalle_id,))
@@ -191,6 +197,12 @@ def editar_arreglo_evento(detalle_id, data):
 
     ))
 
+    # Cambiar solo las observaciones no altera el precio
+    precio_borrado = (
+        abs(float(fila[2]) - float(data.cantidad)) > 1e-9
+        and borrar_precio_acordado(cur, evento_id)
+    )
+
     conn.commit()
 
     cur.close()
@@ -201,7 +213,8 @@ def editar_arreglo_evento(detalle_id, data):
     )
 
     return {
-        "mensaje": "Arreglo actualizado"
+        "mensaje": "Arreglo actualizado",
+        "precio_borrado": precio_borrado
     }
 
 def eliminar_arreglo_evento(detalle_id):
@@ -233,6 +246,8 @@ def eliminar_arreglo_evento(detalle_id):
         WHERE id = %s
     """, (detalle_id,))
 
+    precio_borrado = borrar_precio_acordado(cur, evento_id)
+
     conn.commit()
 
     cur.close()
@@ -243,6 +258,83 @@ def eliminar_arreglo_evento(detalle_id):
     )
 
     return {
-        "mensaje": "Arreglo eliminado"
+        "mensaje": "Arreglo eliminado",
+        "precio_borrado": precio_borrado
     }
 
+
+
+def sincronizar_arreglo_en_eventos(arreglo_id):
+    """Pasa la versión actual de un arreglo del catálogo a los eventos en negociación.
+
+    Al agregar un arreglo a un evento se copian su costo y su receta. Si
+    después se edita la receta en el catálogo, los eventos en Cotización o
+    Pendiente Autorización toman el costo y la receta nuevos. Los confirmados
+    o con contrato conservan la versión con la que se cerraron.
+
+    Si el costo de la partida cambió, se borra el precio acordado del evento,
+    igual que al cambiar sus arreglos (ver borrar_precio_acordado).
+    """
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT costo_total FROM arreglos WHERE id = %s", (arreglo_id,))
+    fila = cur.fetchone()
+    if not fila:
+        cur.close()
+        conn.close()
+        return {"eventos_actualizados": 0, "precios_borrados": 0}
+
+    costo = fila[0] or 0
+
+    cur.execute("""
+        SELECT ea.id, ea.evento_id, ea.costo_unitario
+        FROM evento_arreglos ea
+        INNER JOIN eventos e
+            ON e.id = ea.evento_id
+        WHERE ea.arreglo_id = %s
+          AND e.activo = TRUE
+          AND e.estatus = ANY(%s)
+        ORDER BY ea.id
+        FOR UPDATE OF ea
+    """, (arreglo_id, ESTATUS_EN_NEGOCIACION))
+    partidas = cur.fetchall()
+
+    eventos, con_costo_nuevo = set(), set()
+    for partida_id, evento_id, costo_anterior in partidas:
+        cur.execute("""
+            UPDATE evento_arreglos
+            SET
+                costo_unitario = %s,
+                subtotal = cantidad * %s
+            WHERE id = %s
+        """, (costo, costo, partida_id))
+
+        # La receta también cambia la lista de compras: se vuelve a copiar
+        cur.execute("""
+            DELETE FROM evento_arreglo_insumos
+            WHERE evento_arreglo_id = %s
+        """, (partida_id,))
+        congelar_insumos_arreglo(cur, partida_id, arreglo_id)
+
+        eventos.add(evento_id)
+        if abs(float(costo_anterior or 0) - float(costo)) >= 0.005:
+            con_costo_nuevo.add(evento_id)
+
+    precios_borrados = sum(
+        1 for evento_id in sorted(con_costo_nuevo)
+        if borrar_precio_acordado(cur, evento_id)
+    )
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    for evento_id in sorted(eventos):
+        actualizar_totales_evento(evento_id)
+
+    return {
+        "eventos_actualizados": len(eventos),
+        "precios_borrados": precios_borrados
+    }

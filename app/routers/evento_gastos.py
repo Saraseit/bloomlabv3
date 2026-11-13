@@ -7,6 +7,7 @@ from app.core.dependencies import (
 from pydantic import BaseModel, Field
 from app.services.eventos_service import (
     actualizar_totales_evento,
+    borrar_precio_acordado,
     fijar_precio_venta,
     guardar_foto
 )
@@ -27,12 +28,35 @@ def actualizar_gastos(evento_id: int, data: GastosEvento, usuario=Depends(get_us
     cur  = conn.cursor()
 
     cur.execute("""
+        SELECT costo_flete, costo_montaje
+        FROM eventos
+        WHERE id = %s
+        FOR UPDATE
+    """, (evento_id,))
+    anterior = cur.fetchone()
+
+    if not anterior:
+        cur.close()
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Evento no encontrado"
+        )
+
+    cur.execute("""
         UPDATE eventos
         SET
             costo_flete   = %s,
             costo_montaje = %s
         WHERE id = %s
     """, (data.costo_flete, data.costo_montaje, evento_id))
+
+    # Con otro flete o montaje, el precio acordado ya no corresponde
+    cambio = (
+        abs(float(anterior[0] or 0) - data.costo_flete) >= 0.005
+        or abs(float(anterior[1] or 0) - data.costo_montaje) >= 0.005
+    )
+    precio_borrado = cambio and borrar_precio_acordado(cur, evento_id)
 
     conn.commit()
     cur.close()
@@ -41,7 +65,7 @@ def actualizar_gastos(evento_id: int, data: GastosEvento, usuario=Depends(get_us
     # Recalcula todo con los nuevos gastos
     actualizar_totales_evento(evento_id)
 
-    return {"mensaje": "Gastos actualizados"}
+    return {"mensaje": "Gastos actualizados", "precio_borrado": precio_borrado}
 
 class PrecioVenta(BaseModel):
     precio_venta: float = Field(gt=0)

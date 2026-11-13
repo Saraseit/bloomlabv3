@@ -217,6 +217,8 @@ async function agregarInsumo() {
         return;
     }
 
+    avisoEventosActualizados("Insumo agregado", await respuesta.json().catch(() => ({})));
+
     // Listo para capturar el siguiente insumo
     limpiarFormularioInsumo();
     _buscadorInsumo.enfocar();
@@ -228,7 +230,12 @@ async function eliminarDetalle(id) {
     const confirmar = await ui.confirmar("¿Eliminar insumo?");
     if (!confirmar) return;
 
-    await fetchAuth(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
+    const respuesta = await fetchAuth(`${API_URL}/arreglo-detalle/${id}`, { method: "DELETE" });
+    if (!respuesta.ok) {
+        ui.aviso("Error al eliminar el insumo");
+        return;
+    }
+    avisoEventosActualizados("Insumo eliminado", await respuesta.json().catch(() => ({})));
 
     cargarDetalle();
     limpiarFormularioInsumo();
@@ -301,9 +308,26 @@ async function guardarDetalleEditado() {
         return;
     }
 
+    avisoEventosActualizados("Insumo actualizado", await respuesta.json().catch(() => ({})));
     cerrarModalDetalle();
     cargarDetalle();
     cargarInsumos();
+}
+
+// Los cambios de la receta llegan a los eventos en Cotización o Pendiente
+// Autorización que usan este arreglo; los confirmados conservan su versión.
+function avisoEventosActualizados(mensaje, resultado) {
+    const n = Number(resultado?.eventos_actualizados) || 0;
+    const borrados = Number(resultado?.precios_borrados) || 0;
+    if (!n) {
+        ui.aviso(mensaje, "ok");
+        return;
+    }
+    let texto = `${mensaje}. Se actualizó en ${n} ${n === 1 ? "evento" : "eventos"} en cotización`;
+    if (borrados) {
+        texto += `; en ${borrados} se borró el precio acordado y hay que negociarlo de nuevo`;
+    }
+    ui.aviso(texto + ".", borrados ? "info" : "ok");
 }
 
 // Cerrar al hacer clic fuera de la tarjeta

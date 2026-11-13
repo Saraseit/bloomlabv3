@@ -10,6 +10,39 @@ from app.services.precios import (
     repartir_por_arreglo
 )
 
+# Estatus en los que el precio todavía se negocia. La base guarda la
+# cotización con y sin acento ("Cotizacion" y "Cotización").
+ESTATUS_EN_NEGOCIACION = ["Cotizacion", "Cotización", "Pendiente Autorización"]
+
+
+def borrar_precio_acordado(cur, evento_id):
+    """Borra el precio acordado de un evento en negociación cuyo contenido cambió.
+
+    El precio acordado se negoció para ciertos arreglos, cantidades, flete y
+    montaje. Si se conserva fijo después de cambiarlos, se reparte entre más
+    costo y deja arreglos por debajo de lo que cuestan. Al borrarlo, el evento
+    vuelve al precio sugerido y hay que negociar de nuevo; si esperaba
+    autorización, regresa a Cotización porque ya no hay precio que autorizar.
+
+    No toca eventos confirmados o con contrato: su precio ya se cerró con el
+    cliente. Corre en la transacción del llamador (no hace commit). Devuelve
+    True si había un precio y se borró.
+    """
+    cur.execute("""
+        UPDATE eventos
+        SET
+            precio_venta = NULL,
+            estatus = CASE
+                WHEN estatus = 'Pendiente Autorización' THEN 'Cotizacion'
+                ELSE estatus
+            END
+        WHERE id = %s
+          AND precio_venta IS NOT NULL
+          AND estatus = ANY(%s)
+        RETURNING id
+    """, (evento_id, ESTATUS_EN_NEGOCIACION))
+    return cur.fetchone() is not None
+
 def obtener_eventos():
 
     conn = get_connection()

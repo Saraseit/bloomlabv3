@@ -1,4 +1,5 @@
 from app.database.connection import get_connection
+from app.services.evento_arreglo_service import sincronizar_arreglo_en_eventos
 
 
 def agregar_insumo_arreglo(data):
@@ -43,12 +44,12 @@ def agregar_insumo_arreglo(data):
     cur.close()
     conn.close()
     
-    actualizar_costo_total(
-    data.arreglo_id
-)
+    sincronizado = actualizar_costo_total(data.arreglo_id)
+
     return {
         "mensaje": "Detalle agregado",
-        "id": nuevo_id
+        "id": nuevo_id,
+        **sincronizado
     }
 
 def obtener_detalle_arreglo(arreglo_id):
@@ -135,6 +136,9 @@ def actualizar_costo_total(arreglo_id):
     cur.close()
     conn.close()
 
+    # Los eventos en negociación toman el costo y la receta nuevos
+    return sincronizar_arreglo_en_eventos(arreglo_id)
+
  
 def editar_detalle(detalle_id, data):
 
@@ -182,10 +186,11 @@ def editar_detalle(detalle_id, data):
     cur.close()
     conn.close()
 
-    actualizar_costo_total(arreglo_id)
+    sincronizado = actualizar_costo_total(arreglo_id)
 
     return {
-        "mensaje": "Detalle actualizado"
+        "mensaje": "Detalle actualizado",
+        **sincronizado
     }  
 
 def eliminar_detalle(detalle_id):
@@ -224,8 +229,9 @@ def eliminar_detalle(detalle_id):
     cur.close()
     conn.close()
 
-    actualizar_costo_total(arreglo_id)
+    sincronizado = actualizar_costo_total(arreglo_id)
 
     return {
-        "mensaje": "Detalle eliminado"
+        "mensaje": "Detalle eliminado",
+        **sincronizado
     } 

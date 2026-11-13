@@ -45,6 +45,13 @@ async function cargarEvento() {
     _precioSugerido = evento.precio_sugerido;
     _estatusEvento  = evento.estatus;
 
+    // Aviso antes de cambiar el contenido de un evento con precio acordado
+    // (el servidor lo borra: ver avisoCambioEvento)
+    const enNegociacion = ["Cotizacion", "Cotización", "Pendiente Autorización"].includes(evento.estatus);
+    document.querySelectorAll(".nota-precio-acordado").forEach(el => {
+        el.hidden = !(enNegociacion && evento.tipo_precio === "acordado");
+    });
+
     document.getElementById('valor-flete').textContent   = fmt(_costoFlete);
     document.getElementById('valor-montaje').textContent = fmt(_costoMontaje);
     document.getElementById('valor-sobrante').textContent =
@@ -462,10 +469,11 @@ async function agregarArreglo() {
         return;
     }
 
+    const resultado = await respuesta.json().catch(() => ({}));
     _buscadorArreglo.limpiar();
     campoCantidad.value = "";
     document.getElementById("observaciones").value = "";
-    ui.aviso(`Se agregó ${arreglo.codigo} · ${arreglo.nombre}`, "ok");
+    avisoCambioEvento(`Se agregó ${arreglo.codigo} · ${arreglo.nombre}`, resultado);
     _buscadorArreglo.enfocar();
 
     cargarEvento();
@@ -514,7 +522,7 @@ async function editarArreglo(arregloId) {
         return;
     }
 
-    ui.aviso("Partida actualizada", "ok");
+    avisoCambioEvento("Partida actualizada", await respuesta.json().catch(() => ({})));
     cargarEvento();
 }
 
@@ -527,14 +535,35 @@ async function eliminarArreglo(id) {
     );
     if (!confirmar) return;
 
-    await fetchAuth(
+    const respuesta = await fetchAuth(
         `${API_URL}/evento-arreglos/${id}`,
         {
             method: "DELETE"
         }
     );
 
+    if (!respuesta.ok) {
+        ui.aviso("Error al quitar el arreglo");
+        return;
+    }
+
+    avisoCambioEvento("Arreglo quitado del evento", await respuesta.json().catch(() => ({})));
     cargarEvento();
+}
+
+// El servidor borra el precio acordado de un evento en negociación cuando
+// cambian sus arreglos, cantidades, flete o montaje: ese precio se negoció
+// para otro contenido y, fijo, dejaría arreglos por debajo de su costo.
+function avisoCambioEvento(mensaje, resultado) {
+    if (resultado && resultado.precio_borrado) {
+        ui.aviso(
+            `${mensaje}. Se borró el precio acordado porque cambió el evento: ` +
+            "ahora se muestra el sugerido. Captura el precio de nuevo cuando lo negocies.",
+            "info"
+        );
+    } else {
+        ui.aviso(mensaje, "ok");
+    }
 }
 
 // ── Gastos operativos ──────────────────────────
@@ -568,6 +597,7 @@ async function guardarGastos() {
         return;
     }
 
+    avisoCambioEvento('Gastos guardados', await respuesta.json().catch(() => ({})));
     cerrarModalGastos();
     cargarEvento(); // recarga KPIs y valores
 }

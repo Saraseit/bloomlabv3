@@ -756,3 +756,16 @@ mark {
     font-weight: 600;
     white-space: nowrap;
 }
+
+/* Aviso de que cambiar el evento borra su precio acordado */
+.nota-precio-acordado {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: #fdf3e1;
+    color: #8a5a14;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+.nota-precio-acordado[hidden] { display: none; }
+#modal-gastos .nota-precio-acordado { margin: -0.75rem 0 1rem; }

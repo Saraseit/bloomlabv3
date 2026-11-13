@@ -1164,3 +1164,8 @@ html[data-theme="dark"] .tabla-panel-sep,
 html[data-theme="dark"] .tabla-panel-lista { background: transparent; border-color: var(--bl-border); }
 html[data-theme="dark"] .tabla-panel-sep { background: var(--bl-border); }
 html[data-theme="dark"] .tabla-panel-num { color: var(--bl-faint); }
+
+html[data-theme="dark"] .nota-precio-acordado {
+    background: rgba(240, 180, 80, 0.14);
+    color: #f0c27a;
+}
