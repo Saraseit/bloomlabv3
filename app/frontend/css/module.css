@@ -769,3 +769,10 @@ mark {
 }
 .nota-precio-acordado[hidden] { display: none; }
 #modal-gastos .nota-precio-acordado { margin: -0.75rem 0 1rem; }
+
+/* Botón Duplicar a la derecha del título del arreglo */
+.page-title-block .btn-duplicar-arreglo { margin-left: auto; }
+@media (max-width: 640px) {
+    .page-title-block { flex-wrap: wrap; }
+    .page-title-block .btn-duplicar-arreglo { margin-left: 0; }
+}

@@ -57,7 +57,7 @@ const _tabla = crearTablaInteractiva({
           valor: a => Number(a.costo_total) || 0, texto: a => fmt(a.costo_total) },
         { clave: "descripcion", etiqueta: "Descripción", tipo: "texto", ancho: 230 },
         { clave: "fecha_creacion", etiqueta: "Creado", tipo: "fecha", ancho: 108, valor: fechaCreado },
-        { clave: "acciones", etiqueta: "Acciones", filtrable: false, ancho: 192 },
+        { clave: "acciones", etiqueta: "Acciones", filtrable: false, ancho: 264 },
     ],
     pintarFila: arreglo => {
         const fila = document.createElement("tr");
@@ -72,6 +72,7 @@ const _tabla = crearTablaInteractiva({
                 <div class="action-cell">
                     <button class="btn btn-primary btn-sm" onclick="verDetalle(${arreglo.id})">Ver</button>
                     <button class="btn btn-secondary btn-sm" onclick="editarArreglo(${arreglo.id})">Editar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="duplicarArregloCatalogo(_arreglos.find(a => a.id === ${arreglo.id}))">Duplicar</button>
                     <button class="btn btn-danger btn-sm" onclick="eliminarArreglo(${arreglo.id})">Eliminar</button>
                 </div>
             </td>`;

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class ArregloCreate(BaseModel):
 
@@ -24,3 +24,5 @@ class ArregloUpdate(BaseModel):
     imagen_url: str | None = None
 
 
+class ArregloDuplicar(BaseModel):
+    nombre: str = Field(min_length=1, max_length=150)

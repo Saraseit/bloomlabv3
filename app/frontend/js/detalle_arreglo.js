@@ -17,10 +17,14 @@ const _costosCatalogo = {};
 // Renglón que se está editando; lo fija editarDetalle() al abrir el modal.
 let _detalleEditando = null;
 
+// Arreglo en pantalla, para el botón Duplicar (js/duplicar_arreglo.js)
+let _arregloActual = null;
+
 async function cargarDetalle() {
 
     const respuesta = await fetchAuth(`${API_URL}/arreglos/${arregloId}`);
     const arreglo = await respuesta.json();
+    _arregloActual = arreglo;
 
     document.getElementById("nombre-arreglo").textContent = arreglo.nombre;
     document.getElementById("codigo").textContent = arreglo.codigo;
